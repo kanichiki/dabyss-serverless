@@ -217,10 +217,22 @@ export class Jinro extends dabyss.Game {
         return res;
     }
 
+    async getAliveNumber() {
+        let alive_num = 0;
+        for (let state of this.isAliveStatus) {
+            if (state) {
+                alive_num++;
+            }
+        }
+        return alive_num;
+    }
 
     // TODO 人狼側の勝利条件が満たされているか判定
     async isWerewolfWin(): Promise<boolean> {
-        return false;
+        const isAliveNumber: number = await this.getAliveNumber();
+        const WerewolfNumber: number = await this.makePositionsNumberList()[0]
+        const is_werewolf_win: boolean = (isAliveNumber <= WerewolfNumber);
+        return is_werewolf_win
     }
 
 }
