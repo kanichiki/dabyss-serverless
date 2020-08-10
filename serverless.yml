@@ -1,0 +1,495 @@
+service: dabyss-sls-ts
+app: dabyss-sls-ts
+org: kanichiki 
+custom:
+  webpack: 
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
+plugins:
+  - serverless-webpack
+  - serverless-step-functions
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: ap-northeast-1
+  runtime: nodejs12.x
+  apiGateway: 
+    minimumCompressionSize: 1024
+  environment: 
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    TZ: Asia/Tokyo
+    stage: ${opt:stage, self:provider.stage, 'dev'}
+    eventTable: ${self:resources.Resources.eventTable.Properties.TableName}
+    userTable: ${self:resources.Resources.userTable.Properties.TableName}
+    groupTable: ${self:resources.Resources.groupTable.Properties.TableName}
+    gameTable: ${self:resources.Resources.gameTable.Properties.TableName}
+    sequenceTable: ${self:resources.Resources.sequenceTable.Properties.TableName}
+    actionTable: ${self:resources.Resources.actionTable.Properties.TableName}
+    discussionTable: ${self:resources.Resources.discussionTable.Properties.TableName}
+    voteTable: ${self:resources.Resources.voteTable.Properties.TableName}
+    crazinessTable: ${self:resources.Resources.crazinessTable.Properties.TableName}
+    wordsetTable: ${self:resources.Resources.wordsetTable.Properties.TableName}
+
+  cfnRole: arn:aws:iam::126640255293:role/ServerlessFrameworkRole
+  role: arn:aws:iam::126640255293:role/dabyss-dev-lambda
+
+package:
+  include:
+    - src/**/*
+
+functions: 
+  Reception: 
+    handler: src/functions/reception/handler.handler
+    name: dabyss-reception-${opt:stage, self:provider.stage, 'dev'}
+    environment:
+      stateMachineArn: ${self:resources.Outputs.DabyssMachine.Value}
+      notifyFunctionArn: 
+        Fn::GetAtt: [NotifyLambdaFunction, Arn]
+    events: 
+      - http: 
+          method: post
+          path: webhook
+  Notify:
+    handler: src/functions/notify/handler.handler
+    name: dabyss-notify-${opt:stage, self:provider.stage, 'dev'}
+  Entry:
+    handler: src/functions/entry/handler.handler
+    name: dabyss-entry-${opt:stage, self:provider.stage, 'dev'}
+  # Cardgame:
+  #   handler: src/functions/cardgame/handler.handler
+  #   name: dabyss-cardgame-${opt:stage, self:provider.stage, 'dev'}
+  #   events: 
+  #     - http: 
+  #         method: any
+  #         path: hoge
+  #     - http:
+  #         method: any
+  #         path: '/'
+  CrazyNoisyGroupMessage:
+    handler: src/functions/crazynoisy/group-message/handler.handler
+    name: dabyss-crazynoisy-group-message-${opt:stage, self:provider.stage, 'dev'}
+  CrazyNoisyGroupPostback:
+    handler: src/functions/crazynoisy/group-postback/handler.handler
+    name: dabyss-crazynoisy-group-postback-${opt:stage, self:provider.stage, 'dev'}
+  CrazyNoisyUserPostback:
+    handler: src/functions/crazynoisy/user-postback/handler.handler
+    name: dabyss-crazynoisy-user-postback-${opt:stage, self:provider.stage, 'dev'}
+  CrazyNoisyGroupDatetimepicker:
+    handler: src/functions/crazynoisy/group-datetimepicker/handler.handler
+    name: dabyss-crazynoisy-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
+
+  WordWolfGroupMessage:
+    handler: src/functions/wordwolf/group-message/handler.handler
+    name: dabyss-wordwolf-group-message-${opt:stage, self:provider.stage, 'dev'}
+  WordWolfGroupPostback:
+    handler: src/functions/wordwolf/group-postback/handler.handler
+    name: dabyss-wordwolf-group-postback-${opt:stage, self:provider.stage, 'dev'}
+  WordWolfGroupDatetimepicker:
+    handler: src/functions/wordwolf/group-datetimepicker/handler.handler
+    name: dabyss-wordwolf-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
+  
+  JinroGroupMessage:
+    handler: src/functions/jinro/group-message/handler.handler
+    name: dabyss-jinro-group-message-${opt:stage, self:provider.stage, 'dev'}
+  JinroGroupPostback:
+    handler: src/functions/jinro/group-postback/handler.handler
+    name: dabyss-jinro-group-postback-${opt:stage, self:provider.stage, 'dev'}
+  JinroUserPostback:
+    handler: src/functions/jinro/user-postback/handler.handler
+    name: dabyss-jinro-user-postback-${opt:stage, self:provider.stage, 'dev'}
+  JinroGroupDatetimepicker:
+    handler: src/functions/jinro/group-datetimepicker/handler.handler
+    name: dabyss-jinro-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
+
+
+stepFunctions:
+  stateMachines:
+    DabyssMachine:
+      name: dabyss-state-machine-${opt:stage, self:provider.stage, 'dev'}
+      definition: 
+        Comment: "DabyssのLambda分岐"
+        StartAt: Entry
+        States: 
+          Entry: 
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName:
+                Fn::GetAtt: [EntryLambdaFunction, Arn]
+              Payload:
+                Input.$: $
+            OutputPath: $.Payload
+            Next: GameChoice
+          GameChoice: 
+            Type: Choice
+            Choices:
+              - Variable: $.game
+                StringEquals: ワードウルフ
+                Next: WordWolf
+              - Variable: $.game
+                StringEquals: クレイジーノイジー
+                Next: CrazyNoisy
+              - Variable: $.game
+                StringEquals: 人狼
+                Next: Jinro
+            Default: DefaultState
+
+          CrazyNoisy:
+            Type: Choice
+            Choices:
+            - Variable: "$.eventType"
+              StringEquals: groupMessage
+              Next: CrazyNoisyGroupMessage
+            - Variable: "$.eventType"
+              StringEquals: groupPostback
+              Next: CrazyNoisyGroupPostback
+            - Variable: "$.eventType"
+              StringEquals: groupDatetimepicker
+              Next: CrazyNoisyGroupDatetimepicker
+            - Variable: "$.eventType"
+              StringEquals: userPostback
+              Next: CrazyNoisyUserPostback
+
+          CrazyNoisyGroupMessage:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [CrazyNoisyGroupMessageLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          CrazyNoisyGroupPostback:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [CrazyNoisyGroupPostbackLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          CrazyNoisyUserPostback:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [CrazyNoisyUserPostbackLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          CrazyNoisyGroupDatetimepicker:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [CrazyNoisyGroupDatetimepickerLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+
+          WordWolf:
+            Type: Choice
+            Choices:
+            - Variable: "$.eventType"
+              StringEquals: groupMessage
+              Next: WordWolfGroupMessage
+            - Variable: "$.eventType"
+              StringEquals: groupPostback
+              Next: WordWolfGroupPostback
+            - Variable: "$.eventType"
+              StringEquals: groupDatetimepicker
+              Next: WordWolfGroupDatetimepicker
+          
+          WordWolfGroupMessage:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [WordWolfGroupMessageLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          WordWolfGroupPostback:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [WordWolfGroupPostbackLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          WordWolfGroupDatetimepicker:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [WordWolfGroupDatetimepickerLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+
+          Jinro:
+            Type: Choice
+            Choices:
+            - Variable: "$.eventType"
+              StringEquals: groupMessage
+              Next: JinroGroupMessage
+            - Variable: "$.eventType"
+              StringEquals: groupPostback
+              Next: JinroGroupPostback
+            - Variable: "$.eventType"
+              StringEquals: groupDatetimepicker
+              Next: JinroGroupDatetimepicker
+            - Variable: "$.eventType"
+              StringEquals: userPostback
+              Next: JinroUserPostback
+
+          JinroGroupMessage:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [JinroGroupMessageLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          JinroGroupPostback:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [JinroGroupPostbackLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          JinroUserPostback:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [JinroUserPostbackLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+          JinroGroupDatetimepicker:
+            Type: Task
+            Resource: arn:aws:states:::lambda:invoke
+            Parameters:
+              FunctionName: 
+                Fn::GetAtt: [JinroGroupDatetimepickerLambdaFunction, Arn]
+              Payload:
+                Input.$: "$"
+            End: true
+
+          DefaultState:
+            Type: Pass
+            End: true
+
+resources:
+  Outputs:
+    DabyssMachine:
+      Value:
+        Ref: DabyssDashstateDashmachineDash${opt:stage, self:provider.stage, 'dev'}
+  Resources:
+    eventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-event-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: reply_token
+            AttributeType: S
+        KeySchema:
+          - AttributeName: reply_token
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    userTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-user-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    groupTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-group-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: group_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: group_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    gameTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-game-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: group_id
+            AttributeType: S
+          - AttributeName: game_id
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: group_id
+            KeyType: HASH
+          - AttributeName: game_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: game_id-index
+            KeySchema:
+              - AttributeName: game_id
+                KeyType: HASH
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 3
+                WriteCapacityUnits: 3
+    sequenceTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-sequence-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    actionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-action-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: day
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: day
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    discussionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-discussion-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: day
+            AttributeType: 'N'
+          - AttributeName: is_discussing
+            AttributeType: S
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: day
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: is_discussing-game_id-index
+            KeySchema:
+              - AttributeName: is_discussing
+                KeyType: HASH
+              - AttributeName: game_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 3
+                WriteCapacityUnits: 3
+    voteTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-vote-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: vote_id
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: vote_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    crazinessTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-craziness-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: craziness_id
+            AttributeType: 'N'
+          - AttributeName: type
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: craziness_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: type-craziness_id-index
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+              - AttributeName: craziness_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 3
+                WriteCapacityUnits: 3
+    wordsetTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-wordset-${opt:stage, self:provider.stage, 'dev'}
+        AttributeDefinitions:
+          - AttributeName: wordset_id
+            AttributeType: 'N'
+          - AttributeName: depth
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: wordset_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        GlobalSecondaryIndexes:
+          - IndexName: depth-wordset_id-index
+            KeySchema:
+              - AttributeName: depth
+                KeyType: HASH
+              - AttributeName: wordset_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 3
+                WriteCapacityUnits: 3
+
+  
