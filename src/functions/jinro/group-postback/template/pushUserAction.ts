@@ -2,7 +2,7 @@ import line = require('@line/bot-sdk');
 import dabyss = require('../../../../modules/dabyss');
 import jinro_module = require('../../../../modules/jinro');
 
-export const main = async (displayName: string, position: string, isAlive: boolean, targetAliveDisplayNames: string[], targetDeadDisplayNames: string[],targetUserIndexes: number[]): Promise<line.Message[]> => {
+export const main = async (displayName: string, position: string, isAlive: boolean, targetAliveDisplayNames: string[], targetDeadDisplayNames: string[],targetUserIndexes: number[], targetDeadUserIndexes: number[]): Promise<line.Message[]> => {
     let actionMessage = "";
     let targetMessages: line.FlexComponent[] = [
         {
@@ -60,7 +60,7 @@ export const main = async (displayName: string, position: string, isAlive: boole
                         "action": {
                             "type": "postback",
                             "label": targetDeadDisplayNames[i],
-                            "data": targetUserIndexes[i].toString()
+                            "data": targetDeadUserIndexes[i].toString()
                         },
                         "color": dabyss.mainColor
                     }

@@ -204,11 +204,12 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
         const targetAliveDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
         const targetDeadDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
         const targetIndexes = await jinro.getUserIndexesExceptOneself(i);
+        const targetDeadIndexes = await jinro.getDeadUserIndexesExceptOneself(i);
 
         const isAlive = await jinro.isAlive(i);
 
         const pushUserAction = await import("./template/pushUserAction");
-        promises.push(dabyss.pushMessage(jinro.userIds[i], await pushUserAction.main(displayNames[i], jinro.positions[i], !(isAlive), targetAliveDisplayNames, targetDeadDisplayNames, targetIndexes)));
+        promises.push(dabyss.pushMessage(jinro.userIds[i], await pushUserAction.main(displayNames[i], jinro.positions[i], !(isAlive), targetAliveDisplayNames, targetDeadDisplayNames, targetIndexes, targetDeadIndexes)));
     }
 
     const replyVoteFinish = await import("./template/replyVoteFinish");
