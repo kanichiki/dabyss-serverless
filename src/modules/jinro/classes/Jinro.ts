@@ -65,20 +65,20 @@ export class Jinro extends dabyss.Game {
                         this.gameKey = {
                             group_id: this.groupId,
                             game_id: this.gameId
-                        }
-
+                        };
                         this.userIds = game.user_ids as string[];
                         this.day = game.day as number;
                         this.gameName = game.game_name as string;
                         this.gameStatus = game.game_status as string;
                         this.settingStatus = game.setting_status as boolean[];
                         this.timer = game.timer as string;
+                        this.winner = game.winner as string;
+                        this.positions = game.positions as string[];
 
                         this.talkType = game.talk_type as number;
 
-                        if (game.positions) {
-                            this.positions = game.positions as string[];
-                        }
+                        this.positions = game.positions as string[];
+
                     }
                 }
             }

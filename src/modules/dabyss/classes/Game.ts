@@ -135,6 +135,7 @@ export class Game {
                         this.settingStatus = game.setting_status as boolean[];
                         this.timer = game.timer as string;
                         this.winner = game.winner as string;
+                        this.positions = game.positions as string[];
                     }
 
                 }
@@ -221,12 +222,12 @@ export class Game {
     }
 
     // TODO 
-        /**
-     * 死んでいる参加者の表示名の配列を取得
-     *
-     * @returns {Promise<string[]>}
-     * @memberof Game
-     */
+    /**
+ * 死んでいる参加者の表示名の配列を取得
+ *
+ * @returns {Promise<string[]>}
+ * @memberof Game
+ */
     async getDeadDisplayNames(): Promise<string[]> {
         let res: string[] = [];
         for (let userId of this.userIds) {
