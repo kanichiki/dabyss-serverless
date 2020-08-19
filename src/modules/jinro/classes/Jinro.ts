@@ -30,7 +30,7 @@ export class Jinro extends dabyss.Game {
     constructor(groupId: string) {
         super(groupId);
         this.settingNames = ["type", "timer"];
-        this.defaultSettingStatus = [false, true];
+        this.defaultSettingStatus = [true, true];
 
         this.positionNames = {
             werewolf: "人狼",

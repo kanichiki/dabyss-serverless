@@ -103,7 +103,7 @@ export const typeOptions: line.FlexBubble = {
   }
 }
 
-export const settingConfirmMessage = async (userNumber: number, type: number, timer: string): Promise<line.FlexBubble> => {
+export const settingConfirmMessage = async (userNumber: number, /* type: number, */ timer: string): Promise<line.FlexBubble> => {
   return {
     "type": "bubble",
     "size": "giga",
@@ -144,11 +144,11 @@ export const settingConfirmMessage = async (userNumber: number, type: number, ti
               "text": `役職 : ランダム`,
               "size": "md"
             },
-            {
+            /* {
               "type": "text",
               "text": `話し合い方法 : ${type.toString()}`,
               "size": "md"
-            },
+            }, */
             {
               "type": "text",
               "text": `0日目襲撃(人狼) : なし`,
@@ -183,7 +183,7 @@ export const settingConfirmMessage = async (userNumber: number, type: number, ti
           ],
           "margin": "md"
         },
-        {
+        /* {
           "type": "box",
           "layout": "horizontal",
           "contents": [
@@ -198,7 +198,7 @@ export const settingConfirmMessage = async (userNumber: number, type: number, ti
             }
           ],
           "margin": "md"
-        }
+        } */
       ]
     },
     "footer": {
