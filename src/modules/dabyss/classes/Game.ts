@@ -135,6 +135,7 @@ export class Game {
                         this.settingStatus = game.setting_status as boolean[];
                         this.timer = game.timer as string;
                         this.winner = game.winner as string;
+                        this.positions = game.positions as string[];
                     }
 
                 }
@@ -221,12 +222,12 @@ export class Game {
     }
 
     // TODO 
-        /**
-     * 死んでいる参加者の表示名の配列を取得
-     *
-     * @returns {Promise<string[]>}
-     * @memberof Game
-     */
+    /**
+ * 死んでいる参加者の表示名の配列を取得
+ *
+ * @returns {Promise<string[]>}
+ * @memberof Game
+ */
     async getDeadDisplayNames(): Promise<string[]> {
         let res: string[] = [];
         for (let userId of this.userIds) {
@@ -257,26 +258,6 @@ export class Game {
         return res;
     }
 
-    // TODO 死んでいるひとの表示名を取得
-    /**
-     * 入力ユーザー以外の表示名を配列で取得
-     *
-     * @param {number} index
-     * @returns {Promise<string[]>}
-     * @memberof Game
-     */
-    async getDeadDisplayNamesExceptOneself(index: number): Promise<string[]> {
-        let res: string[] = [];
-        for (let i = 0; i < this.userIds.length; i++) {
-            if (i != index) {
-                const user: User = new User(this.userIds[i]);
-                const displayName: string = await user.getDisplayName();
-                res.push(displayName);
-            }
-        }
-        return res;
-    }
-
     /**
      * 入力ユーザー以外のインデックス配列取得
      *
@@ -285,24 +266,6 @@ export class Game {
      * @memberof Game
      */
     async getUserIndexesExceptOneself(index: number): Promise<number[]> {
-        let res: number[] = [];
-        for (let i = 0; i < this.userIds.length; i++) {
-            if (i != index) {
-                res.push(i);
-            }
-        }
-        return res;
-    }
-
-    // TODO　死んでいるひとのインデックスを取得
-    /**
-     * 入力ユーザー以外のインデックス配列取得
-     *
-     * @param {number} index
-     * @returns {Promise<number[]>}
-     * @memberof Game
-     */
-    async getDeadUserIndexesExceptOneself(index: number): Promise<number[]> {
         let res: number[] = [];
         for (let i = 0; i < this.userIds.length; i++) {
             if (i != index) {

@@ -30,7 +30,7 @@ export class Jinro extends dabyss.Game {
     constructor(groupId: string) {
         super(groupId);
         this.settingNames = ["type", "timer"];
-        this.defaultSettingStatus = [false, true];
+        this.defaultSettingStatus = [true, true];
 
         this.positionNames = {
             werewolf: "人狼",
@@ -65,20 +65,19 @@ export class Jinro extends dabyss.Game {
                         this.gameKey = {
                             group_id: this.groupId,
                             game_id: this.gameId
-                        }
-
+                        };
                         this.userIds = game.user_ids as string[];
                         this.day = game.day as number;
                         this.gameName = game.game_name as string;
                         this.gameStatus = game.game_status as string;
                         this.settingStatus = game.setting_status as boolean[];
                         this.timer = game.timer as string;
+                        this.winner = game.winner as string;
+                        this.positions = game.positions as string[];
 
                         this.talkType = game.talk_type as number;
+                        this.isAliveStatus = game.is_alive_status as boolean[]
 
-                        if (game.positions) {
-                            this.positions = game.positions as string[];
-                        }
                     }
                 }
             }
@@ -179,8 +178,7 @@ export class Jinro extends dabyss.Game {
     }
 
     async updateDefaultAliveStatus(): Promise<void> {
-        const positions: string[] = this.positions;
-        for (let i = 0; i < positions.length; i++) {
+        for (let i = 0; i < this.userIds.length; i++) {
             this.isAliveStatus[i] = true;
         }
         dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
@@ -233,6 +231,16 @@ export class Jinro extends dabyss.Game {
         const WerewolfNumber: number = await this.makePositionsNumberList()[0]
         const is_werewolf_win: boolean = (isAliveNumber <= WerewolfNumber);
         return is_werewolf_win
+    }
+
+    async getDeadIndexes(): Promise<number[]> {
+        const deadIndexes:number[] = [];
+        for (let i=0;i<this.userIds.length;i++){
+            if(!this.isAliveStatus[i]){
+                deadIndexes.push(i);
+            }
+        }
+        return deadIndexes;
     }
 
 }

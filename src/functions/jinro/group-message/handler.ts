@@ -41,11 +41,11 @@ exports.handler = async (event: any, context: any): Promise<void> => {
             if (!isSettingCompleted) {
                 for (let i = 0; i < settingNames.length; i++) {
                     if (!settingStatus[i]) {
-                        if (settingNames[i] == "type") {
+                        /* if (settingNames[i] == "type") {
                             if ((text == "1" || text == "2") || text == "3") {
                                 await replyTypeChosen(jinro, text, replyToken);
                             }
-                        }
+                        } */
                         break; // これがないと設定繰り返しちゃう
                     }
                 }
@@ -60,12 +60,6 @@ exports.handler = async (event: any, context: any): Promise<void> => {
                         break;
                     case "議論時間変更":
                         changeSetting = "timer";
-                        break;
-                    case "0日目襲撃有無":
-                        changeSetting = "なし";
-                        break;
-                    case "0日目占い有無":
-                        changeSetting = "あり";
                         break;
                 }
                 if (changeSetting != "") {
@@ -103,8 +97,10 @@ const replyRollCallEnd = async (group: dabyss.Group, jinro: jinro_module.Jinro, 
     promises.push(jinro.updateDefaultSettingStatus());
     promises.push(group.updateStatus("play")); // 参加者リストをプレイ中にして、募集中を解除する
 
+    const userNumber = await jinro.getUserNumber();
+    const timer = await jinro.getTimerString();
     const replyMessage = await import("./template/replyRollCallEnd");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, userNumber, timer)));
 
     await Promise.all(promises);
     return;
@@ -131,11 +127,11 @@ const replyTypeChosen = async (jinro: jinro_module.Jinro, text: string, replyTok
 const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
-    if (setting == "type") {
-        promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
-        const replyMessage = await import("./template/replyTypeChange");
-        promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
-    }
+    // if (setting == "type") {
+    //     promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
+    //     const replyMessage = await import("./template/replyTypeChange");
+    //     promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
+    // }
     if (setting == "timer") {
         promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
         const replyMessage = await import("./template/replyTimerChange");
@@ -150,11 +146,10 @@ const replyConfirm = async (jinro: jinro_module.Jinro, replyToken: string): Prom
     const promises: Promise<void>[] = [];
 
     const userNumber = await jinro.getUserNumber();
-    const type = jinro.talkType;
     const timer = await jinro.getTimerString();
 
     const replyMessage = await import("./template/replyChanged");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, type, timer)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, timer)));
 
     await Promise.all(promises);
     return;
