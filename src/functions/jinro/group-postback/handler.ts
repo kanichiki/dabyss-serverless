@@ -254,4 +254,3 @@ const replyDuplicateVote = async (jinro: jinro_module.Jinro, userIndex: number, 
     const replyMessage = await import("./template/replyDuplicateVote");
     await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
 };
-
