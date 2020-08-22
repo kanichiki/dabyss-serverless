@@ -61,12 +61,6 @@ exports.handler = async (event: any, context: any): Promise<void> => {
                     case "議論時間変更":
                         changeSetting = "timer";
                         break;
-                    case "0日目襲撃有無":
-                        changeSetting = "なし";
-                        break;
-                    case "0日目占い有無":
-                        changeSetting = "あり";
-                        break;
                 }
                 if (changeSetting != "") {
                     await replySettingChange(jinro, changeSetting, replyToken);
@@ -133,11 +127,11 @@ const replyTypeChosen = async (jinro: jinro_module.Jinro, text: string, replyTok
 const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
-    if (setting == "type") {
-        promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
-        const replyMessage = await import("./template/replyTypeChange");
-        promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
-    }
+    // if (setting == "type") {
+    //     promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
+    //     const replyMessage = await import("./template/replyTypeChange");
+    //     promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
+    // }
     if (setting == "timer") {
         promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
         const replyMessage = await import("./template/replyTimerChange");
@@ -152,11 +146,10 @@ const replyConfirm = async (jinro: jinro_module.Jinro, replyToken: string): Prom
     const promises: Promise<void>[] = [];
 
     const userNumber = await jinro.getUserNumber();
-    // const type = jinro.talkType;
     const timer = await jinro.getTimerString();
 
     const replyMessage = await import("./template/replyChanged");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, /* type, */ timer)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, timer)));
 
     await Promise.all(promises);
     return;
