@@ -14,7 +14,7 @@ export const main = async (displayNames: string[], userNumber: number, timer: st
     {
       "type": "flex",
       "altText": "設定確認",
-      "contents": await jinro_module.settingConfirmMessage(userNumber, /* type, */ timer)
+      "contents": await jinro_module.settingConfirmMessage(userNumber, timer)
     },
   ]
 
