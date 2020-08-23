@@ -1,5 +1,6 @@
 import dabyss = require('../../dabyss');
 import line = require('@line/bot-sdk');
+import jinro_module = require('../../jinro');
 
 export const werewolf = "人狼"
 export const forecaster = "占い師"
@@ -275,14 +276,7 @@ export const timerMessage = async (): Promise<line.FlexBubble> => {
   }
 }
 
-export const positionNumberMessage = async (userNumber: number, position_num_list: number[]): Promise<line.FlexBubble> => {
-  const werewolfNumber: number = position_num_list[0];
-  const madmanNumber: number = position_num_list[1];
-  const forecasterNumber: number = position_num_list[2];
-  const psychicNumber: number = position_num_list[3];
-  const hunterNumber: number = position_num_list[4];
-  const citizenNumber: number = userNumber - (werewolfNumber + madmanNumber + forecasterNumber + psychicNumber + hunterNumber);
-
+export const positionNumberMessage = async (positionNumbers: jinro_module.PositionNumbers): Promise<line.FlexBubble> => {
   return {
     "type": "bubble",
     "body": {
@@ -301,28 +295,28 @@ export const positionNumberMessage = async (userNumber: number, position_num_lis
         },
         {
           "type": "text",
-          "text": "人狼 : 1人",
+          "text": `人狼 : ${positionNumbers.werewolf}人`,
           "margin": "md"
         },
         {
           "type": "text",
-          "text": `狂人 : ${madmanNumber}人`
+          "text": `狂人 : ${positionNumbers.madman}人`
         },
         {
           "type": "text",
-          "text": `占い師 : ${forecasterNumber}人`
+          "text": `占い師 : ${positionNumbers.forecaster}人`
         },
         {
           "type": "text",
-          "text": `霊媒師 : ${psychicNumber}人`
+          "text": `霊媒師 : ${positionNumbers.psychic}人`
         },
         {
           "type": "text",
-          "text": `狩人 : ${hunterNumber}人`
+          "text": `狩人 : ${positionNumbers.hunter}人`
         },
         {
           "type": "text",
-          "text": `市民 : ${citizenNumber}人`
+          "text": `市民 : ${positionNumbers.citizen}人`
         }
       ]
     }

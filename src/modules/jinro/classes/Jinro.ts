@@ -1,7 +1,26 @@
 import dabyss = require('../../dabyss');
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { werewolf } from '../constants/JinroParts';
 
 const gameTable = process.env.gameTable;
+
+export interface PositionNumbers {
+    werewolf: number;
+    madman: number;
+    forecaster: number;
+    psychic: number;
+    hunter: number;
+    citizen: number;
+}
+
+export interface PositionNames {
+    werewolf: string;
+    madman: string;
+    forecaster: string;
+    psychic: string;
+    hunter: string;
+    citizen: string;
+}
 
 /**
  * (「・ω・)「 がおー
@@ -14,10 +33,12 @@ export class Jinro extends dabyss.Game {
     settingNames: string[];
     defaultSettingStatus: boolean[];
 
-    positionNames: { [key: string]: string };
+    positionNames: PositionNames;
 
     talkType: number;
     isAliveStatus: boolean[];
+
+    positionNumbers: PositionNumbers;
 
     /**
      * Jinroインスタンス作成
@@ -43,6 +64,15 @@ export class Jinro extends dabyss.Game {
 
         this.talkType = -1;
         this.isAliveStatus = [];
+
+        this.positionNumbers = {
+            werewolf: 0,
+            madman: 0,
+            forecaster: 0,
+            psychic: 0,
+            hunter: 0,
+            citizen: 0,
+        }
     }
 
 
@@ -75,12 +105,15 @@ export class Jinro extends dabyss.Game {
                         this.winner = game.winner as string;
 
                         this.talkType = game.talk_type as number;
-                        
+
                         if (game.positions) {
                             this.positions = game.positions as string[];
                         }
                         if (game.is_alive_status) {
                             this.isAliveStatus = game.is_alive_status as boolean[];
+                        }
+                        if (game.position_numbers) {
+                            this.positionNumbers = game.position_numbers as PositionNumbers;
                         }
 
                     }
@@ -107,55 +140,69 @@ export class Jinro extends dabyss.Game {
         return jinro;
     }
 
-    async makePositionsNumberList(): Promise<number[]> {
-        const userNumer: number = await this.getUserNumber();
-        let position_num_list: number[] = []
-        // [人狼, 狂人, 占い, 霊媒師, 狩人] 
-        if (userNumer < 5) {
-            position_num_list = [1, 0, 0, 0, 0];
-        } else if (userNumer == 5) {
-            position_num_list = [1, 1, 0, 0, 0];
-        } else if (userNumer == 6) {
-            position_num_list = [1, 1, 1, 0, 0];
-        } else if (userNumer == 7) {
-            position_num_list = [2, 1, 1, 0, 1];
-        } else if (userNumer >= 8 && userNumer < 11) {
-            position_num_list = [2, 1, 1, 1, 1];
-        } else if (userNumer >= 11 && userNumer < 15) {
-            position_num_list = [3, 1, 1, 1, 1];
+    async updatePositionNumbers(): Promise<void> {
+        const userNumber: number = await this.getUserNumber();
+        if (userNumber < 5) {
+            this.positionNumbers.werewolf = 1;
+        } else if (userNumber == 5) {
+            this.positionNumbers.werewolf = 1;
+            this.positionNumbers.madman = 1;
+        } else if (userNumber == 6) {
+            this.positionNumbers.werewolf = 1;
+            this.positionNumbers.madman = 1;
+            this.positionNumbers.forecaster = 1;
+        } else if (userNumber == 7) {
+            this.positionNumbers.werewolf = 2;
+            this.positionNumbers.madman = 1;
+            this.positionNumbers.forecaster = 1;
+            this.positionNumbers.hunter = 1;
+        } else if (userNumber >= 8 && userNumber < 11) {
+            this.positionNumbers.werewolf = 2;
+            this.positionNumbers.madman = 1;
+            this.positionNumbers.forecaster = 1;
+            this.positionNumbers.psychic = 1;
+            this.positionNumbers.hunter = 1;
+        } else if (userNumber >= 11 && userNumber < 15) {
+            this.positionNumbers.werewolf = 3;
+            this.positionNumbers.madman = 1;
+            this.positionNumbers.forecaster = 1;
+            this.positionNumbers.psychic = 1;
+            this.positionNumbers.hunter = 1;
         } else {
-            position_num_list = [4, 1, 1, 1, 1];
+            this.positionNumbers.werewolf = 4;
+            this.positionNumbers.madman = 1;
+            this.positionNumbers.forecaster = 1;
+            this.positionNumbers.psychic = 1;
+            this.positionNumbers.hunter = 1;
         }
-        return position_num_list;
+        this.positionNumbers.citizen = userNumber - (this.positionNumbers.werewolf
+            + this.positionNumbers.madman
+            + this.positionNumbers.forecaster
+            + this.positionNumbers.psychic
+            + this.positionNumbers.hunter)
+
+        dabyss.dynamoUpdate(gameTable, this.gameKey, "position_numbers", this.positionNumbers);
     }
 
     async updatePositions() {
-        const userNumber = await this.getUserNumber();
-        const position_num_list = await this.makePositionsNumberList();
-        const werewolfNumber: number = position_num_list[0];
-        const madmanNumber: number = position_num_list[1];
-        const forecasterNumber: number = position_num_list[2];
-        const psychicNumber: number = position_num_list[3];
-        const hunterNumber: number = position_num_list[4];
-        const citizenNumber: number = userNumber - (werewolfNumber + madmanNumber + forecasterNumber + psychicNumber + hunterNumber);
         let positions: string[] = [];
 
-        for (let i = 0; i < werewolfNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.werewolf; i++) {
             positions.push("人狼")
         }
-        for (let i = 0; i < madmanNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.madman; i++) {
             positions.push("狂人")
         }
-        for (let i = 0; i < forecasterNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.forecaster; i++) {
             positions.push("占い師")
         }
-        for (let i = 0; i < psychicNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.psychic; i++) {
             positions.push("霊媒師")
         }
-        for (let i = 0; i < hunterNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.hunter; i++) {
             positions.push("狩人")
         }
-        for (let i = 0; i < citizenNumber; i++) {
+        for (let i = 0; i < this.positionNumbers.citizen; i++) {
             positions.push("市民")
         }
 
@@ -204,7 +251,7 @@ export class Jinro extends dabyss.Game {
         return res;
     }
 
-    async getWinnerIndexes() {
+    async getWinnerIndexes(): Promise<number[]> {
         let res: number[] = [];
         for (let i = 0; i < this.positions.length; i++) {
             if (this.winner == "werewolf") { // 人狼陣営勝利なら
@@ -221,28 +268,52 @@ export class Jinro extends dabyss.Game {
         return res;
     }
 
-    async getAliveNumber() {
-        let alive_num = 0;
+    async getAliveNumber(): Promise<number> {
+        let aliveNum = 0;
         for (let state of this.isAliveStatus) {
             if (state) {
-                alive_num++;
+                aliveNum++;
             }
         }
-        return alive_num;
+        return aliveNum;
+    }
+
+    async getAliveWerewolfNumber(): Promise<number> {
+        let aliveNum = 0;
+        for (let i = 0; i < this.userIds.length; i++) {
+            if (this.positions[i] == this.positionNames.werewolf) {
+                if (this.isAliveStatus[i]) {
+                    aliveNum++;
+                }
+            }
+        }
+        return aliveNum
+    }
+
+    async getAliveNotWerewolfNumber(): Promise<number> {
+        const aliveNumber = await this.getAliveNumber();
+        const aliveWerewolfNumber = await this.getAliveWerewolfNumber();
+        return aliveNumber - aliveWerewolfNumber
     }
 
     // TODO -> DONE 人狼側の勝利条件が満たされているか判定
     async isWerewolfWin(): Promise<boolean> {
-        const isAliveNumber: number = await this.getAliveNumber();
-        const WerewolfNumber: number = await this.makePositionsNumberList()[0]
-        const is_werewolf_win: boolean = (isAliveNumber <= WerewolfNumber);
-        return is_werewolf_win
+        const aliveNumber: number = await this.getAliveNumber();
+        const werewolfNumber: number = this.positionNumbers.werewolf;
+        const isWerewolfWin: boolean = (aliveNumber - werewolfNumber <= werewolfNumber);
+        return isWerewolfWin
     }
 
+    async isCitizenWin(): Promise<boolean> {
+        const aliveWerewolfNumber = await this.getAliveWerewolfNumber();
+        return (aliveWerewolfNumber == 0)
+    }
+
+
     async getDeadIndexes(): Promise<number[]> {
-        const deadIndexes:number[] = [];
-        for (let i=0;i<this.userIds.length;i++){
-            if(!this.isAliveStatus[i]){
+        const deadIndexes: number[] = [];
+        for (let i = 0; i < this.userIds.length; i++) {
+            if (!this.isAliveStatus[i]) {
                 deadIndexes.push(i);
             }
         }

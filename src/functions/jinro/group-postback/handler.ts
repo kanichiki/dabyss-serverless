@@ -110,73 +110,55 @@ const replyVoteSuccess = async (jinro: jinro_module.Jinro, votedUserIndex: numbe
 
         const displayNames = await jinro.getDisplayNames();
 
+        let isVoteFinish: boolean = true;
+        let executorIndex: number = -1;
+        let executorDisplayName: string = "";
+
         const multipleMostVotedUserExists = await jinro.vote.multipleMostPolledUserExists();
         if (!multipleMostVotedUserExists) { // 最多得票者が一人だった場合
 
-            const mostVotedUserIndex = await jinro.vote.getMostPolledUserIndex(); // 最多得票者
-            const executorDisplayName = await jinro.getDisplayName(mostVotedUserIndex);
+            executorIndex = await jinro.vote.getMostPolledUserIndex(); // 最多得票者
+            executorDisplayName = await jinro.getDisplayName(executorIndex);
 
             const replyExecutor = await import("./template/replyExecutor");
             const replyExecutorMessage = await replyExecutor.main(executorDisplayName);
             replyMessage = replyMessage.concat(replyExecutorMessage);
 
-            const isWerewolf = await jinro.isWerewolf(mostVotedUserIndex); // 最多得票者が教祖かどうか
-
-            if (!isWerewolf) { // 最多得票者が教祖じゃなかった場合
-                replyMessage = replyMessage.concat(await replyExecutorIsNotWerewolf(jinro, executorDisplayName, mostVotedUserIndex));
-
-                const isWerewolfWin = await jinro.isWerewolfWin();
-                if (!isWerewolfWin) {
-
-                    replyMessage = replyMessage.concat(await replyVoteFinish(jinro));
-
-                } else { // 死亡が完了したら
-                    replyMessage = replyMessage.concat(await replyBiteCompleted(jinro));
-                }
-            } else { // 最多得票者が教祖だった場合
-                replyMessage = replyMessage.concat(await replyCitizenWin(jinro));
-            }
-
         } else { // 最多得票者が複数いた場合
             const mostVotedUserIndexes = await jinro.vote.getMostPolledUserIndexes(); // 最多得票者の配列
             const isRevoting = (jinro.vote.count > 1);
             if (!isRevoting) { // 一回目の投票の場合
+                isVoteFinish = false;
 
                 const replyRevote = await import("./template/replyRevote");
                 const replyRevoteMessage = await replyRevote.main(mostVotedUserIndexes, displayNames);
-                replyMessage = replyMessage.concat(replyRevoteMessage);
 
-                // DB変更操作３’，４’
-                // 再投票データを作成したら、投票データを初期化する同期処理
+                replyMessage = replyMessage.concat(replyRevoteMessage);
                 promises.push(jinro.putRevote());
             } else { // 再投票中だった場合
 
-                const executorIndex = await jinro.vote.chooseExecutorRandomly(); // 処刑者をランダムで決定
-                const executorDisplayName = await jinro.getDisplayName(executorIndex);
+                executorIndex = await jinro.vote.chooseExecutorRandomly(); // 処刑者をランダムで決定
+                executorDisplayName = await jinro.getDisplayName(executorIndex);
 
                 const replyExecutorInRevote = await import("./template/replyExecutorInRevote");
                 const replyExecutorInRevoteMessage = await replyExecutorInRevote.main(executorDisplayName);
                 replyMessage = replyMessage.concat(replyExecutorInRevoteMessage);
-
-                const isWerewolf = await jinro.isWerewolf(executorIndex); // 最多得票者が教祖かどうか
-                if (!isWerewolf) { // 最多得票者が教祖じゃなかった場合
-                    replyMessage = replyMessage.concat(await replyExecutorIsNotWerewolf(jinro, executorDisplayName, executorIndex));
-
-                    const isWerewolfWin = await jinro.isWerewolfWin();
-                    if (!isWerewolfWin) {
-
-                        replyMessage = replyMessage.concat(await replyVoteFinish(jinro));
-
-                    } else { // 洗脳が完了したら
-                        replyMessage = replyMessage.concat(await replyBiteCompleted(jinro));
-                    }
-                } else { // 最多得票者が教祖だった場合
-                    replyMessage = replyMessage.concat(await replyCitizenWin(jinro));
-                }
             }
+        }
 
+        if (isVoteFinish) {
+            const isCitizenWin = await jinro.isCitizenWin();
+            const isWerewolfWin = await jinro.isWerewolfWin();
+            if (isCitizenWin) {
+                replyMessage = replyMessage.concat(await replyCitizenWin(jinro));
+            } else if (isWerewolfWin) {
+                replyMessage = replyMessage.concat(await replyBiteCompleted(jinro));
+            } else {
+                replyMessage = replyMessage.concat(await replyVoteFinish(jinro));
+            }
         }
     }
+
     promises.push(dabyss.replyMessage(replyToken, replyMessage));
     await Promise.all(promises);
     return;

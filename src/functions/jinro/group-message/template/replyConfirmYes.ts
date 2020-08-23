@@ -2,14 +2,14 @@ import line = require('@line/bot-sdk');
 import dabyss = require('../../../../modules/dabyss');
 import jinro_module = require('../../../../modules/jinro');
 
-export const main = async (userNumber: number, positionNumberList: number[]): Promise<line.Message[]> => {
+export const main = async (positionNumbers: jinro_module.PositionNumbers): Promise<line.Message[]> => {
   const channelId: string = await dabyss.getChannelId();
   return [
 
     {
       "type": "flex",
       "altText": "役職人数確認",
-      "contents": await jinro_module.positionNumberMessage(userNumber, positionNumberList)
+      "contents": await jinro_module.positionNumberMessage(positionNumbers)
     },
     {
       "type": "flex",
