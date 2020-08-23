@@ -170,8 +170,6 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
     const positions = jinro.positions;
     const userNumber = await jinro.getUserNumber();
 
-    promises.push(jinro.putZeroAction());
-
     for (let i = 0; i < userNumber; i++) {
         const targetDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
         const targetUserIndexes = await jinro.getUserIndexesExceptOneself(i);

@@ -310,15 +310,15 @@ export const positionNumberMessage = async (userNumber: number, position_num_lis
         },
         {
           "type": "text",
-          "text": `占い師 : ${forecasterNumber}}人`
+          "text": `占い師 : ${forecasterNumber}人`
         },
         {
           "type": "text",
-          "text": `霊媒師 : ${psychicNumber}}人`
+          "text": `霊媒師 : ${psychicNumber}人`
         },
         {
           "type": "text",
-          "text": `狩人 : ${hunterNumber}}人`
+          "text": `狩人 : ${hunterNumber}人`
         },
         {
           "type": "text",
