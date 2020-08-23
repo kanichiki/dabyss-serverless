@@ -103,7 +103,7 @@ export const typeOptions: line.FlexBubble = {
   }
 }
 
-export const settingConfirmMessage = async (userNumber: number, /* type: number, */ timer: string): Promise<line.FlexBubble> => {
+export const settingConfirmMessage = async (userNumber: number, timer: string): Promise<line.FlexBubble> => {
   return {
     "type": "bubble",
     "size": "giga",

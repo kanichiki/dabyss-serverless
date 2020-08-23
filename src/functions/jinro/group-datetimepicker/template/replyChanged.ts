@@ -7,7 +7,7 @@ export const main = async (userNumber: number, type: number, timer: string): Pro
     {
       "type": "flex",
       "altText": "設定確認",
-      "contents": await jinro_module.settingConfirmMessage(userNumber, type, timer)
+      "contents": await jinro_module.settingConfirmMessage(userNumber, timer)
     }
   ]
 }
