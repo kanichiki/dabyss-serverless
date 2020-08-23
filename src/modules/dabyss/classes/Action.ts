@@ -143,6 +143,9 @@ export class Action {
      * @memberof Action
      */
     async act(userIndex: number, target: number): Promise<void> {
+        if (this.actionStatus == undefined) {
+            return;
+        }
         this.updateActionStateTrue(userIndex);
         this.updateTarget(userIndex, target);
     }
