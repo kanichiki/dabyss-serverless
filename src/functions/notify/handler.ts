@@ -9,9 +9,10 @@ exports.handler = async (event: any, context: any): Promise<void> => {
     if (data.Items != undefined) {
         for (let item of data.Items) {
             const discussion = await dabyss.Discussion.createInstance(item.game_id, item.day, item.group_id);
+            const game = await dabyss.Game.createInstance(discussion.groupId);
             const remainingTime: dabyss.Interval = await dabyss.getRemainingTime(discussion.endTime);
-            if (remainingTime.hours < 0) {
-                const game = await dabyss.Game.createInstance(discussion.groupId);
+            if (remainingTime.hours < 0 && game.gameStatus == "discuss") {
+
                 promises.push(discussion.updateIsDiscussingFalse());
                 promises.push(game.putFirstVote());
                 promises.push(game.updateGameStatus("vote"));
