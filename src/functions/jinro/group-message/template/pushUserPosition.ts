@@ -12,6 +12,16 @@ export const main = async (displayName: string, position: string, targetDisplayN
 
     if (position == jinro_module.werewolf) {
         actionMessage = "初日は襲撃できません";
+        const targetMessage: line.FlexButton = {
+            "type": "button",
+            "action": {
+                "type": "postback",
+                "label": "確認しました",
+                "data": "確認しました"
+            },
+            "color": dabyss.mainColor
+        }
+        targetMessages.push(targetMessage);
         
     } else if (position == jinro_module.forecaster) {
 

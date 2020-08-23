@@ -68,6 +68,7 @@ exports.handler = async (event: any, context: any): Promise<void> => {
             }
         }
     } else if (text == "役職人数確認") {
+        // TODO ここ実装
         // await replyPositionNumber(jinro, replyToken);
     }
 
