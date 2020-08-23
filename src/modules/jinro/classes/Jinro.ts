@@ -185,6 +185,7 @@ export class Jinro extends dabyss.Game {
     }
 
     async updatePositions() {
+        await this.updatePositionNumbers();
         let positions: string[] = [];
 
         for (let i = 0; i < this.positionNumbers.werewolf; i++) {

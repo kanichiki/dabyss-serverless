@@ -179,12 +179,9 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
         promises.push(dabyss.pushMessage(userIds[i], await pushPosition.main(displayNames[i], positions[i], targetDisplayNames, targetUserIndexes)));
     }
 
-    await jinro.updatePositionNumbers();
-    const positionNumbers = jinro.positionNumbers
-
     const replyMessage = await import("./template/replyConfirmYes");
     // promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, werewolfNumber, forecasterNumber, psychicNumber, hunterNumber, madmanNumber)));
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(positionNumbers)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers)));
 
 
     await Promise.all(promises);
