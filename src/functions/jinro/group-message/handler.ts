@@ -69,7 +69,7 @@ exports.handler = async (event: any, context: any): Promise<void> => {
         }
     } else if (text == "役職人数確認") {
         // TODO ここ実装
-        // await replyPositionNumber(jinro, replyToken);
+        await replyPositionNumber(jinro, replyToken);
     }
 
     if (status == "discuss") {
@@ -187,6 +187,14 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
     await Promise.all(promises);
     return;
 };
+
+const replyPositionNumber = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
+    const userNumber = await jinro.getUserNumber();
+    const replyMessage = await import("./template/replyPositionNumber");
+    await dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers));
+    return;
+}
+
 
 const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
