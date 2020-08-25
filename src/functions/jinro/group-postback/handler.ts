@@ -185,7 +185,6 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
     for (let i = 0; i < jinro.userIds.length; i++) {
         const isAlive = await jinro.isAlive(i);
         if (isAlive) {
-            // TODO 
             const targetAliveDisplayNames = await jinro.getAliveDisplayNamesExceptOneself(i);
             const targetDeadDisplayNames = await jinro.getDeadDisplayNamesExceptOneself(i);
             const aliveIndexes = await jinro.getAliveUserIndexesExceptOneself(i);
