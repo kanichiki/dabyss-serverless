@@ -33,9 +33,9 @@ export const main = async (day: number): Promise<line.Message[]> => {
               "action": {
                 "type": "uri",
                 "label": "アクションする",
-                "uri": `https://line.me/R/oaMessage/${process.env.channelId}/`,
+                "uri": `https://line.me/R/oaMessage/${channelId}/`,
                 "altUri": {
-                  "desktop": `https://line.me/R/oaMessage/${process.env.channelId}/`
+                  "desktop": `https://line.me/R/oaMessage/${channelId}/`
                 }
               },
               "color": dabyss.mainColor
