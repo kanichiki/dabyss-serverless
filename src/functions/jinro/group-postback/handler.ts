@@ -147,6 +147,7 @@ const replyVoteSuccess = async (jinro: jinro_module.Jinro, votedUserIndex: numbe
         }
 
         if (isVoteFinish) {
+            await jinro.die(executorIndex); // 最多投票者洗脳
             const isCitizenWin = await jinro.isCitizenWin();
             const isWerewolfWin = await jinro.isWerewolfWin();
             if (isCitizenWin) {
@@ -166,7 +167,7 @@ const replyVoteSuccess = async (jinro: jinro_module.Jinro, votedUserIndex: numbe
 
 const replyExecutorIsNotWerewolf = async (jinro: jinro_module.Jinro, executorDisplayName: string, executorIndex: number): Promise<line.Message[]> => {
     const promises: Promise<void>[] = [];
-    await jinro.die(executorIndex); // 最多投票者洗脳
+    // await jinro.die(executorIndex); // 最多投票者洗脳
     const replyExecutorIsNotWerewolf = await import("./template/replyExecutorIsNotWerewolf");
     const replyExecutorIsNotWerewolfMessage = await replyExecutorIsNotWerewolf.main(executorDisplayName);
 
