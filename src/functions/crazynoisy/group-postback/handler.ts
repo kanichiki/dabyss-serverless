@@ -199,7 +199,7 @@ const replyVoteFinish = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.
     promises.push(crazyNoisy.updateGameStatus("action")); // ステータスをアクション中に
 
     const displayNames = await crazyNoisy.getDisplayNames();
-    promises.push(crazyNoisy.setAction());
+    promises.push(crazyNoisy.putAction());
     for (let i = 0; i < crazyNoisy.userIds.length; i++) {
         const targetDisplayNames = await crazyNoisy.getDisplayNamesExceptOneself(i);
         const targetIndexes = await crazyNoisy.getUserIndexesExceptOneself(i);

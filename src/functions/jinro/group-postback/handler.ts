@@ -181,7 +181,7 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
     promises.push(jinro.updateGameStatus("action")); // ステータスをアクション中に
 
     const displayNames = await jinro.getDisplayNames();
-    promises.push(jinro.setAction());
+    promises.push(jinro.putAction());
     for (let i = 0; i < jinro.userIds.length; i++) {
         const isAlive = await jinro.isAlive(i);
         if (isAlive) {

@@ -1,8 +1,8 @@
 import dabyss = require('../../dabyss');
 import { Craziness } from "./Craziness";
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import {Action} from "../../dabyss";
 
-const crazinessTable = process.env.crazinessTable;
 const gameTable = process.env.gameTable;
 
 /**
@@ -325,6 +325,19 @@ export class CrazyNoisy extends dabyss.Game {
 
         }
         return res;
+    }
+
+    async putAction(){
+        const userNumber: number = await this.getUserNumber();
+        const status: boolean[] = [];
+        for (let i = 0; i < userNumber; i++) {
+            if (this.positions[i] == this.positionNames.guru || (this.positions[i] == this.positionNames.detective && !this.brainwashStatus[i])) {
+                status[i] = false;
+            } else {
+                status[i] = true;
+            }
+        }
+        await Action.putAction(this.gameId, this.day, status);
     }
 
 }
