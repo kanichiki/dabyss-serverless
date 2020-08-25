@@ -230,7 +230,6 @@ export class Vote {
                 res = false;
             } else if (voteNumber == max) {
                 res = true;
-                break;
             }
         }
         return res;
