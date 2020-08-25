@@ -360,7 +360,7 @@ export class Jinro extends dabyss.Game {
     async getDeadDisplayNamesExceptOneself(index: number): Promise<string[]> {
         let res: string[] = [];
         for (let i = 0; i < this.userIds.length; i++) {
-            if (i != index　&& await !this.isAlive(i)) {
+            if (i != index　&& ! await this.isAlive(i)) {
                 const user: dabyss.User = new dabyss.User(this.userIds[i]);
                 const displayName: string = await user.getDisplayName();
                 res.push(displayName);
