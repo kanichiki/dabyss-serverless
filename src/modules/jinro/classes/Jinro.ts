@@ -310,7 +310,6 @@ export class Jinro extends dabyss.Game {
         return (aliveWerewolfNumber == 0)
     }
 
-
     async getDeadIndexes(): Promise<number[]> {
         const deadIndexes: number[] = [];
         for (let i = 0; i < this.userIds.length; i++) {
@@ -320,5 +319,40 @@ export class Jinro extends dabyss.Game {
         }
         return deadIndexes;
     }
+
+    async getAliveUserIndexesExceptOneself(index: number): Promise<number[]> {
+        let res: number[] = [];
+        for (let i = 0; i < this.userIds.length; i++) {
+            if (i != index　&& this.isAlive(i)) {
+                res.push(i);
+            }
+        }
+        return res;
+    }
+
+    async getAliveDisplayNamesExceptOneself(index: number): Promise<string[]> {
+        let res: string[] = [];
+        for (let i = 0; i < this.userIds.length; i++) {
+            if (i != index　&& this.isAlive(i)) {
+                const user: dabyss.User = new dabyss.User(this.userIds[i]);
+                const displayName: string = await user.getDisplayName();
+                res.push(displayName);
+            }
+        }
+        return res;
+    }
+
+    async getDeadDisplayNamesExceptOneself(index: number): Promise<string[]> {
+        let res: string[] = [];
+        for (let i = 0; i < this.userIds.length; i++) {
+            if (i != index　&& !this.isAlive(i)) {
+                const user: dabyss.User = new dabyss.User(this.userIds[i]);
+                const displayName: string = await user.getDisplayName();
+                res.push(displayName);
+            }
+        }
+        return res;
+    }
+
 
 }

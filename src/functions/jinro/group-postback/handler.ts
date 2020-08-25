@@ -185,13 +185,14 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
     for (let i = 0; i < jinro.userIds.length; i++) {
         const isAlive = await jinro.isAlive(i);
         if (isAlive) {
-            const targetAliveDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
-            const targetDeadDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
-            const targetIndexes = await jinro.getUserIndexesExceptOneself(i);
+            // TODO 
+            const targetAliveDisplayNames = await jinro.getAliveDisplayNamesExceptOneself(i);
+            const targetDeadDisplayNames = await jinro.getDeadDisplayNamesExceptOneself(i);
+            const aliveIndexes = await jinro.getAliveUserIndexesExceptOneself(i);
             const deadIndexes = await jinro.getDeadIndexes();
 
             const pushUserAction = await import("./template/pushUserAction");
-            promises.push(dabyss.pushMessage(jinro.userIds[i], await pushUserAction.main(displayNames[i], jinro.positions[i], isAlive, targetAliveDisplayNames, targetDeadDisplayNames, targetIndexes, deadIndexes)));
+            promises.push(dabyss.pushMessage(jinro.userIds[i], await pushUserAction.main(displayNames[i], jinro.positions[i], isAlive, targetAliveDisplayNames, targetDeadDisplayNames, aliveIndexes, deadIndexes)));
         }
     }
 
