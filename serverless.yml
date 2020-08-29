@@ -304,8 +304,8 @@ resources:
           - AttributeName: reply_token
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     userTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -317,8 +317,8 @@ resources:
           - AttributeName: user_id
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     groupTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -330,8 +330,8 @@ resources:
           - AttributeName: group_id
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     gameTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -347,8 +347,8 @@ resources:
           - AttributeName: game_id
             KeyType: RANGE
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: game_id-index
             KeySchema:
@@ -357,8 +357,8 @@ resources:
             Projection: 
               ProjectionType: ALL
             ProvisionedThroughput:
-                ReadCapacityUnits: 3
-                WriteCapacityUnits: 3
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
     sequenceTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -370,8 +370,8 @@ resources:
           - AttributeName: name
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     actionTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -387,8 +387,8 @@ resources:
           - AttributeName: day
             KeyType: RANGE
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     discussionTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -406,8 +406,8 @@ resources:
           - AttributeName: day
             KeyType: RANGE
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: is_discussing-game_id-index
             KeySchema:
@@ -418,8 +418,8 @@ resources:
             Projection: 
               ProjectionType: ALL
             ProvisionedThroughput:
-                ReadCapacityUnits: 3
-                WriteCapacityUnits: 3
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
     voteTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -435,8 +435,8 @@ resources:
           - AttributeName: vote_id
             KeyType: RANGE
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
     crazinessTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -450,8 +450,8 @@ resources:
           - AttributeName: craziness_id
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: type-craziness_id-index
             KeySchema:
@@ -462,8 +462,8 @@ resources:
             Projection: 
               ProjectionType: ALL
             ProvisionedThroughput:
-                ReadCapacityUnits: 3
-                WriteCapacityUnits: 3
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
     wordsetTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -477,8 +477,8 @@ resources:
           - AttributeName: wordset_id
             KeyType: HASH
         ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: depth-wordset_id-index
             KeySchema:
@@ -489,7 +489,7 @@ resources:
             Projection: 
               ProjectionType: ALL
             ProvisionedThroughput:
-                ReadCapacityUnits: 3
-                WriteCapacityUnits: 3
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
 
   
