@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -63,7 +63,7 @@ exports.handler = async (event: any, context: any): Promise<void> => {
                     return replyVoteSuccess(jinro, votedUserIndex, userIndex, replyToken);
                 } else {
                     // 自分に投票していた場合
-                    return replySelfVote(jinro, userIndex, replyToken);
+                    return replySelfVote(replyToken);
                 }
             }
         } else {
@@ -165,16 +165,6 @@ const replyVoteSuccess = async (jinro: jinro_module.Jinro, votedUserIndex: numbe
     return;
 }
 
-const replyExecutorIsNotWerewolf = async (jinro: jinro_module.Jinro, executorDisplayName: string, executorIndex: number): Promise<line.Message[]> => {
-    const promises: Promise<void>[] = [];
-    // await jinro.die(executorIndex); // 最多投票者洗脳
-    const replyExecutorIsNotWerewolf = await import("./template/replyExecutorIsNotWerewolf");
-    const replyExecutorIsNotWerewolfMessage = await replyExecutorIsNotWerewolf.main(executorDisplayName);
-
-    await Promise.all(promises);
-    return replyExecutorIsNotWerewolfMessage;
-}
-
 const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[]> => {
     const promises: Promise<void>[] = [];
 
@@ -226,10 +216,9 @@ const replyCitizenWin = async (jinro: jinro_module.Jinro): Promise<line.Message[
 
 }
 
-const replySelfVote = async (jinro: jinro_module.Jinro, userIndex: number, replyToken: string): Promise<void> => {
-    const displayName = await jinro.getDisplayName(userIndex);
+const replySelfVote = async (replyToken: string): Promise<void> => {
     const replyMessage = await import("./template/replySelfVote");
-    await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
+    await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
 const replyDuplicateVote = async (jinro: jinro_module.Jinro, userIndex: number, replyToken: string): Promise<void> => {

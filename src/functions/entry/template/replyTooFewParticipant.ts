@@ -1,5 +1,4 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
 
 export const main = async (userNumber: number, recruitingGameName: string, minNumber: number): Promise<line.Message[]> => {
 

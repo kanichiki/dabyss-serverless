@@ -12,7 +12,7 @@ export declare type StateOutput = {
     event?: line.WebhookEvent
 }
 
-exports.handler = async (event: any, context: any): Promise<StateOutput> => {
+exports.handler = async (event: any): Promise<StateOutput> => {
     const lineEvent: line.MessageEvent | line.PostbackEvent = event.Input.event;
 
     const replyToken: string = lineEvent.replyToken;
@@ -76,7 +76,7 @@ exports.handler = async (event: any, context: any): Promise<StateOutput> => {
                                     if (status == "recruit") {
 
                                         // 参加者募集中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
-                                        return replyRestartConfirmIfRecruiting(group, text, replyToken);
+                                        return replyRestartConfirmIfRecruiting(group, replyToken);
 
                                     }
                                     if (status == "play") {
@@ -85,7 +85,7 @@ exports.handler = async (event: any, context: any): Promise<StateOutput> => {
                                         if (isUserParticipate) { // 参加者の発言の場合
 
                                             // プレイ中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
-                                            return replyRestartConfirmIfPlaying(group, text, replyToken);
+                                            return replyRestartConfirmIfPlaying(group, replyToken);
                                         }
 
                                     }
@@ -347,7 +347,7 @@ const replyParticipateConfirm = async (user: dabyss.User, replyToken: string): P
     return { "game": "none" };
 }
 
-const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, text: string, replyToken: string): Promise<StateOutput> => {
+const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, replyToken: string): Promise<StateOutput> => {
     const promises: Promise<void>[] = [];
 
     const game: dabyss.Game = await dabyss.Game.createInstance(group.groupId);
@@ -359,13 +359,13 @@ const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, text: string
     // 一応newGameNameも渡すがまだ使ってない
     // TODO is_restartingをrestart_game_idに変更する
     const replyMessage = await import("./template/replyRestartConfirmIfRecruiting");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(recruitingGameName, text)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(recruitingGameName)));
 
     await Promise.all(promises);
     return { "game": "none" };
 }
 
-const replyRestartConfirmIfPlaying = async (group: dabyss.Group, text: string, replyToken: string): Promise<StateOutput> => {
+const replyRestartConfirmIfPlaying = async (group: dabyss.Group, replyToken: string): Promise<StateOutput> => {
     const promises: Promise<void>[] = [];
 
     const game: dabyss.Game = await dabyss.Game.createInstance(group.groupId);
@@ -376,7 +376,7 @@ const replyRestartConfirmIfPlaying = async (group: dabyss.Group, text: string, r
 
     // 一応newGameNameも渡すがまだ使ってない
     const replyMessage = await import("./template/replyRestartConfirmIfPlaying");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(playingGameName, text)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(playingGameName)));
 
     await Promise.all(promises);
     return { "game": "none" };

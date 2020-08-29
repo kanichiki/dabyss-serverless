@@ -1,6 +1,5 @@
 import * as aws from "../clients/awsClient";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import * as commonFunction from '../functions/commonFunction';
 
 const voteTable = process.env.voteTable;
 const sequenceTable = process.env.sequenceTable;

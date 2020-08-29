@@ -1,6 +1,4 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
-import crazynoisy = require('../../../../modules/crazynoisy');
 
 export const main = async (displayNames: string[], positions: string[], contentsList: string[][]): Promise<line.Message[]> => {
   let positionMessages: string = "役職一覧\n\n";

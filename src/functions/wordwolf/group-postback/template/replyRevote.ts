@@ -1,6 +1,5 @@
 import line = require('@line/bot-sdk');
 import dabyss = require('../../../../modules/dabyss');
-import wordwolf = require('../../../../modules/wordwolf');
 
 export const main = async (voterDisplayName: string, mostVotedUserIndexes: number[], displayNames: string[]): Promise<line.Message[]> => {
     return [

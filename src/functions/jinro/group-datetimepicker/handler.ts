@@ -2,7 +2,7 @@ import line = require('@line/bot-sdk');
 import dabyss = require('../../../modules/dabyss');
 import jinro_module = require('../../../modules/jinro');
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -17,15 +17,10 @@ exports.handler = async (event: any, context: any): Promise<void> => {
     const source: line.EventSource = lineEvent.source;
 
     let groupId!: string;
-    let userId!: string;
     if (source.type == "group") {
         groupId = source.groupId;
     } else if (source.type == "room") {
         groupId = source.roomId; // roomIdもgroupId扱いしよう
-    }
-
-    if (source.userId != undefined) {
-        userId = source.userId;
     }
 
     const jinro: jinro_module.Jinro = await jinro_module.Jinro.createInstance(groupId);
@@ -66,10 +61,9 @@ const replyConfirm = async (jinro: jinro_module.Jinro, replyToken: string): Prom
     const promises: Promise<void>[] = [];
 
     const userNumber = await jinro.getUserNumber();
-    const type = jinro.talkType;
     const timer = await jinro.getTimerString();
     const replyMessage = await import("./template/replyChanged");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, type, timer)));
+    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, timer)));
 
     await Promise.all(promises);
     return;

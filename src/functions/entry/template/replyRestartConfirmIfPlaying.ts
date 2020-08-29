@@ -1,7 +1,6 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
 
-export const main = async (playingGameName: string, newGameName: string): Promise<line.Message[]> => {
+export const main = async (playingGameName: string): Promise<line.Message[]> => {
     return [
         {
             type: "text",

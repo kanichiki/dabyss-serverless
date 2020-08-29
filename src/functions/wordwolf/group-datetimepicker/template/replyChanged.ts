@@ -1,5 +1,4 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
 import wordwolf = require('../../../../modules/wordwolf');
 
 export const main = async (userNumber: number, depth: number, wolfNumber: number, lunaticNumber: number, timerString: string): Promise<line.FlexMessage> => {

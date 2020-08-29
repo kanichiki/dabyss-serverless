@@ -1,6 +1,5 @@
 import line = require('@line/bot-sdk');
 import dabyss = require('../../../../modules/dabyss');
-import wordwolf = require('../../../../modules/wordwolf');
 
 export const main = async (displayNames: string[], wolfIndexes: number[], lunaticIndexes: number[], citizenWord: string, wolfWord: string, winner: string): Promise<line.Message[]> => {
   let resultMessage: string = "それぞれの単語は以下の通りです\n\n";

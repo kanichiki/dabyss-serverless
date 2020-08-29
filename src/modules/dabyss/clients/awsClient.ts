@@ -1,6 +1,6 @@
 import aws = require('aws-sdk');
 // import AmazonDaxClient = require('amazon-dax-client');
-import { DocumentClient, GetItemInput, GetItemOutput, QueryInput } from 'aws-sdk/clients/dynamodb';
+import { DocumentClient, GetItemOutput } from 'aws-sdk/clients/dynamodb';
 
 let documentClient!: DocumentClient;
 
@@ -99,7 +99,7 @@ export /**
             TableName: tableName,
             Item: item
         }
-        return documentClient.put(params, (err, data) => {
+        return documentClient.put(params, (err) => {
             if (err) {
                 console.log(err);
             }
@@ -130,7 +130,7 @@ export /**
             },
             UpdateExpression: 'SET #name = :v, #t = :t'
         }
-        return documentClient.update(params, (err, data) => {
+        return documentClient.update(params, (err) => {
             if (err) {
                 console.log(err);
             }
@@ -152,7 +152,7 @@ export const dynamoAppend = async (tableName: string, key: aws.DynamoDB.Document
         },
         UpdateExpression: 'SET #name = list_append(#name, :v), #t = :t'
     }
-    return documentClient.update(params, (err, data) => {
+    return documentClient.update(params, (err) => {
         if (err) {
             console.log(err);
         }

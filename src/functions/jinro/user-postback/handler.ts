@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -166,9 +166,6 @@ const replyActionCompleted = async (jinro: jinro_module.Jinro): Promise<void> =>
     if (biteTarget != -1 && biteTarget != protectTarget) {
         promises.push(jinro.die(biteTarget));
     }
-
-    const userNumber = await jinro.getUserNumber();
-
 
     await jinro.updateDay(); // 日付更新
     const pushDay = await import("./template/pushDay");

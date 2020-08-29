@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -56,7 +56,7 @@ exports.handler = async (event: any, context: any): Promise<void> => {
                     return replyVoteSuccess(wordWolf, votedUserIndex, userIndex, replyToken);
                 } else {
                     // 自分に投票していた場合
-                    return replySelfVote(wordWolf, userIndex, replyToken);
+                    return replySelfVote(replyToken);
                 }
             }
         } else {
@@ -163,10 +163,9 @@ const replyVoteSuccess = async (wordWolf: wordwolf.WordWolf, votedUserIndex: num
     return;
 };
 
-const replySelfVote = async (wordWolf: wordwolf.WordWolf, userIndex: number, replyToken: string): Promise<void> => {
-    const displayName = await wordWolf.getDisplayName(userIndex);
+const replySelfVote = async (replyToken: string): Promise<void> => {
     const replyMessage = await import("./template/replySelfVote");
-    await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
+    await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
 const replyDuplicateVote = async (wordWolf: wordwolf.WordWolf, userIndex: number, replyToken: string): Promise<void> => {

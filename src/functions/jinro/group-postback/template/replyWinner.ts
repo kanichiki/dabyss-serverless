@@ -1,6 +1,4 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
-import jinro_module = require('../../../../modules/jinro');
 
 export const main = async (displayNames: string[], isWinnerWerewolf: boolean, winnerIndexes: number[]): Promise<line.Message[]> => {
   let winners = [];

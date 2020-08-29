@@ -1,6 +1,5 @@
 import dabyss = require('../../dabyss');
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import { werewolf } from '../constants/JinroParts';
 import {Action} from "../../dabyss";
 
 const gameTable = process.env.gameTable;

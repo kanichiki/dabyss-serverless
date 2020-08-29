@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -63,7 +63,7 @@ exports.handler = async (event: any, context: any): Promise<void> => {
                     return replyVoteSuccess(crazyNoisy, votedUserIndex, userIndex, replyToken);
                 } else {
                     // 自分に投票していた場合
-                    return replySelfVote(crazyNoisy, userIndex, replyToken);
+                    return replySelfVote(replyToken);
                 }
             }
         } else {
@@ -242,10 +242,9 @@ const replyCitizenWin = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.
 
 }
 
-const replySelfVote = async (crazyNoisy: crazynoisy.CrazyNoisy, userIndex: number, replyToken: string): Promise<void> => {
-    const displayName = await crazyNoisy.getDisplayName(userIndex);
+const replySelfVote = async (replyToken: string): Promise<void> => {
     const replyMessage = await import("./template/replySelfVote");
-    await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
+    await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
 const replyDuplicateVote = async (crazyNoisy: crazynoisy.CrazyNoisy, userIndex: number, replyToken: string): Promise<void> => {

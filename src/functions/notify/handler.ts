@@ -1,7 +1,7 @@
 import dabyss = require('../../modules/dabyss');
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (): Promise<void> => {
     const promises: Promise<void>[] = [];
     const discussionTable = process.env.discussionTable;
     const secondaryIndex = "is_discussing-game_id-index";

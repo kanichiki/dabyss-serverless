@@ -1,6 +1,4 @@
 import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
-import jinro_module = require('../../../../modules/jinro');
 
 export const main = async (displayNames: string[], positions: string[]): Promise<line.Message[]> => {
   let positionMessages: string = "役職一覧\n\n"

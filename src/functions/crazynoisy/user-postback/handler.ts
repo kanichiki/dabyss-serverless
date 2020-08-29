@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 

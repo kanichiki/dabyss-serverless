@@ -6,7 +6,7 @@ process.on('uncaughtException', function (err) {
     console.log(err);
 });
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.MessageEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -107,24 +107,6 @@ const replyRollCallEnd = async (group: dabyss.Group, jinro: jinro_module.Jinro, 
     return;
 };
 
-
-const replyTypeChosen = async (jinro: jinro_module.Jinro, text: string, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
-
-    promises.push(jinro.updateTalkType(Number(text)));
-    await jinro.updateSettingState("type", true);
-
-    const isSettingCompleted: boolean = await jinro.isSettingCompleted();
-    if (!isSettingCompleted) {
-
-    } else {
-        promises.push(replyConfirm(jinro, replyToken));
-    }
-
-    await Promise.all(promises);
-    return;
-};
-
 const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
@@ -142,19 +124,6 @@ const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, re
     await Promise.all(promises);
     return;
 };
-
-const replyConfirm = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
-
-    const userNumber = await jinro.getUserNumber();
-    const timer = await jinro.getTimerString();
-
-    const replyMessage = await import("./template/replyChanged");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, timer)));
-
-    await Promise.all(promises);
-    return;
-}
 
 const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
@@ -189,7 +158,6 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 };
 
 const replyPositionNumber = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
-    const userNumber = await jinro.getUserNumber();
     const replyMessage = await import("./template/replyPositionNumber");
     await dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers));
     return;
@@ -229,7 +197,6 @@ const replyAnnounceResult = async (jinro: jinro_module.Jinro, replyToken: string
     const group: dabyss.Group = await dabyss.Group.createInstance(jinro.groupId);
     promises.push(group.finishGroup());
 
-    const userNumber = await jinro.getUserNumber();
     const displayNames = await jinro.getDisplayNames();
     const positions = jinro.positions;
 

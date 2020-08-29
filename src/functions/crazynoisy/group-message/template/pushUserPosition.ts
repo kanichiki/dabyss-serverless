@@ -3,7 +3,7 @@ import dabyss = require('../../../../modules/dabyss');
 import crazynoisy = require('../../../../modules/crazynoisy');
 
 export const main = async (displayName: string, position: string, targetDisplayNames: string[], targetUserIndexes: number[], zeroGuru: boolean, zeroDetective: boolean): Promise<line.Message[]> => {
-    let actionMessage: string = "";
+    let actionMessage!: string;
     let targetMessages: line.FlexComponent[] = [
         {
             "type": "spacer"

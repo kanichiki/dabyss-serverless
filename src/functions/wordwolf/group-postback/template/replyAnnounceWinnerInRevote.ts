@@ -1,9 +1,8 @@
 import line = require('@line/bot-sdk');
 import dabyss = require('../../../../modules/dabyss');
-import wordwolf = require('../../../../modules/wordwolf');
 
 export const main = async (voterDisplayName: string, executorDisplayName: string, isExecutorWolf: boolean, displayNames: string[], isWinnerArray: boolean[]): Promise<line.Message[]> => {
-    let message = "";
+    let message:string = "";
     if (!isExecutorWolf) {
         message = "ウルフ側の勝利です！！"
     } else {

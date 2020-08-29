@@ -2,7 +2,7 @@ import line = require('@line/bot-sdk');
 import dabyss = require('../../../modules/dabyss');
 import crazynoisy = require('../../../modules/crazynoisy');
 
-exports.handler = async (event: any, context: any): Promise<void> => {
+exports.handler = async (event: any): Promise<void> => {
     const lineEvent: line.PostbackEvent = event.Input.event;
     console.log(lineEvent);
 
@@ -17,16 +17,12 @@ exports.handler = async (event: any, context: any): Promise<void> => {
     const source: line.EventSource = lineEvent.source;
 
     let groupId!: string;
-    let userId!: string;
     if (source.type == "group") {
         groupId = source.groupId;
     } else if (source.type == "room") {
         groupId = source.roomId; // roomIdもgroupId扱いしよう
     }
 
-    if (source.userId != undefined) {
-        userId = source.userId;
-    }
 
     const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
     const status: string = crazyNoisy.gameStatus;
@@ -45,7 +41,8 @@ exports.handler = async (event: any, context: any): Promise<void> => {
 }
 
 const replyTimerChosen = async (crazyNoisy: crazynoisy.CrazyNoisy, time: string, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
+    let promises: Promise<void>[];
+    promises = [];
 
     const settingIndex = await crazyNoisy.getSettingIndex("timer");
 
