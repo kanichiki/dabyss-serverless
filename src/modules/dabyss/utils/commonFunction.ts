@@ -1,4 +1,4 @@
-export const makeShuffuleNumberArray = async (number: number): Promise<number[]> => {
+export const makeShuffleNumberArray = async (number: number): Promise<number[]> => {
     let shuffleNumbers: number[] = [];
     LOOP: for (let i: number = 0; i < number; i++) {
         while (true) {

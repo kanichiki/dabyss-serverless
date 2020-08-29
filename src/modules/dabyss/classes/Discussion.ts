@@ -1,6 +1,6 @@
 import * as aws from "../clients/awsClient";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import * as commonFunction from '../functions/commonFunction';
+import * as commonFunction from '../utils/commonFunction';
 
 const discussionTable = process.env.discussionTable;
 

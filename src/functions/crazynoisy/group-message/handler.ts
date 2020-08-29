@@ -261,7 +261,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
     promises.push(crazyNoisy.updateGameStatus("vote"));
 
     const userNumber: number = await crazyNoisy.getUserNumber();
-    const shuffleUserIndexes: number[] = await dabyss.makeShuffuleNumberArray(userNumber);
+    const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
 
     let displayNames: string[] = [];
 

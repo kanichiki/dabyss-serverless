@@ -306,7 +306,7 @@ const replyDiscussFinish = async (wordWolf: wordwolf.WordWolf, replyToken: strin
     promises.push(wordWolf.updateGameStatus("vote"));
 
     const userNumber: number = await wordWolf.getUserNumber();
-    const shuffleUserIndexes: number[] = await dabyss.makeShuffuleNumberArray(userNumber);
+    const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
 
     let displayNames: string[] = [];
 

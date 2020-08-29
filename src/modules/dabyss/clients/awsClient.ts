@@ -14,7 +14,7 @@ if (!documentClient) {
     documentClient = new aws.DynamoDB.DocumentClient();
     // }
 }
-import * as commonFunction from "../functions/commonFunction";
+import * as commonFunction from "../utils/commonFunction";
 
 export /**
  * DynamoDB get

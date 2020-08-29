@@ -18,7 +18,7 @@ exports.handler = async (): Promise<void> => {
                 promises.push(game.updateGameStatus("vote"));
 
                 const userNumber: number = await game.getUserNumber();
-                const shuffleUserIndexes: number[] = await dabyss.makeShuffuleNumberArray(userNumber);
+                const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
 
                 let displayNames: string[] = [];
 

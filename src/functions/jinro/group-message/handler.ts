@@ -172,7 +172,7 @@ const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string)
     promises.push(jinro.updateGameStatus("vote"));
 
     const userNumber: number = await jinro.getUserNumber();
-    const shuffleUserIndexes: number[] = await dabyss.makeShuffuleNumberArray(userNumber);
+    const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
 
     let displayNames: string[] = [];
 

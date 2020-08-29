@@ -11,4 +11,4 @@ export * from './clients/awsClient';
 export * from './clients/lineClient';
 
 export * from './constants/messageParts';
-export * from './functions/commonFunction';
+export * from './utils/commonFunction';
