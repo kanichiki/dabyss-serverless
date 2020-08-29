@@ -255,8 +255,7 @@ const replyPositionNumber = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken
 const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
-    // DB変更操作１，２
-    // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
+
     promises.push(crazyNoisy.discussion.updateIsDiscussingFalse());
     promises.push(crazyNoisy.putFirstVote());
     promises.push(crazyNoisy.updateGameStatus("vote"));

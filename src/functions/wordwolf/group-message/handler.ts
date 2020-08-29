@@ -301,8 +301,7 @@ const replyConfirmYes = async (wordWolf: wordwolf.WordWolf, replyToken: string):
 const replyDiscussFinish = async (wordWolf: wordwolf.WordWolf, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
-    // DB変更操作１，２
-    // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
+    promises.push(wordWolf.discussion.updateIsDiscussingFalse())
     promises.push(wordWolf.putFirstVote());
     promises.push(wordWolf.updateGameStatus("vote"));
 
@@ -316,7 +315,6 @@ const replyDiscussFinish = async (wordWolf: wordwolf.WordWolf, replyToken: strin
         displayNames[i] = await wordWolf.getDisplayName(shuffleUserIndexes[i]);
     }
 
-    //if (usePostback) { // postbackを使う設定の場合
     const replyMessage = await import("./template/replyDiscussFinish");
 
     promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));

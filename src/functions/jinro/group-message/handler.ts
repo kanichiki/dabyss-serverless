@@ -167,8 +167,7 @@ const replyPositionNumber = async (jinro: jinro_module.Jinro, replyToken: string
 const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
     const promises: Promise<void>[] = [];
 
-    // DB変更操作１，２
-    // 投票データを挿入出来たら話し合い終了ステータスをtrueにする同期処理
+    promises.push(jinro.discussion.updateIsDiscussingFalse())
     promises.push(jinro.putFirstVote());
     promises.push(jinro.updateGameStatus("vote"));
 
