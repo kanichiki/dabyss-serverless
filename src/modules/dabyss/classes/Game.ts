@@ -110,6 +110,16 @@ export class Game {
 		return res;
 	}
 
+	async getGameAlias(gameName: string): Promise<string> {
+		let res: string;
+		for (const game of Object.keys(games)) {
+			if (gameName == games[game].name) {
+				res = games[game].name;
+			}
+		}
+		return res;
+	}
+
 	/**
 	 * ゲームデータを引っ張ってきてそれぞれインスタンス変数に代入
 	 *
@@ -176,12 +186,13 @@ export class Game {
 			if (data.Item != undefined) {
 				this.gameId = data.Item.number + 1;
 			}
+			const gameAlias = game.getGameAlias(gameName);
 			const item: DocumentClient.AttributeMap = {
 				group_id: this.groupId,
 				game_id: this.gameId,
 				user_ids: [],
 				game_status: 'setting',
-				game_name: gameName,
+				game_name: gameAlias,
 				day: 0,
 				timer: '00:03:00',
 			};
@@ -310,7 +321,7 @@ export class Game {
 	 * @memberof Game
 	 */
 	async getMinNumber(): Promise<number> {
-		return games[this.gameName]['minNumber'];
+		return games[this.gameName].minNumber;
 	}
 
 	/**
