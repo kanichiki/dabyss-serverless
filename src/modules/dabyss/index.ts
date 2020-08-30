@@ -12,3 +12,4 @@ export * from './clients/lineClient';
 
 export * from './constants/messageParts';
 export * from './utils/commonFunction';
+export * from './utils/eventOperator';

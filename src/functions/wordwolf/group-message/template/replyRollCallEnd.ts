@@ -58,49 +58,45 @@ exports.main = async (displayNames, genres) => {
 
 // depth
 export const main = async (displayNames: string[]): Promise<line.Message[]> => {
+	// let depthMessages = [];
+	// for (let depth in depths) {
+	//     const depthMessage = {
+	//         "type": "bubble",
+	//         "body": {
+	//             "type": "box",
+	//             "layout": "vertical",
+	//             "contents": [
+	//                 {
+	//                     "type": "button",
+	//                     "action": {
+	//                         "type": "message",
+	//                         "label": depth,
+	//                         "text": depth
+	//                     },
+	//                     "color": parts.mainColor,
+	//                     "style": "link"
+	//                 }
+	//             ]
+	//         }
+	//     }
+	//     depthMessages.push(depthMessage);
+	// }
 
-    // let depthMessages = [];
-    // for (let depth in depths) {
-    //     const depthMessage = {
-    //         "type": "bubble",
-    //         "body": {
-    //             "type": "box",
-    //             "layout": "vertical",
-    //             "contents": [
-    //                 {
-    //                     "type": "button",
-    //                     "action": {
-    //                         "type": "message",
-    //                         "label": depth,
-    //                         "text": depth
-    //                     },
-    //                     "color": parts.mainColor,
-    //                     "style": "link"
-    //                 }
-    //             ]
-    //         }
-    //     }
-    //     depthMessages.push(depthMessage);
-    // }
+	const displayNamesSan: string = displayNames.join('さん、\n');
 
-    const displayNamesSan: string = displayNames.join("さん、\n");
-
-    return [
-        {
-            type: "text",
-            text: `参加受付を終了します\n\n参加者は\n\n${displayNamesSan}さん\n\nです！`
-        },
-        {
-            type: "text",
-            text: `ゲームを途中で終了する際は「強制終了」と発言してください`
-        },
-        {
-            "type": "flex",
-            "altText": "ワードの難易度",
-            "contents": await wordwolf.depthOptionsMessage()
-        }
-
-
-    ]
-
-}
+	return [
+		{
+			type: 'text',
+			text: `参加受付を終了します\n\n参加者は\n\n${displayNamesSan}さん\n\nです！`,
+		},
+		{
+			type: 'text',
+			text: `ゲームを途中で終了する際は「強制終了」と発言してください`,
+		},
+		{
+			type: 'flex',
+			altText: 'ワードの難易度',
+			contents: await wordwolf.depthOptionsMessage(),
+		},
+	];
+};
