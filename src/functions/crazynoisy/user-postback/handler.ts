@@ -1,201 +1,214 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import crazynoisy = require('../../../modules/crazynoisy');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import crazynoisy = require("../../../modules/crazynoisy");
 
-process.on('uncaughtException', function (err) {
-    console.log(err);
+process.on("uncaughtException", function (err) {
+	console.log(err);
 });
 
 exports.handler = async (event: any): Promise<void> => {
-    const lineEvent: line.PostbackEvent = event.Input.event;
-    console.log(lineEvent);
+	const lineEvent: line.PostbackEvent = event.Input.event;
+	console.log(lineEvent);
 
-    const replyToken: string = lineEvent.replyToken;
-    const postback: line.Postback = lineEvent.postback;
-    const postbackData: string = postback.data;
-    const source: line.EventSource = lineEvent.source;
+	const replyToken: string = lineEvent.replyToken;
+	const postback: line.Postback = lineEvent.postback;
+	const postbackData: string = postback.data;
+	const source: line.EventSource = lineEvent.source;
 
-    let userId!: string;
-    if (source.userId != undefined) {
-        userId = source.userId;
-    }
-    const user: dabyss.User = await dabyss.User.createInstance(userId);
-    const groupId: string = user.groupId;
+	let userId!: string;
+	if (source.userId != undefined) {
+		userId = source.userId;
+	}
+	const user: dabyss.User = await dabyss.User.createInstance(userId);
+	const groupId: string = user.groupId;
 
-    const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
-    const status: string = crazyNoisy.gameStatus;
-    const day: number = crazyNoisy.day;
+	const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
+	const status: string = crazyNoisy.gameStatus;
+	const day: number = crazyNoisy.day;
 
-    if (status == "action") {
-        await crazyNoisy.setAction();
-        const userIndex: number = await crazyNoisy.getUserIndexFromUserId(userId);
-        const targetIndex: number = Number(postbackData);
+	if (status == "action") {
+		await crazyNoisy.setAction();
+		const userIndex: number = await crazyNoisy.getUserIndexFromUserId(userId);
+		const targetIndex = Number(postbackData);
 
-        if (day == 0) { // 0日目なら
-            const confirmsState: boolean = await crazyNoisy.action.isActedUser(userIndex);
-            if (!confirmsState) {
-                const position: string = await crazyNoisy.getPosition(userIndex);
-                const zeroGuru: boolean = crazyNoisy.zeroGuru;
-                const zeroDetective: boolean = crazyNoisy.zeroDetective;
+		if (day == 0) {
+			// 0日目なら
+			const confirmsState: boolean = await crazyNoisy.action.isActedUser(userIndex);
+			if (!confirmsState) {
+				const position: string = await crazyNoisy.getPosition(userIndex);
+				const zeroGuru: boolean = crazyNoisy.zeroGuru;
+				const zeroDetective: boolean = crazyNoisy.zeroDetective;
 
-                if (position == crazyNoisy.positionNames.guru && zeroGuru) {
-                    const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
-                    if (targetExists) {
-                        await replyBasicAction(crazyNoisy, position, userIndex, targetIndex, replyToken);
-                    }
+				if (position == crazyNoisy.positionNames.guru && zeroGuru) {
+					const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
+					if (targetExists) {
+						await replyBasicAction(crazyNoisy, position, userIndex, targetIndex, replyToken);
+					}
+				} else if (position == crazyNoisy.positionNames.detective && zeroDetective) {
+					const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
+					if (targetExists) {
+						await replyDetectiveAction(crazyNoisy, userIndex, targetIndex, replyToken);
+					}
+				} else {
+					if (postbackData == "確認しました") {
+						await replyPositionConfirm(crazyNoisy, userIndex, replyToken);
+					}
+				}
+			}
+		} else {
+			// 0日目以外の場合
 
-                } else if (position == crazyNoisy.positionNames.detective && zeroDetective) {
-                    const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
-                    if (targetExists) {
+			const actionsState = await crazyNoisy.action.isActedUser(userIndex);
+			if (!actionsState) {
+				// その人のアクションがまだなら
 
-                        await replyDetectiveAction(crazyNoisy, userIndex, targetIndex, replyToken);
-                    }
+				const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
+				if (targetExists) {
+					const position = await crazyNoisy.getPosition(userIndex);
+					if (position == crazyNoisy.positionNames.guru) {
+						await replyBasicAction(crazyNoisy, position, userIndex, targetIndex, replyToken);
+					}
+					if (position == crazyNoisy.positionNames.detective) {
+						await replyDetectiveAction(crazyNoisy, userIndex, targetIndex, replyToken);
+					}
+				}
+			}
+		}
+	}
+};
 
-                } else {
-                    if (postbackData == "確認しました") {
-                        await replyPositionConfirm(crazyNoisy, userIndex, replyToken);
-                    }
-                }
-            }
-        } else { // 0日目以外の場合
+const replyBasicAction = async (
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	position: string,
+	userIndex: number,
+	targetIndex: number,
+	replyToken: string
+): Promise<void> => {
+	const promises: Promise<void>[] = [];
 
-            const actionsState = await crazyNoisy.action.isActedUser(userIndex);
-            if (!actionsState) { // その人のアクションがまだなら
+	await crazyNoisy.action.act(userIndex, targetIndex);
 
-                const targetExists = await crazyNoisy.existsUserIndexExceptOneself(userIndex, targetIndex);
-                if (targetExists) {
-                    const position = await crazyNoisy.getPosition(userIndex);
-                    if (position == crazyNoisy.positionNames.guru) {
-                        await replyBasicAction(crazyNoisy, position, userIndex, targetIndex, replyToken);
-                    }
-                    if (position == crazyNoisy.positionNames.detective) {
-                        await replyDetectiveAction(crazyNoisy, userIndex, targetIndex, replyToken);
-                    }
-                }
-            }
-        }
-    }
-}
+	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
-const replyBasicAction = async (crazyNoisy: crazynoisy.CrazyNoisy, position: string, userIndex: number, targetIndex: number, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
+	if (position == crazyNoisy.positionNames.guru) {
+		const replyMessage = await import("./template/replyGuruAction");
+		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
+	}
 
-    await crazyNoisy.action.act(userIndex, targetIndex)
+	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
+	if (isActionsCompleted) {
+		promises.push(replyActionCompleted(crazyNoisy));
+	}
 
-    const displayName = await crazyNoisy.getDisplayName(targetIndex);
+	await Promise.all(promises);
+	return;
+};
 
-    if (position == crazyNoisy.positionNames.guru) {
-        const replyMessage = await import("./template/replyGuruAction");
-        promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
-    }
+const replyDetectiveAction = async (
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	userIndex: number,
+	targetIndex: number,
+	replyToken: string
+): Promise<void> => {
+	const promises: Promise<void>[] = [];
 
-    const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
-    if (isActionsCompleted) {
-        promises.push(replyActionCompleted(crazyNoisy));
-    }
+	await crazyNoisy.action.act(userIndex, targetIndex);
+	const isGuru = await crazyNoisy.isGuru(targetIndex);
+	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
-    await Promise.all(promises);
-    return;
-}
+	const replyMessage = await import("./template/replyDetectiveAction");
+	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isGuru)));
 
-const replyDetectiveAction = async (crazyNoisy: crazynoisy.CrazyNoisy, userIndex: number, targetIndex: number, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
+	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
+	if (isActionsCompleted) {
+		promises.push(replyActionCompleted(crazyNoisy));
+	}
 
-    await crazyNoisy.action.act(userIndex, targetIndex);
-    const isGuru = await crazyNoisy.isGuru(targetIndex);
-    const displayName = await crazyNoisy.getDisplayName(targetIndex);
+	await Promise.all(promises);
+	return;
+};
 
-    const replyMessage = await import("./template/replyDetectiveAction");
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isGuru)));
+const replyPositionConfirm = async (
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	userIndex: number,
+	replyToken: string
+): Promise<void> => {
+	const promises: Promise<void>[] = [];
 
-    const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
-    if (isActionsCompleted) {
-        promises.push(replyActionCompleted(crazyNoisy));
-    }
+	await crazyNoisy.action.updateActionStateTrue(userIndex);
 
-    await Promise.all(promises);
-    return;
-}
+	const replyMessage = await import("./template/replyPositionConfirm");
+	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
-const replyPositionConfirm = async (crazyNoisy: crazynoisy.CrazyNoisy, userIndex: number, replyToken: string): Promise<void> => {
-    const promises: Promise<void>[] = [];
+	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
+	if (isActionsCompleted) {
+		promises.push(replyActionCompleted(crazyNoisy));
+	}
 
-    await crazyNoisy.action.updateActionStateTrue(userIndex);
-
-    const replyMessage = await import("./template/replyPositionConfirm")
-    promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
-
-    const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
-    if (isActionsCompleted) {
-        promises.push(replyActionCompleted(crazyNoisy));
-    }
-
-    await Promise.all(promises);
-    return;
-}
+	await Promise.all(promises);
+	return;
+};
 
 const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<void> => {
-    const promises: Promise<void>[] = [];
+	const promises: Promise<void>[] = [];
 
-    const pushCraziness = await import("./template/pushUserCraziness");
+	const pushCraziness = await import("./template/pushUserCraziness");
 
-    const brainwashTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.guru);
-    const spTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.sp);
-    if (brainwashTarget != -1 && brainwashTarget != spTarget) {
-        promises.push(crazyNoisy.updateBrainwashStateTrue(brainwashTarget));
-        await crazyNoisy.addCrazinessId(brainwashTarget);
+	const brainwashTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.guru);
+	const spTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.sp);
+	if (brainwashTarget != -1 && brainwashTarget != spTarget) {
+		promises.push(crazyNoisy.updateBrainwashStateTrue(brainwashTarget));
+		await crazyNoisy.addCrazinessId(brainwashTarget);
+	}
 
-    }
+	const userNumber = await crazyNoisy.getUserNumber();
 
-    const userNumber = await crazyNoisy.getUserNumber();
+	for (let i = 0; i < userNumber; i++) {
+		if (crazyNoisy.crazinessIds[i][0] != null) {
+			const contents = [];
+			const remarks = [];
+			for (const crazinessId of crazyNoisy.crazinessIds[i]) {
+				const craziness = await crazynoisy.Craziness.createInstance(crazinessId);
 
-    for (let i = 0; i < userNumber; i++) {
-        if (crazyNoisy.crazinessIds[i][0] != null) {
-            let contents = [];
-            let remarks = [];
-            for (let crazinessId of crazyNoisy.crazinessIds[i]) {
+				contents.push(craziness.content);
+				remarks.push(craziness.remark);
+			}
+			promises.push(dabyss.pushMessage(crazyNoisy.userIds[i], await pushCraziness.main(contents, remarks)));
+		}
+	}
 
-                const craziness = await crazynoisy.Craziness.createInstance(crazinessId);
+	await crazyNoisy.updateDay(); // 日付更新
+	const pushDay = await import("./template/pushDay");
+	let pushMessage = await pushDay.main(crazyNoisy.day);
 
-                contents.push(craziness.content);
-                remarks.push(craziness.remark);
+	const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
+	if (!isBrainwashCompleted || crazyNoisy.day == 1) {
+		// ゲームが続く場合
+		const timer = await crazyNoisy.getTimerString(); // タイマー設定を取得
 
-            }
-            promises.push(dabyss.pushMessage(crazyNoisy.userIds[i], await pushCraziness.main(contents, remarks)));
-        }
-    }
+		const pushFinishActions = await import("./template/pushFinishActions");
+		const pushFinishActionsMessage = await pushFinishActions.main(crazyNoisy.day, timer);
 
-    await crazyNoisy.updateDay(); // 日付更新
-    const pushDay = await import("./template/pushDay");
-    let pushMessage = await pushDay.main(crazyNoisy.day);
+		promises.push(crazyNoisy.updateGameStatus("discuss"));
+		promises.push(crazyNoisy.putDiscussion());
 
-    const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
-    if (!isBrainwashCompleted || crazyNoisy.day == 1) { // ゲームが続く場合
-        const timer = await crazyNoisy.getTimerString(); // タイマー設定を取得
+		pushMessage = pushMessage.concat(pushFinishActionsMessage);
 
-        const pushFinishActions = await import("./template/pushFinishActions");
-        const pushFinishActionsMessage = await pushFinishActions.main(crazyNoisy.day, timer);
+		promises.push(dabyss.pushMessage(crazyNoisy.groupId, pushMessage));
+	} else {
+		// 洗脳が完了したら
+		await crazyNoisy.updateGameStatus("winner"); // 勝者発表状況をtrueにする
+		const isWinnerGuru = true;
+		const winnerIndexes = await crazyNoisy.getWinnerIndexes();
 
-        promises.push(crazyNoisy.updateGameStatus("discuss"));
-        promises.push(crazyNoisy.putDiscussion());
+		const replyWinner = await import("./template/replyWinner");
+		const displayNames = await crazyNoisy.getDisplayNames();
+		const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
 
-        pushMessage = pushMessage.concat(pushFinishActionsMessage);
+		pushMessage = pushMessage.concat(pushWinnerMessage);
+		promises.push(dabyss.pushMessage(crazyNoisy.groupId, pushMessage));
+	}
 
-        promises.push(dabyss.pushMessage(crazyNoisy.groupId, pushMessage));
-
-    } else { // 洗脳が完了したら
-        await crazyNoisy.updateGameStatus("winner"); // 勝者発表状況をtrueにする
-        const isWinnerGuru = true;
-        const winnerIndexes = await crazyNoisy.getWinnerIndexes();
-
-        const replyWinner = await import("./template/replyWinner");
-        const displayNames = await crazyNoisy.getDisplayNames();
-        const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
-
-        pushMessage = pushMessage.concat(pushWinnerMessage);
-        promises.push(dabyss.pushMessage(crazyNoisy.groupId, pushMessage));
-    }
-
-    await Promise.all(promises);
-    return;
-}
+	await Promise.all(promises);
+	return;
+};
