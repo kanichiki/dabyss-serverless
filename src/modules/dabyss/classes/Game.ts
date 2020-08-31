@@ -6,17 +6,17 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { Action } from './Action';
 
 // インスタンス変数にしちゃうとstatic関数で参照できないから
-const games: { [key: string]: { name: string; minNumber: number } } = {
+const games: { [key: string]: { jpName: string; minNumber: number } } = {
 	wordwolf: {
-		name: 'ワードウルフ',
+		jpName: 'ワードウルフ',
 		minNumber: 2,
 	},
 	crazynoisy: {
-		name: 'クレイジーノイジー',
+		jpName: 'クレイジーノイジー',
 		minNumber: 2,
 	},
 	jinro: {
-		name: '人狼',
+		jpName: '人狼',
 		minNumber: 2,
 	},
 };
@@ -100,24 +100,28 @@ export class Game {
 	 * @returns {Promise<boolean>}
 	 * @memberof Game
 	 */
-	static async gameNameExists(text: string): Promise<boolean> {
+	static async gameJPNameExists(text: string): Promise<boolean> {
 		let res = false;
 		for (const game of Object.keys(games)) {
-			if (text == games[game].name) {
+			if (text == games[game].jpName) {
 				res = true;
 			}
 		}
 		return res;
 	}
 
-	async getGameAlias(gameName: string): Promise<string> {
+	async getGameName(jpName: string): Promise<string> {
 		let res: string;
 		for (const game of Object.keys(games)) {
-			if (gameName == games[game].name) {
-				res = games[game].name;
+			if (jpName == games[game].jpName) {
+				res = game;
 			}
 		}
 		return res;
+	}
+
+	async getJpGameName(): Promise<string> {
+		return games[this.gameName].jpName;
 	}
 
 	/**
@@ -175,24 +179,24 @@ export class Game {
 	/**
 	 * ゲームデータ挿入
 	 *
-	 * @param {string} gameName
+	 * @param {string} jpName
 	 * @returns {Promise<void>}
 	 * @memberof Game
 	 */
-	async putGame(gameName: string): Promise<void> {
+	async putGame(jpName: string): Promise<void> {
 		try {
 			const key: { name: string } = { name: gameTable };
 			const data: DocumentClient.GetItemOutput = await aws.dynamoGet(sequenceTable, key);
 			if (data.Item != undefined) {
 				this.gameId = data.Item.number + 1;
 			}
-			const gameAlias = game.getGameAlias(gameName);
+			const gameName = await this.getGameName(jpName);
 			const item: DocumentClient.AttributeMap = {
 				group_id: this.groupId,
 				game_id: this.gameId,
 				user_ids: [],
 				game_status: 'setting',
-				game_name: gameAlias,
+				game_name: gameName,
 				day: 0,
 				timer: '00:03:00',
 			};

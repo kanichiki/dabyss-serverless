@@ -64,7 +64,7 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 						const groupExists: boolean = group.exists;
 						const isUser: boolean = user.exists; // ユーザーのデータがあるかどうか
 
-						const gameNameExists: boolean = await dabyss.Game.gameNameExists(text);
+						const gameNameExists: boolean = await dabyss.Game.gameJPNameExists(text);
 						if (gameNameExists) {
 							if (groupExists) {
 								const isRestarting: boolean = group.isRestarting;
@@ -283,9 +283,10 @@ const replyParticipate = async (game: dabyss.Game, user: dabyss.User, replyToken
 
 			const displayNames: string[] = await game.getDisplayNames(); // 参加者リストのユーザー全員の表示名の配列
 			displayNames.push(displayName);
+			const gameName = await game.getJpGameName();
 			const replyMessage = await import('./template/replyParticipate');
 			promises.push(
-				dabyss.replyMessage(replyToken, await replyMessage.main(game.gameName, displayName, displayNames))
+				dabyss.replyMessage(replyToken, await replyMessage.main(gameName, displayName, displayNames))
 			);
 
 			promises.push(game.appendUserId(user.userId));
@@ -356,7 +357,7 @@ const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, replyToken: 
 
 	promises.push(group.updateIsRestarting(true)); // 参加者リストをリスタート待ちにする
 
-	const recruitingGameName = game.gameName;
+	const recruitingGameName = await game.getJpGameName();
 
 	// 一応newGameNameも渡すがまだ使ってない
 	// TODO is_restartingをrestart_game_idに変更する
@@ -374,7 +375,7 @@ const replyRestartConfirmIfPlaying = async (group: dabyss.Group, replyToken: str
 
 	promises.push(group.updateIsRestarting(true)); // 参加者リストをリスタート待ちにする
 
-	const playingGameName = game.gameName;
+	const playingGameName = await game.getJpGameName();
 
 	// 一応newGameNameも渡すがまだ使ってない
 	const replyMessage = await import('./template/replyRestartConfirmIfPlaying');

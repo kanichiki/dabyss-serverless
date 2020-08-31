@@ -126,13 +126,13 @@ stepFunctions:
             Type: Choice
             Choices:
               - Variable: $.game
-                StringEquals: ワードウルフ
+                StringEquals: wordwolf
                 Next: WordWolf
               - Variable: $.game
-                StringEquals: クレイジーノイジー
+                StringEquals: crazynoisy
                 Next: CrazyNoisy
               - Variable: $.game
-                StringEquals: 人狼
+                StringEquals: jinro
                 Next: Jinro
             Default: DefaultState
 
