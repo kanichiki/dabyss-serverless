@@ -1,5 +1,5 @@
-import * as aws from '../clients/awsClient';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import * as aws from "../clients/awsClient";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const voteTable = process.env.voteTable;
 const sequenceTable = process.env.sequenceTable;
@@ -49,7 +49,7 @@ export class Vote {
 	 */
 	async init(): Promise<void> {
 		try {
-			const data: DocumentClient.QueryOutput = await aws.dynamoQuery(voteTable, 'game_id', this.gameId, false);
+			const data: DocumentClient.QueryOutput = await aws.dynamoQuery(voteTable, "game_id", this.gameId, false);
 			if (data.Count != undefined) {
 				if (data.Count > 0) {
 					if (data.Items != undefined) {
@@ -70,7 +70,7 @@ export class Vote {
 			}
 		} catch (err) {
 			console.error(err);
-			console.error('Voteの初期化失敗');
+			console.error("Voteの初期化失敗");
 		}
 	}
 
@@ -126,7 +126,7 @@ export class Vote {
 				vote_status: voteStatus,
 			};
 			// voteデータをputできたらsequenceをプラス１
-			aws.dynamoPut(voteTable, item).then(await aws.dynamoUpdate(sequenceTable, key, 'number', voteId));
+			aws.dynamoPut(voteTable, item).then(await aws.dynamoUpdate(sequenceTable, key, "number", voteId));
 		} catch (err) {
 			console.log(err);
 		}
@@ -174,7 +174,7 @@ export class Vote {
 	 */
 	async updateVoteState(userIndex: number): Promise<void> {
 		this.voteStatus[userIndex] = true;
-		aws.dynamoUpdate(voteTable, this.voteKey, 'vote_status', this.voteStatus);
+		aws.dynamoUpdate(voteTable, this.voteKey, "vote_status", this.voteStatus);
 	}
 
 	/**
@@ -187,7 +187,7 @@ export class Vote {
 	async updatePolledNumber(userIndex: number): Promise<void> {
 		this.polledNumbers[userIndex] += 1;
 		console.log(this.polledNumbers);
-		aws.dynamoUpdate(voteTable, this.voteKey, 'polled_numbers', this.polledNumbers);
+		aws.dynamoUpdate(voteTable, this.voteKey, "polled_numbers", this.polledNumbers);
 	}
 
 	/**

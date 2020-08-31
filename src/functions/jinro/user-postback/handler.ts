@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import jinro_module = require('../../../modules/jinro');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import jinro_module = require("../../../modules/jinro");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -26,7 +26,7 @@ exports.handler = async (event: any): Promise<void> => {
 	const status: string = jinro.gameStatus;
 	const day: number = jinro.day;
 
-	if (status == 'action') {
+	if (status == "action") {
 		await jinro.setAction();
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);
 		const targetIndex = Number(postbackData);
@@ -43,7 +43,7 @@ exports.handler = async (event: any): Promise<void> => {
 						await replyForecasterAction(jinro, userIndex, targetIndex, replyToken);
 					}
 				} else {
-					if (postbackData == '確認しました') {
+					if (postbackData == "確認しました") {
 						await replyPositionConfirm(jinro, userIndex, replyToken);
 					}
 				}
@@ -87,11 +87,11 @@ const replyBasicAction = async (
 	const displayName = await jinro.getDisplayName(targetIndex);
 
 	if (position == jinro.positionNames.werewolf) {
-		const replyMessage = await import('./template/replyWerewolfAction');
+		const replyMessage = await import("./template/replyWerewolfAction");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 	}
 	if (position == jinro.positionNames.hunter) {
-		const replyMessage = await import('./template/replyHunterAction');
+		const replyMessage = await import("./template/replyHunterAction");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 	}
 
@@ -116,7 +116,7 @@ const replyForecasterAction = async (
 	const isWerewolf = await jinro.isWerewolf(targetIndex);
 	const displayName = await jinro.getDisplayName(targetIndex);
 
-	const replyMessage = await import('./template/replyForecasterAction');
+	const replyMessage = await import("./template/replyForecasterAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
 
 	const isActionsCompleted = await jinro.action.isActionCompleted();
@@ -140,7 +140,7 @@ const replyPsychicAction = async (
 	const isWerewolf = await jinro.isWerewolf(targetIndex);
 	const displayName = await jinro.getDisplayName(targetIndex);
 
-	const replyMessage = await import('./template/replyPsychicAction');
+	const replyMessage = await import("./template/replyPsychicAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
 
 	const isActionsCompleted = await jinro.action.isActionCompleted();
@@ -161,7 +161,7 @@ const replyPositionConfirm = async (
 
 	await jinro.action.updateActionStateTrue(userIndex);
 
-	const replyMessage = await import('./template/replyPositionConfirm');
+	const replyMessage = await import("./template/replyPositionConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
 	const isActionsCompleted = await jinro.action.isActionCompleted();
@@ -183,7 +183,7 @@ const replyActionCompleted = async (jinro: jinro_module.Jinro): Promise<void> =>
 	}
 
 	await jinro.updateDay(); // 日付更新
-	const pushDay = await import('./template/pushDay');
+	const pushDay = await import("./template/pushDay");
 	let pushMessage = await pushDay.main(jinro.day);
 
 	const isWerewolfWin = await jinro.isWerewolfWin();
@@ -191,10 +191,10 @@ const replyActionCompleted = async (jinro: jinro_module.Jinro): Promise<void> =>
 		// ゲームが続く場合
 		const timer = await jinro.getTimerString(); // タイマー設定を取得
 
-		const pushFinishActions = await import('./template/pushFinishActions');
+		const pushFinishActions = await import("./template/pushFinishActions");
 		const pushFinishActionsMessage = await pushFinishActions.main(jinro.day, timer);
 
-		promises.push(jinro.updateGameStatus('discuss'));
+		promises.push(jinro.updateGameStatus("discuss"));
 		promises.push(jinro.putDiscussion());
 
 		pushMessage = pushMessage.concat(pushFinishActionsMessage);
@@ -202,11 +202,11 @@ const replyActionCompleted = async (jinro: jinro_module.Jinro): Promise<void> =>
 		promises.push(dabyss.pushMessage(jinro.groupId, pushMessage));
 	} else {
 		// 襲撃が完了したら
-		await jinro.updateGameStatus('winner'); // 勝者発表状況をtrueにする
+		await jinro.updateGameStatus("winner"); // 勝者発表状況をtrueにする
 		const isWinnerWerewolf = true;
 		const winnerIndexes = await jinro.getWinnerIndexes();
 
-		const replyWinner = await import('./template/replyWinner');
+		const replyWinner = await import("./template/replyWinner");
 		const displayNames = await jinro.getDisplayNames();
 		const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerWerewolf, winnerIndexes);
 

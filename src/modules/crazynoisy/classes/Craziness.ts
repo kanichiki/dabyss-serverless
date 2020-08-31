@@ -1,5 +1,5 @@
-import dabyss = require('../../dabyss');
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import dabyss = require("../../dabyss");
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const crazinessTable = process.env.crazinessTable;
 
@@ -17,8 +17,8 @@ export class Craziness {
 			craziness_id: this.crazinessId,
 		};
 
-		this.content = '';
-		this.remark = '';
+		this.content = "";
+		this.remark = "";
 		this.type = -1;
 		this.level = -1;
 	}
@@ -33,7 +33,7 @@ export class Craziness {
 				this.type = craziness.type as number;
 				this.level = craziness.level as number;
 			} else {
-				throw new Error('データが見つかりません');
+				throw new Error("データが見つかりません");
 			}
 		} catch (err) {
 			console.error(err);
@@ -47,13 +47,13 @@ export class Craziness {
 	}
 
 	static async getCrazinessIdsMatchType(type: number): Promise<number[]> {
-		const secondaryIndex = 'type-craziness_id-index';
+		const secondaryIndex = "type-craziness_id-index";
 		const crazinessIds: number[] = [];
 		for (let i = 1; i <= type; i++) {
 			const data: DocumentClient.QueryOutput = await dabyss.dynamoQuerySecondaryIndex(
 				crazinessTable,
 				secondaryIndex,
-				'type',
+				"type",
 				i
 			);
 			if (data.Items != undefined) {

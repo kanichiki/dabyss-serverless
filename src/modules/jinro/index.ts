@@ -1,5 +1,5 @@
-import { Jinro, PositionNames, PositionNumbers } from './classes/Jinro';
+import { Jinro, PositionNames, PositionNumbers } from "./classes/Jinro";
 
 export { Jinro, PositionNames, PositionNumbers };
 
-export * from './constants/JinroParts';
+export * from "./constants/JinroParts";

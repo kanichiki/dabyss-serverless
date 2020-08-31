@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import jinro_module = require('../../../modules/jinro');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import jinro_module = require("../../../modules/jinro");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -12,28 +12,28 @@ exports.handler = async (event: any): Promise<void> => {
 
 	const replyToken: string = lineEvent.replyToken;
 	let message!: line.TextEventMessage;
-	if (lineEvent.message.type == 'text') {
+	if (lineEvent.message.type == "text") {
 		message = lineEvent.message;
 	}
 	const text: string = message.text;
 	const source: line.EventSource = lineEvent.source;
 
 	let groupId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
 	const jinro: jinro_module.Jinro = await jinro_module.Jinro.createInstance(groupId);
 	const status: string = jinro.gameStatus;
 
-	if (status == 'setting') {
+	if (status == "setting") {
 		const settingNames = jinro.settingNames;
 		const settingStatus = jinro.settingStatus;
 		if (settingStatus == [] || settingStatus == undefined) {
 			const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
-			if (group.status == 'recruit') {
+			if (group.status == "recruit") {
 				return replyRollCallEnd(group, jinro, replyToken);
 			}
 		} else {
@@ -51,39 +51,39 @@ exports.handler = async (event: any): Promise<void> => {
 				}
 			} else {
 				// 設定項目がすべてtrueだったら
-				let changeSetting = '';
+				let changeSetting = "";
 				switch (text) {
-					case 'ゲームを開始する':
+					case "ゲームを開始する":
 						await replyConfirmYes(jinro, replyToken);
 						break;
-					case '話し合い方法変更':
-						changeSetting = 'type';
+					case "話し合い方法変更":
+						changeSetting = "type";
 						break;
-					case '議論時間変更':
-						changeSetting = 'timer';
+					case "議論時間変更":
+						changeSetting = "timer";
 						break;
 				}
-				if (changeSetting != '') {
+				if (changeSetting != "") {
 					await replySettingChange(jinro, changeSetting, replyToken);
 				}
 			}
 		}
-	} else if (text == '役職人数確認') {
+	} else if (text == "役職人数確認") {
 		// TODO ここ実装
 		await replyPositionNumber(jinro, replyToken);
 	}
 
-	if (status == 'discuss') {
+	if (status == "discuss") {
 		// 話し合い中だった場合
 
-		if (text == '終了') {
+		if (text == "終了") {
 			await replyDiscussFinish(jinro, replyToken);
 		}
 	}
 
-	if (status == 'winner') {
+	if (status == "winner") {
 		// すべての結果発表がまだなら
-		if (text == '役職を見る') {
+		if (text == "役職を見る") {
 			await replyAnnounceResult(jinro, replyToken);
 		}
 	}
@@ -96,11 +96,11 @@ const replyRollCallEnd = async (group: dabyss.Group, jinro: jinro_module.Jinro, 
 
 	// DB変更操作１
 	promises.push(jinro.updateDefaultSettingStatus());
-	promises.push(group.updateStatus('play')); // 参加者リストをプレイ中にして、募集中を解除する
+	promises.push(group.updateStatus("play")); // 参加者リストをプレイ中にして、募集中を解除する
 
 	const userNumber = await jinro.getUserNumber();
 	const timer = await jinro.getTimerString();
-	const replyMessage = await import('./template/replyRollCallEnd');
+	const replyMessage = await import("./template/replyRollCallEnd");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, userNumber, timer)));
 
 	await Promise.all(promises);
@@ -115,9 +115,9 @@ const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, re
 	//     const replyMessage = await import("./template/replyTypeChange");
 	//     promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	// }
-	if (setting == 'timer') {
+	if (setting == "timer") {
 		promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import('./template/replyTimerChange');
+		const replyMessage = await import("./template/replyTimerChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
 
@@ -128,7 +128,7 @@ const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, re
 const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	promises.push(jinro.updateGameStatus('action'));
+	promises.push(jinro.updateGameStatus("action"));
 
 	await jinro.updatePositions();
 
@@ -144,7 +144,7 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 		const targetDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await jinro.getUserIndexesExceptOneself(i);
 
-		const pushPosition = await import('./template/pushUserPosition');
+		const pushPosition = await import("./template/pushUserPosition");
 		promises.push(
 			dabyss.pushMessage(
 				userIds[i],
@@ -153,7 +153,7 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 		);
 	}
 
-	const replyMessage = await import('./template/replyConfirmYes');
+	const replyMessage = await import("./template/replyConfirmYes");
 	// promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, werewolfNumber, forecasterNumber, psychicNumber, hunterNumber, madmanNumber)));
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers)));
 
@@ -162,7 +162,7 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 };
 
 const replyPositionNumber = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
-	const replyMessage = await import('./template/replyPositionNumber');
+	const replyMessage = await import("./template/replyPositionNumber");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers));
 	return;
 };
@@ -172,7 +172,7 @@ const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string)
 
 	promises.push(jinro.discussion.updateIsDiscussingFalse());
 	promises.push(jinro.putFirstVote());
-	promises.push(jinro.updateGameStatus('vote'));
+	promises.push(jinro.updateGameStatus("vote"));
 
 	const userNumber: number = await jinro.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
@@ -185,7 +185,7 @@ const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string)
 	}
 
 	//if (usePostback) { // postbackを使う設定の場合
-	const replyMessage = await import('./template/replyDiscussFinish');
+	const replyMessage = await import("./template/replyDiscussFinish");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
 	await Promise.all(promises);
@@ -195,14 +195,14 @@ const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string)
 const replyAnnounceResult = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	promises.push(jinro.updateGameStatus('result'));
+	promises.push(jinro.updateGameStatus("result"));
 	const group: dabyss.Group = await dabyss.Group.createInstance(jinro.groupId);
 	promises.push(group.finishGroup());
 
 	const displayNames = await jinro.getDisplayNames();
 	const positions = jinro.positions;
 
-	const replyMessage = await import('./template/replyAnnounceResult');
+	const replyMessage = await import("./template/replyAnnounceResult");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, positions)));
 
 	await Promise.all(promises);

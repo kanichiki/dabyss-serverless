@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import jinro_module = require('../../../modules/jinro');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import jinro_module = require("../../../modules/jinro");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -17,9 +17,9 @@ exports.handler = async (event: any): Promise<void> => {
 
 	let groupId!: string;
 	let userId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
@@ -30,21 +30,21 @@ exports.handler = async (event: any): Promise<void> => {
 	const jinro: jinro_module.Jinro = await jinro_module.Jinro.createInstance(groupId);
 	const status: string = jinro.gameStatus;
 
-	if (status == 'action' && jinro.day == 0) {
+	if (status == "action" && jinro.day == 0) {
 		await jinro.setAction();
-		if (postbackData == '確認状況') {
+		if (postbackData == "確認状況") {
 			await replyConfirmStatus(jinro, replyToken);
 		}
 	}
 
-	if (status == 'discuss') {
+	if (status == "discuss") {
 		await jinro.setDiscussion();
-		if (postbackData == '残り時間') {
+		if (postbackData == "残り時間") {
 			return replyRemainingTime(jinro, replyToken);
 		}
 	}
 
-	if (status == 'vote') {
+	if (status == "vote") {
 		await jinro.setVote();
 
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);
@@ -82,14 +82,14 @@ const replyConfirmStatus = async (jinro: jinro_module.Jinro, replyToken: string)
 		}
 	}
 
-	const replyMessage = await import('./template/replyConfirmStatus');
+	const replyMessage = await import("./template/replyConfirmStatus");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(unconfirmed));
 };
 
 const replyRemainingTime = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
 	const remainingTime = await jinro.discussion.getRemainingTime();
 
-	const replyMessage = await import('./template/replyRemainingTime');
+	const replyMessage = await import("./template/replyRemainingTime");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(remainingTime));
 };
 
@@ -107,7 +107,7 @@ const replyVoteSuccess = async (
 
 	let replyMessage: line.Message[] = [];
 
-	const replyVoteSuccess = await import('./template/replyVoteSuccess');
+	const replyVoteSuccess = await import("./template/replyVoteSuccess");
 	replyMessage = replyMessage.concat(await replyVoteSuccess.main(voterDisplayName));
 
 	const isVoteCompleted: boolean = await jinro.vote.isVoteCompleted();
@@ -116,7 +116,7 @@ const replyVoteSuccess = async (
 
 		let isVoteFinish = true;
 		let executorIndex = -1;
-		let executorDisplayName = '';
+		let executorDisplayName = "";
 
 		const multipleMostVotedUserExists = await jinro.vote.multipleMostPolledUserExists();
 		if (!multipleMostVotedUserExists) {
@@ -125,7 +125,7 @@ const replyVoteSuccess = async (
 			executorIndex = await jinro.vote.getMostPolledUserIndex(); // 最多得票者
 			executorDisplayName = await jinro.getDisplayName(executorIndex);
 
-			const replyExecutor = await import('./template/replyExecutor');
+			const replyExecutor = await import("./template/replyExecutor");
 			const replyExecutorMessage = await replyExecutor.main(executorDisplayName);
 			replyMessage = replyMessage.concat(replyExecutorMessage);
 		} else {
@@ -136,7 +136,7 @@ const replyVoteSuccess = async (
 				// 一回目の投票の場合
 				isVoteFinish = false;
 
-				const replyRevote = await import('./template/replyRevote');
+				const replyRevote = await import("./template/replyRevote");
 				const replyRevoteMessage = await replyRevote.main(mostVotedUserIndexes, displayNames);
 
 				replyMessage = replyMessage.concat(replyRevoteMessage);
@@ -147,7 +147,7 @@ const replyVoteSuccess = async (
 				executorIndex = await jinro.vote.chooseExecutorRandomly(); // 処刑者をランダムで決定
 				executorDisplayName = await jinro.getDisplayName(executorIndex);
 
-				const replyExecutorInRevote = await import('./template/replyExecutorInRevote');
+				const replyExecutorInRevote = await import("./template/replyExecutorInRevote");
 				const replyExecutorInRevoteMessage = await replyExecutorInRevote.main(executorDisplayName);
 				replyMessage = replyMessage.concat(replyExecutorInRevoteMessage);
 			}
@@ -175,7 +175,7 @@ const replyVoteSuccess = async (
 const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[]> => {
 	const promises: Promise<void>[] = [];
 
-	promises.push(jinro.updateGameStatus('action')); // ステータスをアクション中に
+	promises.push(jinro.updateGameStatus("action")); // ステータスをアクション中に
 
 	const displayNames = await jinro.getDisplayNames();
 	promises.push(jinro.putAction());
@@ -187,7 +187,7 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
 			const aliveIndexes = await jinro.getAliveUserIndexesExceptOneself(i);
 			const deadIndexes = await jinro.getDeadIndexes();
 
-			const pushUserAction = await import('./template/pushUserAction');
+			const pushUserAction = await import("./template/pushUserAction");
 			promises.push(
 				dabyss.pushMessage(
 					jinro.userIds[i],
@@ -205,7 +205,7 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
 		}
 	}
 
-	const replyVoteFinish = await import('./template/replyVoteFinish');
+	const replyVoteFinish = await import("./template/replyVoteFinish");
 	const replyVoteFinishMessage = await replyVoteFinish.main(jinro.day);
 
 	await Promise.all(promises);
@@ -213,31 +213,31 @@ const replyVoteFinish = async (jinro: jinro_module.Jinro): Promise<line.Message[
 };
 
 const replyBiteCompleted = async (jinro: jinro_module.Jinro): Promise<line.Message[]> => {
-	await jinro.updateGameStatus('winner');
-	await jinro.updateWinner('werewolf');
+	await jinro.updateGameStatus("winner");
+	await jinro.updateWinner("werewolf");
 	const winnerIndexes = await jinro.getWinnerIndexes();
 
 	const displayNames = await jinro.getDisplayNames();
-	const replyWinner = await import('./template/replyWinner');
+	const replyWinner = await import("./template/replyWinner");
 	return await replyWinner.main(displayNames, true, winnerIndexes);
 };
 
 const replyCitizenWin = async (jinro: jinro_module.Jinro): Promise<line.Message[]> => {
-	await jinro.updateGameStatus('winner'); // 勝者発表状況をtrueにする
+	await jinro.updateGameStatus("winner"); // 勝者発表状況をtrueにする
 	const winnerIndexes = await jinro.getWinnerIndexes();
 
 	const displayNames = await jinro.getDisplayNames();
-	const replyWinner = await import('./template/replyWinner');
+	const replyWinner = await import("./template/replyWinner");
 	return await replyWinner.main(displayNames, false, winnerIndexes);
 };
 
 const replySelfVote = async (replyToken: string): Promise<void> => {
-	const replyMessage = await import('./template/replySelfVote');
+	const replyMessage = await import("./template/replySelfVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
 const replyDuplicateVote = async (jinro: jinro_module.Jinro, userIndex: number, replyToken: string): Promise<void> => {
 	const displayName = await jinro.getDisplayName(userIndex);
-	const replyMessage = await import('./template/replyDuplicateVote');
+	const replyMessage = await import("./template/replyDuplicateVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
 };

@@ -1,5 +1,5 @@
-import { WordWolf } from './classes/WordWolf';
+import { WordWolf } from "./classes/WordWolf";
 
 export { WordWolf };
 
-export * from './constants/wordWolfParts';
+export * from "./constants/wordWolfParts";

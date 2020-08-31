@@ -1,6 +1,6 @@
-import aws = require('aws-sdk');
+import aws = require("aws-sdk");
 // import AmazonDaxClient = require('amazon-dax-client');
-import { DocumentClient, GetItemOutput } from 'aws-sdk/clients/dynamodb';
+import { DocumentClient, GetItemOutput } from "aws-sdk/clients/dynamodb";
 
 let documentClient!: DocumentClient;
 
@@ -14,7 +14,7 @@ if (!documentClient) {
 	documentClient = new aws.DynamoDB.DocumentClient();
 	// }
 }
-import * as commonFunction from '../utils/commonFunction';
+import * as commonFunction from "../utils/commonFunction";
 
 export /**
  * DynamoDB get
@@ -52,12 +52,12 @@ const dynamoQuery = async (
 ): Promise<DocumentClient.QueryOutput> => {
 	const params: aws.DynamoDB.DocumentClient.QueryInput = {
 		TableName: tableName,
-		KeyConditionExpression: '#hash = :v',
+		KeyConditionExpression: "#hash = :v",
 		ExpressionAttributeNames: {
-			'#hash': partitionKey,
+			"#hash": partitionKey,
 		},
 		ExpressionAttributeValues: {
-			':v': value,
+			":v": value,
 		},
 		ScanIndexForward: asc,
 		ConsistentRead: consistentRead,
@@ -85,12 +85,12 @@ const dynamoQuerySecondaryIndex = async (
 	const params: aws.DynamoDB.DocumentClient.QueryInput = {
 		TableName: tableName,
 		IndexName: indexName,
-		KeyConditionExpression: '#hash = :v',
+		KeyConditionExpression: "#hash = :v",
 		ExpressionAttributeNames: {
-			'#hash': partitionKey,
+			"#hash": partitionKey,
 		},
 		ExpressionAttributeValues: {
-			':v': value,
+			":v": value,
 		},
 		ScanIndexForward: asc,
 	};
@@ -109,7 +109,7 @@ const dynamoPut = async (
 	item: aws.DynamoDB.DocumentClient.PutItemInputAttributeMap
 ): Promise<any> => {
 	const currentTime: string = await commonFunction.getCurrentTime();
-	item['created_at'] = currentTime;
+	item["created_at"] = currentTime;
 	const params: aws.DynamoDB.DocumentClient.PutItemInput = {
 		TableName: tableName,
 		Item: item,
@@ -141,14 +141,14 @@ const dynamoUpdate = async (
 		TableName: tableName,
 		Key: key,
 		ExpressionAttributeNames: {
-			'#name': name,
-			'#t': 'updated_at',
+			"#name": name,
+			"#t": "updated_at",
 		},
 		ExpressionAttributeValues: {
-			':v': value,
-			':t': currentTime,
+			":v": value,
+			":t": currentTime,
 		},
-		UpdateExpression: 'SET #name = :v, #t = :t',
+		UpdateExpression: "SET #name = :v, #t = :t",
 	};
 	return documentClient.update(params, (err) => {
 		if (err) {
@@ -168,14 +168,14 @@ export const dynamoAppend = async (
 		TableName: tableName,
 		Key: key,
 		ExpressionAttributeNames: {
-			'#name': name,
-			'#t': 'updated_at',
+			"#name": name,
+			"#t": "updated_at",
 		},
 		ExpressionAttributeValues: {
-			':v': [value],
-			':t': currentTime,
+			":v": [value],
+			":t": currentTime,
 		},
-		UpdateExpression: 'SET #name = list_append(#name, :v), #t = :t',
+		UpdateExpression: "SET #name = list_append(#name, :v), #t = :t",
 	};
 	return documentClient.update(params, (err) => {
 		if (err) {

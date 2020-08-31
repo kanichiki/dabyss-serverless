@@ -1,5 +1,5 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../../modules/dabyss");
 
 export const main = async (
 	voterDisplayName: string,
@@ -8,18 +8,18 @@ export const main = async (
 ): Promise<line.Message[]> => {
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `${voterDisplayName}さん、投票完了しました！`,
 		},
 		{
-			type: 'text',
+			type: "text",
 			text: `得票数が並んだため再投票に入ります`,
 		},
 		{
-			type: 'flex',
-			altText: '再投票',
+			type: "flex",
+			altText: "再投票",
 			contents: {
-				type: 'carousel',
+				type: "carousel",
 				contents: await dabyss.voteMessage(mostVotedUserIndexes, displayNames),
 			},
 		},

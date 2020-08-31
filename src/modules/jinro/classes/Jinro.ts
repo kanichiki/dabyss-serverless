@@ -1,6 +1,6 @@
-import dabyss = require('../../dabyss');
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import { Action } from '../../dabyss';
+import dabyss = require("../../dabyss");
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Action } from "../../dabyss";
 
 const gameTable = process.env.gameTable;
 
@@ -50,16 +50,16 @@ export class Jinro extends dabyss.Game {
 	 */
 	constructor(groupId: string) {
 		super(groupId);
-		this.settingNames = ['type', 'timer'];
+		this.settingNames = ["type", "timer"];
 		this.defaultSettingStatus = [true, true];
 
 		this.positionNames = {
-			werewolf: '人狼',
-			madman: '狂人',
-			forecaster: '占い師',
-			psychic: '霊媒師',
-			hunter: '狩人',
-			citizen: '市民',
+			werewolf: "人狼",
+			madman: "狂人",
+			forecaster: "占い師",
+			psychic: "霊媒師",
+			hunter: "狩人",
+			citizen: "市民",
 		};
 
 		this.talkType = -1;
@@ -85,7 +85,7 @@ export class Jinro extends dabyss.Game {
 		try {
 			const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(
 				gameTable,
-				'group_id',
+				"group_id",
 				this.groupId,
 				false
 			);
@@ -124,7 +124,7 @@ export class Jinro extends dabyss.Game {
 			}
 		} catch (err) {
 			console.error(err);
-			console.error('gameの初期化失敗');
+			console.error("gameの初期化失敗");
 		}
 	}
 
@@ -185,7 +185,7 @@ export class Jinro extends dabyss.Game {
 				this.positionNumbers.psychic +
 				this.positionNumbers.hunter);
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'position_numbers', this.positionNumbers);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "position_numbers", this.positionNumbers);
 	}
 
 	async updatePositions() {
@@ -193,22 +193,22 @@ export class Jinro extends dabyss.Game {
 		const positions: string[] = [];
 
 		for (let i = 0; i < this.positionNumbers.werewolf; i++) {
-			positions.push('人狼');
+			positions.push("人狼");
 		}
 		for (let i = 0; i < this.positionNumbers.madman; i++) {
-			positions.push('狂人');
+			positions.push("狂人");
 		}
 		for (let i = 0; i < this.positionNumbers.forecaster; i++) {
-			positions.push('占い師');
+			positions.push("占い師");
 		}
 		for (let i = 0; i < this.positionNumbers.psychic; i++) {
-			positions.push('霊媒師');
+			positions.push("霊媒師");
 		}
 		for (let i = 0; i < this.positionNumbers.hunter; i++) {
-			positions.push('狩人');
+			positions.push("狩人");
 		}
 		for (let i = 0; i < this.positionNumbers.citizen; i++) {
-			positions.push('市民');
+			positions.push("市民");
 		}
 
 		// ランダム並べ替え
@@ -221,7 +221,7 @@ export class Jinro extends dabyss.Game {
 
 		this.positions = positions;
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'positions', this.positions);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "positions", this.positions);
 	}
 
 	async getPosition(userIndex: number): Promise<string> {
@@ -231,7 +231,7 @@ export class Jinro extends dabyss.Game {
 
 	async updateTalkType(type: number): Promise<void> {
 		this.talkType = type;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'talk_type', this.talkType);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "talk_type", this.talkType);
 	}
 
 	async updateDefaultAliveStatus(): Promise<void> {
@@ -239,7 +239,7 @@ export class Jinro extends dabyss.Game {
 			this.isAliveStatus[i] = true;
 			console.log(this.isAliveStatus);
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'is_alive_status', this.isAliveStatus);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
 	}
 
 	async isAlive(index: number): Promise<boolean> {
@@ -248,7 +248,7 @@ export class Jinro extends dabyss.Game {
 
 	async die(index: number): Promise<void> {
 		this.isAliveStatus[index] = false;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'is_alive_status', this.isAliveStatus);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
 	}
 
 	async isWerewolf(index: number): Promise<boolean> {
@@ -259,7 +259,7 @@ export class Jinro extends dabyss.Game {
 	async getWinnerIndexes(): Promise<number[]> {
 		const res: number[] = [];
 		for (let i = 0; i < this.positions.length; i++) {
-			if (this.winner == 'werewolf') {
+			if (this.winner == "werewolf") {
 				// 人狼陣営勝利なら
 				if (
 					this.positions[i] == this.positionNames.werewolf ||

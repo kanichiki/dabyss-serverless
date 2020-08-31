@@ -1,6 +1,6 @@
-import line = require('@line/bot-sdk');
-import crazynoisy = require('../../../modules/crazynoisy');
-import dabyss = require('../../../modules/dabyss');
+import line = require("@line/bot-sdk");
+import crazynoisy = require("../../../modules/crazynoisy");
+import dabyss = require("../../../modules/dabyss");
 
 exports.handler = async (event: any): Promise<void> => {
 	const lineEvent: line.MessageEvent = event.Input.event;
@@ -8,28 +8,28 @@ exports.handler = async (event: any): Promise<void> => {
 
 	const replyToken: string = lineEvent.replyToken;
 	let message!: line.TextEventMessage;
-	if (lineEvent.message.type == 'text') {
+	if (lineEvent.message.type == "text") {
 		message = lineEvent.message;
 	}
 	const text: string = message.text;
 	const source: line.EventSource = lineEvent.source;
 
 	let groupId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
 	const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
 	const status: string = crazyNoisy.gameStatus;
 
-	if (status == 'setting') {
+	if (status == "setting") {
 		const settingNames = crazyNoisy.settingNames;
 		const settingStatus = crazyNoisy.settingStatus;
 		if (settingStatus == [] || settingStatus == undefined) {
 			const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
-			if (group.status == 'recruit') {
+			if (group.status == "recruit") {
 				return replyRollCallEnd(group, crazyNoisy, replyToken);
 			}
 		} else {
@@ -37,13 +37,13 @@ exports.handler = async (event: any): Promise<void> => {
 			if (!isSettingCompleted) {
 				for (let i = 0; i < settingNames.length; i++) {
 					if (!settingStatus[i]) {
-						if (settingNames[i] == 'mode') {
-							if (text == 'ノーマル' || text == 'デモ') {
+						if (settingNames[i] == "mode") {
+							if (text == "ノーマル" || text == "デモ") {
 								return replyModeChosen(crazyNoisy, text, replyToken);
 							}
 						}
-						if (settingNames[i] == 'type') {
-							if (text == '1' || text == '2' || text == '3') {
+						if (settingNames[i] == "type") {
+							if (text == "1" || text == "2" || text == "3") {
 								await replyTypeChosen(crazyNoisy, text, replyToken);
 							}
 						}
@@ -52,48 +52,48 @@ exports.handler = async (event: any): Promise<void> => {
 				}
 			} else {
 				// 設定項目がすべてtrueだったら
-				let changeSetting = '';
+				let changeSetting = "";
 				switch (text) {
-					case 'ゲームを開始する':
+					case "ゲームを開始する":
 						await replyConfirmYes(crazyNoisy, replyToken);
 						break;
-					case 'モード変更':
-						changeSetting = 'mode';
+					case "モード変更":
+						changeSetting = "mode";
 						break;
-					case '話し合い方法変更':
-						changeSetting = 'type';
+					case "話し合い方法変更":
+						changeSetting = "type";
 						break;
-					case '議論時間変更':
-						changeSetting = 'timer';
+					case "議論時間変更":
+						changeSetting = "timer";
 						break;
-					case '0日目洗脳有無':
-						changeSetting = 'zeroGuru';
+					case "0日目洗脳有無":
+						changeSetting = "zeroGuru";
 						break;
-					case '0日目調査有無':
-						changeSetting = 'zeroDetective';
+					case "0日目調査有無":
+						changeSetting = "zeroDetective";
 						break;
 				}
-				if (changeSetting != '') {
+				if (changeSetting != "") {
 					await replySettingChange(crazyNoisy, changeSetting, replyToken);
 				}
 			}
 		}
-	} else if (text == '役職人数確認') {
+	} else if (text == "役職人数確認") {
 		await replyPositionNumber(crazyNoisy, replyToken);
 	}
 
-	if (status == 'discuss') {
+	if (status == "discuss") {
 		await crazyNoisy.setDiscussion();
 		// 話し合い中だった場合
 
-		if (text == '終了') {
+		if (text == "終了") {
 			await replyDiscussFinish(crazyNoisy, replyToken);
 		}
 	}
 
-	if (status == 'winner') {
+	if (status == "winner") {
 		// すべての結果発表がまだなら
-		if (text == '役職・狂気を見る') {
+		if (text == "役職・狂気を見る") {
 			await replyAnnounceResult(crazyNoisy, replyToken);
 		}
 	}
@@ -110,9 +110,9 @@ const replyRollCallEnd = async (
 
 	// DB変更操作１
 	promises.push(crazyNoisy.updateDefaultSettingStatus());
-	promises.push(group.updateStatus('play')); // 参加者リストをプレイ中にして、募集中を解除する
+	promises.push(group.updateStatus("play")); // 参加者リストをプレイ中にして、募集中を解除する
 
-	const replyMessage = await import('./template/replyRollCallEnd');
+	const replyMessage = await import("./template/replyRollCallEnd");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames)));
 
 	await Promise.all(promises);
@@ -123,11 +123,11 @@ const replyModeChosen = async (crazyNoisy: crazynoisy.CrazyNoisy, text: string, 
 	const promises: Promise<void>[] = [];
 
 	promises.push(crazyNoisy.updateGameMode(text));
-	await crazyNoisy.updateSettingState('mode', true);
+	await crazyNoisy.updateSettingState("mode", true);
 
 	const isSettingCompleted: boolean = await crazyNoisy.isSettingCompleted();
 	if (!isSettingCompleted) {
-		const replyMessage = await import('./template/replyModeChosen');
+		const replyMessage = await import("./template/replyModeChosen");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(text)));
 	} else {
 		promises.push(replyConfirm(crazyNoisy, replyToken));
@@ -141,7 +141,7 @@ const replyTypeChosen = async (crazyNoisy: crazynoisy.CrazyNoisy, text: string, 
 	const promises: Promise<void>[] = [];
 
 	promises.push(crazyNoisy.updateTalkType(Number(text)));
-	await crazyNoisy.updateSettingState('type', true);
+	await crazyNoisy.updateSettingState("type", true);
 
 	promises.push(replyConfirm(crazyNoisy, replyToken));
 
@@ -156,26 +156,26 @@ const replySettingChange = async (
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	if (setting == 'mode') {
+	if (setting == "mode") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import('./template/replyModeChange');
+		const replyMessage = await import("./template/replyModeChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
-	if (setting == 'type') {
+	if (setting == "type") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import('./template/replyTypeChange');
+		const replyMessage = await import("./template/replyTypeChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
-	if (setting == 'timer') {
+	if (setting == "timer") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import('./template/replyTimerChange');
+		const replyMessage = await import("./template/replyTimerChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
-	if (setting == 'zeroGuru') {
+	if (setting == "zeroGuru") {
 		await crazyNoisy.switchZeroGuru();
 		promises.push(replyConfirm(crazyNoisy, replyToken));
 	}
-	if (setting == 'zeroDetective') {
+	if (setting == "zeroDetective") {
 		await crazyNoisy.switchZeroDetective();
 		promises.push(replyConfirm(crazyNoisy, replyToken));
 	}
@@ -194,7 +194,7 @@ const replyConfirm = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: strin
 	const zeroGuru = crazyNoisy.zeroGuru;
 	const zeroDetective = crazyNoisy.zeroDetective;
 
-	const replyMessage = await import('./template/replyChanged');
+	const replyMessage = await import("./template/replyChanged");
 	promises.push(
 		dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, mode, type, timer, zeroGuru, zeroDetective))
 	);
@@ -206,12 +206,12 @@ const replyConfirm = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: strin
 const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	promises.push(crazyNoisy.updateGameStatus('action'));
+	promises.push(crazyNoisy.updateGameStatus("action"));
 
 	await crazyNoisy.updatePositions();
 	const mode = crazyNoisy.gameMode;
 
-	if (mode != 'デモ') {
+	if (mode != "デモ") {
 		promises.push(crazyNoisy.updateDefaultCrazinessIds());
 	} else {
 		promises.push(crazyNoisy.updateDefaultCrazinessIdsInDemo());
@@ -232,7 +232,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 		const targetDisplayNames = await crazyNoisy.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await crazyNoisy.getUserIndexesExceptOneself(i);
 
-		const pushPosition = await import('./template/pushUserPosition');
+		const pushPosition = await import("./template/pushUserPosition");
 		promises.push(
 			dabyss.pushMessage(
 				userIds[i],
@@ -250,7 +250,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 
 	const numberOption = Math.floor((userNumber - 1) / 3);
 
-	const replyMessage = await import('./template/replyConfirmYes');
+	const replyMessage = await import("./template/replyConfirmYes");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, numberOption)));
 
 	await Promise.all(promises);
@@ -260,7 +260,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 const replyPositionNumber = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
 	const userNumber = await crazyNoisy.getUserNumber();
 	const numberOption = Math.floor((userNumber - 1) / 3);
-	const replyMessage = await import('./template/replyPositionNumber');
+	const replyMessage = await import("./template/replyPositionNumber");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, numberOption));
 	return;
 };
@@ -270,7 +270,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 
 	promises.push(crazyNoisy.discussion.updateIsDiscussingFalse());
 	promises.push(crazyNoisy.putFirstVote());
-	promises.push(crazyNoisy.updateGameStatus('vote'));
+	promises.push(crazyNoisy.updateGameStatus("vote"));
 
 	const userNumber: number = await crazyNoisy.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
@@ -283,7 +283,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 	}
 
 	//if (usePostback) { // postbackを使う設定の場合
-	const replyMessage = await import('./template/replyDiscussFinish');
+	const replyMessage = await import("./template/replyDiscussFinish");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
 	await Promise.all(promises);
@@ -293,7 +293,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 const replyAnnounceResult = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	promises.push(crazyNoisy.updateGameStatus('result'));
+	promises.push(crazyNoisy.updateGameStatus("result"));
 	const group: dabyss.Group = await dabyss.Group.createInstance(crazyNoisy.groupId);
 	promises.push(group.finishGroup());
 
@@ -315,7 +315,7 @@ const replyAnnounceResult = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken
 		contentsList.push(contents);
 	}
 
-	const replyMessage = await import('./template/replyAnnounceResult');
+	const replyMessage = await import("./template/replyAnnounceResult");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, positions, contentsList)));
 
 	await Promise.all(promises);

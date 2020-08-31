@@ -35,31 +35,31 @@ export const convertDateToString = async (date: Date): Promise<string> => {
 	const month: number = date.getMonth() + 1; // 1月は0らしい
 	let monthString: string = month.toString();
 	if (month < 10) {
-		monthString = '0' + monthString;
+		monthString = "0" + monthString;
 	}
 	const day: number = date.getDate();
 	let dayString: string = day.toString();
 	if (day < 10) {
-		dayString = '0' + dayString;
+		dayString = "0" + dayString;
 	}
 	const hours: number = date.getHours();
 	let hoursString: string = hours.toString();
 	if (hours < 10) {
-		hoursString = '0' + hoursString;
+		hoursString = "0" + hoursString;
 	}
 	const minutes: number = date.getMinutes();
 	let minutesString: string = minutes.toString();
 	if (minutes < 10) {
-		minutesString = '0' + minutesString;
+		minutesString = "0" + minutesString;
 	}
 	const second: number = date.getSeconds();
 	let secondString: string = second.toString();
 	if (second < 10) {
-		secondString = '0' + secondString;
+		secondString = "0" + secondString;
 	}
 
 	return (
-		yearString + '-' + monthString + '-' + dayString + ' ' + hoursString + ':' + minutesString + ':' + secondString
+		yearString + "-" + monthString + "-" + dayString + " " + hoursString + ":" + minutesString + ":" + secondString
 	);
 };
 
@@ -78,37 +78,37 @@ export declare type Interval = {
 export const convertIntervalToString = async (interval: Interval): Promise<string> => {
 	let hoursString: string = interval.hours.toString();
 	if (interval.hours < 10) {
-		hoursString = '0' + hoursString;
+		hoursString = "0" + hoursString;
 	}
 	let minutesString: string = interval.minutes.toString();
 	if (interval.minutes < 10) {
-		minutesString = '0' + minutesString;
+		minutesString = "0" + minutesString;
 	}
 	let secondsString: string = interval.seconds.toString();
 	if (interval.seconds < 10) {
-		secondsString = '0' + secondsString;
+		secondsString = "0" + secondsString;
 	}
 
-	const timeString: string = hoursString + ':' + minutesString + ':' + secondsString;
+	const timeString: string = hoursString + ":" + minutesString + ":" + secondsString;
 	return timeString;
 };
 
 export const convertIntervalToTimerString = async (interval: Interval): Promise<string> => {
-	let timerString = '';
+	let timerString = "";
 	if (interval.hours != 0) {
-		timerString += interval.hours.toString() + '時間';
+		timerString += interval.hours.toString() + "時間";
 	}
 	if (interval.minutes != 0) {
-		timerString += interval.minutes.toString() + '分';
+		timerString += interval.minutes.toString() + "分";
 	}
 	if (interval.seconds != 0) {
-		timerString += interval.seconds.toString() + '秒';
+		timerString += interval.seconds.toString() + "秒";
 	}
 	return timerString;
 };
 
 export const getTimerObject = async (timerString: string): Promise<Interval> => {
-	const timerArray: string[] = timerString.split(':');
+	const timerArray: string[] = timerString.split(":");
 	const timerObject: Interval = {
 		hours: Number(timerArray[0]),
 		minutes: Number(timerArray[1]),

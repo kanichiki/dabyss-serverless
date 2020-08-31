@@ -1,5 +1,5 @@
-import line = require('@line/bot-sdk');
-import wordwolf = require('../../../../modules/wordwolf');
+import line = require("@line/bot-sdk");
+import wordwolf = require("../../../../modules/wordwolf");
 
 export const main = async (
 	userNumber: number,
@@ -9,8 +9,8 @@ export const main = async (
 	timerString: string
 ): Promise<line.FlexMessage> => {
 	return {
-		type: 'flex',
-		altText: '設定確認',
+		type: "flex",
+		altText: "設定確認",
 		contents: await wordwolf.settingConfirmMessage(userNumber, depth, wolfNumber, lunaticNumber, timerString),
 	};
 };

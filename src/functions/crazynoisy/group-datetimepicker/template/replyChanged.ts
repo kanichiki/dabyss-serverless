@@ -1,5 +1,5 @@
-import line = require('@line/bot-sdk');
-import crazynoisy = require('../../../../modules/crazynoisy');
+import line = require("@line/bot-sdk");
+import crazynoisy = require("../../../../modules/crazynoisy");
 
 export const main = async (
 	userNumber: number,
@@ -11,8 +11,8 @@ export const main = async (
 ): Promise<line.Message[]> => {
 	return [
 		{
-			type: 'flex',
-			altText: '設定確認',
+			type: "flex",
+			altText: "設定確認",
 			contents: await crazynoisy.settingConfirmMessage(userNumber, mode, type, timer, zeroGuru, zeroDetective),
 		},
 	];

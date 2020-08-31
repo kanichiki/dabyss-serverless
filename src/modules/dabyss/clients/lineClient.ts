@@ -1,11 +1,11 @@
-import aws = require('aws-sdk');
-import line = require('@line/bot-sdk');
+import aws = require("aws-sdk");
+import line = require("@line/bot-sdk");
 
 let lineClient: line.Client;
 
 const getLineConfig = async (): Promise<{ [key: string]: string }> => {
-	const region = 'ap-northeast-1';
-	const secretName = 'dabyss-dev-line';
+	const region = "ap-northeast-1";
+	const secretName = "dabyss-dev-line";
 	let secretString!: string;
 
 	const client: aws.SecretsManager = new aws.SecretsManager({

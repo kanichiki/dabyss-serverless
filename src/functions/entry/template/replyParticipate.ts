@@ -1,56 +1,56 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
 
 export const main = async (
 	recruitingGameName: string,
 	displayName: string,
 	displayNames: string[]
 ): Promise<line.Message[]> => {
-	const displayNamesSan: string = displayNames.join('さん、\n');
+	const displayNamesSan: string = displayNames.join("さん、\n");
 
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `${displayName}さんの参加を確認しました！\n\n現在の参加者は\n\n${displayNamesSan}さん\n\nです！\n引き続き${recruitingGameName}の参加者を募集します！`,
 		},
 		{
-			type: 'flex',
-			altText: '参加募集',
+			type: "flex",
+			altText: "参加募集",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				footer: {
-					type: 'box',
-					layout: 'horizontal',
-					spacing: 'sm',
+					type: "box",
+					layout: "horizontal",
+					spacing: "sm",
 					contents: [
 						{
-							type: 'button',
-							height: 'sm',
+							type: "button",
+							height: "sm",
 							action: {
-								type: 'message',
-								label: '参加',
-								text: '参加',
+								type: "message",
+								label: "参加",
+								text: "参加",
 							},
 							color: dabyss.mainColor,
-							style: 'primary',
+							style: "primary",
 						},
 						{
-							type: 'separator',
+							type: "separator",
 						},
 						{
-							type: 'button',
-							height: 'sm',
+							type: "button",
+							height: "sm",
 							action: {
-								type: 'message',
-								label: '受付終了',
-								text: '受付終了',
+								type: "message",
+								label: "受付終了",
+								text: "受付終了",
 							},
 							color: dabyss.mainColor,
-							style: 'primary',
+							style: "primary",
 						},
 						{
-							type: 'spacer',
-							size: 'sm',
+							type: "spacer",
+							size: "sm",
 						},
 					],
 					flex: 0,

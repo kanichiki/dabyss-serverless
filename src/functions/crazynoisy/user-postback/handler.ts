@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import crazynoisy = require('../../../modules/crazynoisy');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import crazynoisy = require("../../../modules/crazynoisy");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -26,7 +26,7 @@ exports.handler = async (event: any): Promise<void> => {
 	const status: string = crazyNoisy.gameStatus;
 	const day: number = crazyNoisy.day;
 
-	if (status == 'action') {
+	if (status == "action") {
 		await crazyNoisy.setAction();
 		const userIndex: number = await crazyNoisy.getUserIndexFromUserId(userId);
 		const targetIndex = Number(postbackData);
@@ -50,7 +50,7 @@ exports.handler = async (event: any): Promise<void> => {
 						await replyDetectiveAction(crazyNoisy, userIndex, targetIndex, replyToken);
 					}
 				} else {
-					if (postbackData == '確認しました') {
+					if (postbackData == "確認しました") {
 						await replyPositionConfirm(crazyNoisy, userIndex, replyToken);
 					}
 				}
@@ -91,7 +91,7 @@ const replyBasicAction = async (
 	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
 	if (position == crazyNoisy.positionNames.guru) {
-		const replyMessage = await import('./template/replyGuruAction');
+		const replyMessage = await import("./template/replyGuruAction");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 	}
 
@@ -116,7 +116,7 @@ const replyDetectiveAction = async (
 	const isGuru = await crazyNoisy.isGuru(targetIndex);
 	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
-	const replyMessage = await import('./template/replyDetectiveAction');
+	const replyMessage = await import("./template/replyDetectiveAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isGuru)));
 
 	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
@@ -137,7 +137,7 @@ const replyPositionConfirm = async (
 
 	await crazyNoisy.action.updateActionStateTrue(userIndex);
 
-	const replyMessage = await import('./template/replyPositionConfirm');
+	const replyMessage = await import("./template/replyPositionConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
 	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
@@ -152,7 +152,7 @@ const replyPositionConfirm = async (
 const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	const pushCraziness = await import('./template/pushUserCraziness');
+	const pushCraziness = await import("./template/pushUserCraziness");
 
 	const brainwashTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.guru);
 	const spTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.sp);
@@ -178,7 +178,7 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 	}
 
 	await crazyNoisy.updateDay(); // 日付更新
-	const pushDay = await import('./template/pushDay');
+	const pushDay = await import("./template/pushDay");
 	let pushMessage = await pushDay.main(crazyNoisy.day);
 
 	const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
@@ -186,10 +186,10 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 		// ゲームが続く場合
 		const timer = await crazyNoisy.getTimerString(); // タイマー設定を取得
 
-		const pushFinishActions = await import('./template/pushFinishActions');
+		const pushFinishActions = await import("./template/pushFinishActions");
 		const pushFinishActionsMessage = await pushFinishActions.main(crazyNoisy.day, timer);
 
-		promises.push(crazyNoisy.updateGameStatus('discuss'));
+		promises.push(crazyNoisy.updateGameStatus("discuss"));
 		promises.push(crazyNoisy.putDiscussion());
 
 		pushMessage = pushMessage.concat(pushFinishActionsMessage);
@@ -197,11 +197,11 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 		promises.push(dabyss.pushMessage(crazyNoisy.groupId, pushMessage));
 	} else {
 		// 洗脳が完了したら
-		await crazyNoisy.updateGameStatus('winner'); // 勝者発表状況をtrueにする
+		await crazyNoisy.updateGameStatus("winner"); // 勝者発表状況をtrueにする
 		const isWinnerGuru = true;
 		const winnerIndexes = await crazyNoisy.getWinnerIndexes();
 
-		const replyWinner = await import('./template/replyWinner');
+		const replyWinner = await import("./template/replyWinner");
 		const displayNames = await crazyNoisy.getDisplayNames();
 		const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
 

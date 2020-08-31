@@ -1,6 +1,6 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import jinro_module = require('../../../modules/jinro');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import jinro_module = require("../../../modules/jinro");
 
 exports.handler = async (event: any): Promise<void> => {
 	const lineEvent: line.PostbackEvent = event.Input.event;
@@ -17,21 +17,21 @@ exports.handler = async (event: any): Promise<void> => {
 	const source: line.EventSource = lineEvent.source;
 
 	let groupId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
 	const jinro: jinro_module.Jinro = await jinro_module.Jinro.createInstance(groupId);
 	const status: string = jinro.gameStatus;
 
-	if (status == 'setting') {
+	if (status == "setting") {
 		const settingNames = jinro.settingNames;
 		const settingStatus = jinro.settingStatus;
 		for (let i = 0; i < settingNames.length; i++) {
 			if (!settingStatus[i]) {
-				if (settingNames[i] == 'timer') {
+				if (settingNames[i] == "timer") {
 					return replyTimerChosen(jinro, time, replyToken);
 				}
 			}
@@ -42,7 +42,7 @@ exports.handler = async (event: any): Promise<void> => {
 const replyTimerChosen = async (jinro: jinro_module.Jinro, time: string, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	const settingIndex = await jinro.getSettingIndex('timer');
+	const settingIndex = await jinro.getSettingIndex("timer");
 
 	promises.push(jinro.updateTimer(time));
 	await jinro.updateSettingStateTrue(settingIndex);
@@ -58,7 +58,7 @@ const replyConfirm = async (jinro: jinro_module.Jinro, replyToken: string): Prom
 
 	const userNumber = await jinro.getUserNumber();
 	const timer = await jinro.getTimerString();
-	const replyMessage = await import('./template/replyChanged');
+	const replyMessage = await import("./template/replyChanged");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, timer)));
 
 	await Promise.all(promises);

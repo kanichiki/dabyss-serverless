@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import aws = require('aws-sdk');
-import { StartExecutionInput } from 'aws-sdk/clients/stepfunctions';
-import { Lambda } from 'aws-sdk';
-import { InvocationRequest } from 'aws-sdk/clients/lambda';
+import line = require("@line/bot-sdk");
+import aws = require("aws-sdk");
+import { StartExecutionInput } from "aws-sdk/clients/stepfunctions";
+import { Lambda } from "aws-sdk";
+import { InvocationRequest } from "aws-sdk/clients/lambda";
 
 exports.handler = async (event: any): Promise<any> => {
 	const promises: Promise<any>[] = [];
@@ -27,7 +27,7 @@ exports.handler = async (event: any): Promise<any> => {
 	const lambda = new Lambda();
 	const input: InvocationRequest = {
 		FunctionName: process.env.notifyFunctionArn,
-		InvocationType: 'Event',
+		InvocationType: "Event",
 	};
 	promises.push(lambda.invoke(input).promise());
 

@@ -1,9 +1,9 @@
-import line = require('@line/bot-sdk');
+import line = require("@line/bot-sdk");
 
 export const main = async (displayName: string): Promise<line.Message[]> => {
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `${displayName}さんを守ります`,
 		},
 	];

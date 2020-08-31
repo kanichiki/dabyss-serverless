@@ -1,22 +1,22 @@
-import * as aws from '../clients/awsClient';
-import { User } from './User';
-import { Discussion } from './Discussion';
-import { Vote } from './Vote';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import { Action } from './Action';
+import * as aws from "../clients/awsClient";
+import { User } from "./User";
+import { Discussion } from "./Discussion";
+import { Vote } from "./Vote";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Action } from "./Action";
 
 // インスタンス変数にしちゃうとstatic関数で参照できないから
 const games: { [key: string]: { jpName: string; minNumber: number } } = {
 	wordwolf: {
-		jpName: 'ワードウルフ',
+		jpName: "ワードウルフ",
 		minNumber: 2,
 	},
 	crazynoisy: {
-		jpName: 'クレイジーノイジー',
+		jpName: "クレイジーノイジー",
 		minNumber: 2,
 	},
 	jinro: {
-		jpName: '人狼',
+		jpName: "人狼",
 		minNumber: 2,
 	},
 };
@@ -80,11 +80,11 @@ export class Game {
 		};
 		this.userIds = [];
 		this.day = -1;
-		this.gameName = '';
-		this.gameStatus = '';
+		this.gameName = "";
+		this.gameStatus = "";
 		this.settingStatus = [];
-		this.timer = '00:03:00';
-		this.winner = '';
+		this.timer = "00:03:00";
+		this.winner = "";
 		this.positions = [];
 
 		this.discussion = new Discussion(this.gameId, this.day, this.groupId);
@@ -132,7 +132,7 @@ export class Game {
 	 */
 	async init(): Promise<void> {
 		try {
-			const data: DocumentClient.QueryOutput = await aws.dynamoQuery(gameTable, 'group_id', this.groupId, false);
+			const data: DocumentClient.QueryOutput = await aws.dynamoQuery(gameTable, "group_id", this.groupId, false);
 			if (data.Count != undefined) {
 				if (data.Count > 0) {
 					this.exists = true;
@@ -157,7 +157,7 @@ export class Game {
 			}
 		} catch (err) {
 			console.error(err);
-			console.error('gameの初期化失敗');
+			console.error("gameの初期化失敗");
 		}
 	}
 
@@ -195,13 +195,13 @@ export class Game {
 				group_id: this.groupId,
 				game_id: this.gameId,
 				user_ids: [],
-				game_status: 'setting',
+				game_status: "setting",
 				game_name: gameName,
 				day: 0,
-				timer: '00:03:00',
+				timer: "00:03:00",
 			};
 			// groupデータをputできたらsequenceをプラス１
-			aws.dynamoPut(gameTable, item).then(await aws.dynamoUpdate(sequenceTable, key, 'number', this.gameId));
+			aws.dynamoPut(gameTable, item).then(await aws.dynamoUpdate(sequenceTable, key, "number", this.gameId));
 		} catch (err) {
 			console.log(err);
 		}
@@ -215,7 +215,7 @@ export class Game {
 	 */
 	async updateDay(): Promise<void> {
 		this.day++;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'day', this.day);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "day", this.day);
 	}
 
 	/**
@@ -340,7 +340,7 @@ export class Game {
 		if (!isUserExists) {
 			this.userIds.push(userId);
 		}
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'user_ids', this.userIds);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "user_ids", this.userIds);
 	}
 
 	/**
@@ -430,7 +430,7 @@ export class Game {
 	 */
 	async updateDefaultSettingStatus(): Promise<void> {
 		this.settingStatus = this.defaultSettingStatus;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'setting_status', this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
 	}
 
 	/**
@@ -462,7 +462,7 @@ export class Game {
 	async updateSettingState(name: string, bool: boolean): Promise<void> {
 		const settingIndex: number = await this.getSettingIndex(name);
 		this.settingStatus[settingIndex] = bool;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'setting_status', this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
 	}
 
 	/**
@@ -475,7 +475,7 @@ export class Game {
 	async updateSettingStateTrue(index: number): Promise<void> {
 		this.settingStatus[index] = true;
 		console.log(this.settingStatus);
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'setting_status', this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
 	}
 
 	/**
@@ -487,7 +487,7 @@ export class Game {
 	 */
 	async updateSettingStateFalse(index: number): Promise<void> {
 		this.settingStatus[index] = false;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'setting_status', this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
 	}
 
 	/**
@@ -515,16 +515,16 @@ export class Game {
 	 */
 	async getTimerString(): Promise<string> {
 		const timer: string = this.timer;
-		const timerArray: string[] = timer.split(':');
-		let timerString = '';
-		if (timerArray[0] != '00') {
-			timerString += Number(timerArray[0]) + '時間';
+		const timerArray: string[] = timer.split(":");
+		let timerString = "";
+		if (timerArray[0] != "00") {
+			timerString += Number(timerArray[0]) + "時間";
 		}
-		if (timerArray[1] != '00') {
-			timerString += Number(timerArray[1]) + '分';
+		if (timerArray[1] != "00") {
+			timerString += Number(timerArray[1]) + "分";
 		}
-		if (timerArray[2] != '00') {
-			timerString += Number(timerArray[2]) + '秒';
+		if (timerArray[2] != "00") {
+			timerString += Number(timerArray[2]) + "秒";
 		}
 
 		return timerString;
@@ -538,8 +538,8 @@ export class Game {
 	 * @memberof Game
 	 */
 	async updateTimer(time: string): Promise<void> {
-		this.timer = '00:' + time;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'timer', this.timer);
+		this.timer = "00:" + time;
+		await aws.dynamoUpdate(gameTable, this.gameKey, "timer", this.timer);
 	}
 
 	/**
@@ -551,7 +551,7 @@ export class Game {
 	 */
 	async updateGameStatus(status: string): Promise<void> {
 		this.gameStatus = status;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'game_status', this.gameStatus);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "game_status", this.gameStatus);
 	}
 
 	/**
@@ -627,7 +627,7 @@ export class Game {
 	 */
 	async updateWinner(winner: string): Promise<void> {
 		this.winner = winner;
-		await aws.dynamoUpdate(gameTable, this.gameKey, 'winner', this.winner);
+		await aws.dynamoUpdate(gameTable, this.gameKey, "winner", this.winner);
 	}
 
 	/**

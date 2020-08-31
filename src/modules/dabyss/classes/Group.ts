@@ -1,6 +1,6 @@
-import * as aws from '../clients/awsClient';
-import { Game } from './Game';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import * as aws from "../clients/awsClient";
+import { Game } from "./Game";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const groupTable = process.env.groupTable;
 
@@ -29,7 +29,7 @@ export class Group {
 			group_id: groupId,
 		};
 		this.exists = false;
-		this.status = '';
+		this.status = "";
 		this.isRestarting = false;
 		this.isFinishing = false;
 	}
@@ -41,7 +41,7 @@ export class Group {
 	 * @memberof Group
 	 */
 	async init(): Promise<void> {
-		const data: DocumentClient.QueryOutput = await aws.dynamoQuery(groupTable, 'group_id', this.groupId, false);
+		const data: DocumentClient.QueryOutput = await aws.dynamoQuery(groupTable, "group_id", this.groupId, false);
 		if (data.Count != undefined) {
 			if (data.Count > 0) {
 				this.exists = true;
@@ -79,7 +79,7 @@ export class Group {
 		try {
 			const item: DocumentClient.PutItemInputAttributeMap = {
 				group_id: this.groupId,
-				status: 'recruit',
+				status: "recruit",
 				is_restarting: false,
 				is_finishing: false,
 			};
@@ -99,7 +99,7 @@ export class Group {
 		const game: Game = await Game.createInstance(this.groupId);
 		await game.deleteUsersGroupId();
 
-		await this.updateStatus('recruit');
+		await this.updateStatus("recruit");
 		await this.updateIsRestarting(false);
 		await this.updateIsFinishing(false);
 	}
@@ -113,7 +113,7 @@ export class Group {
 	 */
 	async updateStatus(status: string): Promise<void> {
 		this.status = status;
-		await aws.dynamoUpdate(groupTable, this.groupKey, 'status', this.status);
+		await aws.dynamoUpdate(groupTable, this.groupKey, "status", this.status);
 	}
 
 	/**
@@ -124,7 +124,7 @@ export class Group {
 	 */
 	async updateIsRestarting(bool: boolean): Promise<void> {
 		this.isRestarting = bool;
-		await aws.dynamoUpdate(groupTable, this.groupKey, 'is_restarting', this.isRestarting);
+		await aws.dynamoUpdate(groupTable, this.groupKey, "is_restarting", this.isRestarting);
 	}
 
 	/**
@@ -135,7 +135,7 @@ export class Group {
 	 */
 	async updateIsFinishing(bool: boolean): Promise<void> {
 		this.isFinishing = bool;
-		await aws.dynamoUpdate(groupTable, this.groupKey, 'is_finishing', this.isFinishing);
+		await aws.dynamoUpdate(groupTable, this.groupKey, "is_finishing", this.isFinishing);
 	}
 
 	/**
@@ -147,7 +147,7 @@ export class Group {
 	 * @memberof Group
 	 */
 	async finishGroup(): Promise<void> {
-		await this.updateStatus('finish');
+		await this.updateStatus("finish");
 		await this.updateIsRestarting(false);
 		await this.updateIsFinishing(false);
 

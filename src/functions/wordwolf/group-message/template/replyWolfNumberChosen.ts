@@ -1,15 +1,15 @@
-import line = require('@line/bot-sdk');
-import wordwolf = require('../../../../modules/wordwolf');
+import line = require("@line/bot-sdk");
+import wordwolf = require("../../../../modules/wordwolf");
 
 export const main = async (wolfNumber: number, lunaticNumberOptions: number[]): Promise<line.Message[]> => {
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `ウルフは${wolfNumber}人ですね！`,
 		},
 		{
-			type: 'flex',
-			altText: '狂人の人数候補',
+			type: "flex",
+			altText: "狂人の人数候補",
 			contents: await wordwolf.lunaticNumberMessage(lunaticNumberOptions),
 		},
 	];

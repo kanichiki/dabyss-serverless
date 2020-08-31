@@ -1,7 +1,7 @@
-import line = require('@line/bot-sdk');
+import line = require("@line/bot-sdk");
 
 export const main = async (displayNames: string[], positions: string[]): Promise<line.Message[]> => {
-	let positionMessages = '役職一覧\n\n';
+	let positionMessages = "役職一覧\n\n";
 
 	for (let i = 0; i < displayNames.length; i++) {
 		const positionMessage = `・${displayNames[i]} : ${positions[i]}\n`;
@@ -10,50 +10,50 @@ export const main = async (displayNames: string[], positions: string[]): Promise
 
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: positionMessages,
 		},
 		{
-			type: 'flex',
-			altText: 'ゲーム終了',
+			type: "flex",
+			altText: "ゲーム終了",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				body: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'text',
-							text: 'サービス向上のためフィードバックにご協力ください！',
+							type: "text",
+							text: "サービス向上のためフィードバックにご協力ください！",
 							wrap: true,
 						},
 					],
 				},
 				footer: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'button',
+							type: "button",
 							action: {
-								type: 'uri',
-								label: 'フィードバックを書く',
-								uri: 'https://forms.gle/kGHqE924ACYQmTKj7',
+								type: "uri",
+								label: "フィードバックを書く",
+								uri: "https://forms.gle/kGHqE924ACYQmTKj7",
 								altUri: {
-									desktop: 'https://forms.gle/kGHqE924ACYQmTKj7',
+									desktop: "https://forms.gle/kGHqE924ACYQmTKj7",
 								},
 							},
-							color: '#e83b10',
-							style: 'primary',
+							color: "#e83b10",
+							style: "primary",
 						},
 						{
-							type: 'button',
+							type: "button",
 							action: {
-								type: 'message',
-								label: 'ゲーム一覧',
-								text: 'ゲーム一覧',
+								type: "message",
+								label: "ゲーム一覧",
+								text: "ゲーム一覧",
 							},
-							color: '#e83b10',
+							color: "#e83b10",
 						},
 					],
 				},

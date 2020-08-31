@@ -1,5 +1,5 @@
-import * as aws from '../clients/awsClient';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import * as aws from "../clients/awsClient";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const actionTable = process.env.actionTable;
 
@@ -114,7 +114,7 @@ export class Action {
 	 */
 	async updateActionStateTrue(index: number): Promise<void> {
 		this.actionStatus[index] = true;
-		await aws.dynamoUpdate(actionTable, this.actionKey, 'action_status', this.actionStatus);
+		await aws.dynamoUpdate(actionTable, this.actionKey, "action_status", this.actionStatus);
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class Action {
 	 */
 	async updateTarget(index: number, target: number): Promise<void> {
 		this.targets[index] = target;
-		await aws.dynamoUpdate(actionTable, this.actionKey, 'targets', this.targets);
+		await aws.dynamoUpdate(actionTable, this.actionKey, "targets", this.targets);
 	}
 
 	/**

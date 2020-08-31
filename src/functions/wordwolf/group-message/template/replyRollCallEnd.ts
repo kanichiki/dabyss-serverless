@@ -1,5 +1,5 @@
-import line = require('@line/bot-sdk');
-import wordwolf = require('../../../../modules/wordwolf');
+import line = require("@line/bot-sdk");
+import wordwolf = require("../../../../modules/wordwolf");
 
 /* ジャンル
 exports.main = async (displayNames, genres) => {
@@ -82,20 +82,20 @@ export const main = async (displayNames: string[]): Promise<line.Message[]> => {
 	//     depthMessages.push(depthMessage);
 	// }
 
-	const displayNamesSan: string = displayNames.join('さん、\n');
+	const displayNamesSan: string = displayNames.join("さん、\n");
 
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `参加受付を終了します\n\n参加者は\n\n${displayNamesSan}さん\n\nです！`,
 		},
 		{
-			type: 'text',
+			type: "text",
 			text: `ゲームを途中で終了する際は「強制終了」と発言してください`,
 		},
 		{
-			type: 'flex',
-			altText: 'ワードの難易度',
+			type: "flex",
+			altText: "ワードの難易度",
 			contents: await wordwolf.depthOptionsMessage(),
 		},
 	];

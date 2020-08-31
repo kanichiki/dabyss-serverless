@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import wordwolf = require('../../../modules/wordwolf');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import wordwolf = require("../../../modules/wordwolf");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -21,21 +21,21 @@ exports.handler = async (event: any): Promise<void> => {
 	const source: line.EventSource = lineEvent.source;
 
 	let groupId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
 	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 
-	if (status == 'setting') {
+	if (status == "setting") {
 		const settingNames = wordWolf.settingNames;
 		const settingStatus = wordWolf.settingStatus;
 		for (let i = 0; i < settingNames.length; i++) {
 			if (!settingStatus[i]) {
-				if (settingNames[i] == 'timer') {
+				if (settingNames[i] == "timer") {
 					return replyTimerChosen(wordWolf, time, replyToken);
 				}
 			}
@@ -46,7 +46,7 @@ exports.handler = async (event: any): Promise<void> => {
 const replyTimerChosen = async (wordWolf: wordwolf.WordWolf, time: string, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	const settingIndex = await wordWolf.getSettingIndex('timer');
+	const settingIndex = await wordWolf.getSettingIndex("timer");
 
 	promises.push(wordWolf.updateTimer(time));
 	await wordWolf.updateSettingStateTrue(settingIndex);
@@ -64,7 +64,7 @@ const replyConfirm = async (wordWolf: wordwolf.WordWolf, replyToken: string): Pr
 	const lunaticNumber: number = wordWolf.lunaticIndexes.length;
 	const timerString: string = await wordWolf.getTimerString();
 
-	const replyMessage = await import('./template/replyChanged');
+	const replyMessage = await import("./template/replyChanged");
 	await dabyss.replyMessage(
 		replyToken,
 		await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timerString)

@@ -1,6 +1,6 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
-import jinro_module = require('../../../../modules/jinro');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../../modules/dabyss");
+import jinro_module = require("../../../../modules/jinro");
 
 export const main = async (
 	displayName: string,
@@ -11,23 +11,23 @@ export const main = async (
 	targetUserIndexes: number[],
 	targetDeadUserIndexes: number[]
 ): Promise<line.Message[]> => {
-	let actionMessage = '';
+	let actionMessage = "";
 	const targetMessages: line.FlexComponent[] = [
 		{
-			type: 'spacer',
+			type: "spacer",
 		},
 	];
 
 	if (position == jinro_module.werewolf) {
 		if (!isAlive) {
-			actionMessage = '死んでいるため行動できません';
+			actionMessage = "死んでいるため行動できません";
 		} else {
-			actionMessage = '噛む人を選んでください';
+			actionMessage = "噛む人を選んでください";
 			for (let i = 0; i < targetAliveDisplayNames.length; i++) {
 				const targetMessage: line.FlexButton = {
-					type: 'button',
+					type: "button",
 					action: {
-						type: 'postback',
+						type: "postback",
 						label: targetAliveDisplayNames[i],
 						data: targetUserIndexes[i].toString(),
 					},
@@ -38,14 +38,14 @@ export const main = async (
 		}
 	} else if (position == jinro_module.forecaster) {
 		if (!isAlive) {
-			actionMessage = '死んでいるため行動できません';
+			actionMessage = "死んでいるため行動できません";
 		} else {
-			actionMessage = '占う人を選んでください';
+			actionMessage = "占う人を選んでください";
 			for (let i = 0; i < targetAliveDisplayNames.length; i++) {
 				const targetMessage: line.FlexButton = {
-					type: 'button',
+					type: "button",
 					action: {
-						type: 'postback',
+						type: "postback",
 						label: targetAliveDisplayNames[i],
 						data: targetUserIndexes[i].toString(),
 					},
@@ -56,17 +56,17 @@ export const main = async (
 		}
 	} else if (position == jinro_module.psychic) {
 		if (!isAlive) {
-			actionMessage = '死んでいるため行動できません';
+			actionMessage = "死んでいるため行動できません";
 		} else {
 			if (!targetDeadDisplayNames) {
-				actionMessage = '死んでいる人がいないため、霊媒できません';
+				actionMessage = "死んでいる人がいないため、霊媒できません";
 			} else {
-				actionMessage = '霊媒先を選んでください';
+				actionMessage = "霊媒先を選んでください";
 				for (let i = 0; i < targetDeadDisplayNames.length; i++) {
 					const targetMessage: line.FlexButton = {
-						type: 'button',
+						type: "button",
 						action: {
-							type: 'postback',
+							type: "postback",
 							label: targetDeadDisplayNames[i],
 							data: targetDeadUserIndexes[i].toString(),
 						},
@@ -78,17 +78,17 @@ export const main = async (
 		}
 	} else if (position == jinro_module.hunter) {
 		if (!isAlive) {
-			actionMessage = '死んでいるため行動できません';
+			actionMessage = "死んでいるため行動できません";
 		} else {
 			if (!targetAliveDisplayNames) {
-				actionMessage = 'だれも守るひとがいません';
+				actionMessage = "だれも守るひとがいません";
 			} else {
-				actionMessage = '守るひとを選んでください';
+				actionMessage = "守るひとを選んでください";
 				for (let i = 0; i < targetAliveDisplayNames.length; i++) {
 					const targetMessage: line.FlexButton = {
-						type: 'button',
+						type: "button",
 						action: {
-							type: 'postback',
+							type: "postback",
 							label: targetAliveDisplayNames[i],
 							data: targetUserIndexes[i].toString(),
 						},
@@ -99,56 +99,56 @@ export const main = async (
 			}
 		}
 	} else {
-		actionMessage = 'アクションはありません';
+		actionMessage = "アクションはありません";
 	}
 
 	return [
 		{
-			type: 'flex',
-			altText: 'アクション',
+			type: "flex",
+			altText: "アクション",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				body: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'box',
-							layout: 'vertical',
+							type: "box",
+							layout: "vertical",
 							contents: [
 								{
-									type: 'text',
-									text: 'text',
-									size: 'md',
+									type: "text",
+									text: "text",
+									size: "md",
 									contents: [
 										{
-											type: 'span',
+											type: "span",
 											text: `${displayName}さんの役職は『`,
 										},
 										{
-											type: 'span',
+											type: "span",
 											text: position,
-											weight: 'bold',
+											weight: "bold",
 											color: dabyss.mainColor,
 										},
 										{
-											type: 'span',
-											text: '』です',
+											type: "span",
+											text: "』です",
 										},
 									],
 									wrap: true,
 								},
 								{
-									type: 'text',
+									type: "text",
 									text: actionMessage,
-									size: 'md',
+									size: "md",
 									wrap: true,
 								},
 							],
 						},
 						{
-							type: 'box',
-							layout: 'vertical',
+							type: "box",
+							layout: "vertical",
 							contents: targetMessages,
 						},
 					],

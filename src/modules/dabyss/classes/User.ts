@@ -1,6 +1,6 @@
-import * as aws from '../clients/awsClient';
-import * as line from '../clients/lineClient';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import * as aws from "../clients/awsClient";
+import * as line from "../clients/lineClient";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const userTable = process.env.userTable;
 
@@ -31,7 +31,7 @@ export class User {
 			user_id: userId,
 		};
 		this.exists = false;
-		this.groupId = '';
+		this.groupId = "";
 		this.isRestarting = false;
 	}
 
@@ -42,7 +42,7 @@ export class User {
 	 * @memberof User
 	 */
 	async init(): Promise<void> {
-		const data: DocumentClient.QueryOutput = await aws.dynamoQuery(userTable, 'user_id', this.userId, false);
+		const data: DocumentClient.QueryOutput = await aws.dynamoQuery(userTable, "user_id", this.userId, false);
 		if (data.Count != undefined) {
 			if (data.Count > 0) {
 				this.exists = true;
@@ -77,7 +77,7 @@ export class User {
 	 */
 	async hasGroupId(): Promise<boolean> {
 		let res = true;
-		if (this.groupId == 'none' || this.groupId == undefined) {
+		if (this.groupId == "none" || this.groupId == undefined) {
 			res = false;
 		}
 		return res;
@@ -108,7 +108,7 @@ export class User {
 	 */
 	async updateGroupId(groupId: string): Promise<void> {
 		this.groupId = groupId;
-		await aws.dynamoUpdate(userTable, this.userKey, 'group_id', this.groupId);
+		await aws.dynamoUpdate(userTable, this.userKey, "group_id", this.groupId);
 	}
 
 	/**
@@ -118,8 +118,8 @@ export class User {
 	 * @memberof User
 	 */
 	async deleteGroupId(): Promise<void> {
-		this.groupId = 'none';
-		await aws.dynamoUpdate(userTable, this.userKey, 'group_id', this.groupId);
+		this.groupId = "none";
+		await aws.dynamoUpdate(userTable, this.userKey, "group_id", this.groupId);
 	}
 
 	/**
@@ -130,7 +130,7 @@ export class User {
 	 */
 	async updateIsRestarting(bool: boolean): Promise<void> {
 		this.isRestarting = bool;
-		aws.dynamoUpdate(userTable, this.userKey, 'is_restarting', this.isRestarting);
+		aws.dynamoUpdate(userTable, this.userKey, "is_restarting", this.isRestarting);
 	}
 
 	/**

@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../modules/dabyss');
-import wordwolf = require('../../../modules/wordwolf');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../modules/dabyss");
+import wordwolf = require("../../../modules/wordwolf");
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -17,9 +17,9 @@ exports.handler = async (event: any): Promise<void> => {
 
 	let groupId!: string;
 	let userId!: string;
-	if (source.type == 'group') {
+	if (source.type == "group") {
 		groupId = source.groupId;
-	} else if (source.type == 'room') {
+	} else if (source.type == "room") {
 		groupId = source.roomId; // roomIdもgroupId扱いしよう
 	}
 
@@ -30,14 +30,14 @@ exports.handler = async (event: any): Promise<void> => {
 	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 
-	if (status == 'discuss') {
+	if (status == "discuss") {
 		await wordWolf.setDiscussion();
-		if (postbackData == '残り時間') {
+		if (postbackData == "残り時間") {
 			return replyRemainingTime(wordWolf, replyToken);
 		}
 	}
 
-	if (status == 'vote') {
+	if (status == "vote") {
 		await wordWolf.setVote();
 
 		const userIndex: number = await wordWolf.getUserIndexFromUserId(userId);
@@ -68,7 +68,7 @@ exports.handler = async (event: any): Promise<void> => {
 const replyRemainingTime = async (wordWolf: wordwolf.WordWolf, replyToken: string): Promise<void> => {
 	const remainingTime = await wordWolf.getRemainingTime();
 
-	const replyMessage = await import('./template/replyRemainingTime');
+	const replyMessage = await import("./template/replyRemainingTime");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(remainingTime));
 };
 
@@ -96,16 +96,16 @@ const replyVoteSuccess = async (
 			const executorDisplayName: string = await wordWolf.getDisplayName(mostVotedUserIndex);
 			const isExecutorWolf: boolean = await wordWolf.isUserWolf(mostVotedUserIndex); // 処刑者がウルフかどうか
 
-			promises.push(wordWolf.updateGameStatus('winner')); // 勝者発表状況をtrueにする
+			promises.push(wordWolf.updateGameStatus("winner")); // 勝者発表状況をtrueにする
 			if (isExecutorWolf) {
-				promises.push(wordWolf.updateWinner('citizen'));
+				promises.push(wordWolf.updateWinner("citizen"));
 			} else {
-				promises.push(wordWolf.updateWinner('wolf'));
+				promises.push(wordWolf.updateWinner("wolf"));
 			}
 			const displayNames: string[] = await wordWolf.getDisplayNames();
 			const isWinnerArray: boolean[] = await wordWolf.isWinnerArray();
 
-			const replyMessage = await import('./template/replyAnnounceWinner');
+			const replyMessage = await import("./template/replyAnnounceWinner");
 			promises.push(
 				dabyss.replyMessage(
 					replyToken,
@@ -135,7 +135,7 @@ const replyVoteSuccess = async (
 
 				const displayNames: string[] = await wordWolf.getDisplayNamesFromIndexes(shuffleMostVotedUserIndexes);
 
-				const replyMessage = await import('./template/replyRevote');
+				const replyMessage = await import("./template/replyRevote");
 				promises.push(
 					dabyss.replyMessage(
 						replyToken,
@@ -147,16 +147,16 @@ const replyVoteSuccess = async (
 				const executorDisplayName = await wordWolf.getDisplayName(executorIndex);
 				const isExecutorWolf = await wordWolf.isUserWolf(executorIndex); // 処刑者がウルフかどうか
 
-				promises.push(wordWolf.updateGameStatus('winner'));
+				promises.push(wordWolf.updateGameStatus("winner"));
 				if (isExecutorWolf) {
-					promises.push(wordWolf.updateWinner('citizen'));
+					promises.push(wordWolf.updateWinner("citizen"));
 				} else {
-					promises.push(wordWolf.updateWinner('wolf'));
+					promises.push(wordWolf.updateWinner("wolf"));
 				}
 				const displayNames = await wordWolf.getDisplayNames();
 				const isWinnerArray = await wordWolf.isWinnerArray();
 
-				const replyMessage = await import('./template/replyAnnounceWinnerInRevote');
+				const replyMessage = await import("./template/replyAnnounceWinnerInRevote");
 				promises.push(
 					dabyss.replyMessage(
 						replyToken,
@@ -172,7 +172,7 @@ const replyVoteSuccess = async (
 			}
 		}
 	} else {
-		const replyMessage = await import('./template/replyVoteSuccess');
+		const replyMessage = await import("./template/replyVoteSuccess");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(voterDisplayName)));
 	}
 
@@ -181,7 +181,7 @@ const replyVoteSuccess = async (
 };
 
 const replySelfVote = async (replyToken: string): Promise<void> => {
-	const replyMessage = await import('./template/replySelfVote');
+	const replyMessage = await import("./template/replySelfVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
@@ -191,6 +191,6 @@ const replyDuplicateVote = async (
 	replyToken: string
 ): Promise<void> => {
 	const displayName = await wordWolf.getDisplayName(userIndex);
-	const replyMessage = await import('./template/replyDuplicateVote');
+	const replyMessage = await import("./template/replyDuplicateVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
 };

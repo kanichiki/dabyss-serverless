@@ -1,7 +1,7 @@
-import dabyss = require('../../dabyss');
-import { Craziness } from './Craziness';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import { Action } from '../../dabyss';
+import dabyss = require("../../dabyss");
+import { Craziness } from "./Craziness";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { Action } from "../../dabyss";
 
 const gameTable = process.env.gameTable;
 
@@ -36,18 +36,18 @@ export class CrazyNoisy extends dabyss.Game {
 	 */
 	constructor(groupId: string) {
 		super(groupId);
-		this.settingNames = ['mode', 'type', 'timer'];
+		this.settingNames = ["mode", "type", "timer"];
 		this.defaultSettingStatus = [false, false, true];
 
 		this.positionNames = {
-			guru: '教祖',
-			fanatic: '狂信者',
-			detective: '探偵',
-			citizen: '市民',
-			sp: '用心棒',
+			guru: "教祖",
+			fanatic: "狂信者",
+			detective: "探偵",
+			citizen: "市民",
+			sp: "用心棒",
 		};
 
-		this.gameMode = '';
+		this.gameMode = "";
 		this.talkType = -1;
 		this.zeroDetective = false;
 		this.zeroGuru = false;
@@ -66,7 +66,7 @@ export class CrazyNoisy extends dabyss.Game {
 		try {
 			const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(
 				gameTable,
-				'group_id',
+				"group_id",
 				this.groupId,
 				false
 			);
@@ -108,7 +108,7 @@ export class CrazyNoisy extends dabyss.Game {
 			}
 		} catch (err) {
 			console.error(err);
-			console.error('gameの初期化失敗');
+			console.error("gameの初期化失敗");
 		}
 	}
 
@@ -196,7 +196,7 @@ export class CrazyNoisy extends dabyss.Game {
 			}
 		}
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'positions', this.positions);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "positions", this.positions);
 	}
 
 	async getPosition(userIndex: number): Promise<string> {
@@ -206,22 +206,22 @@ export class CrazyNoisy extends dabyss.Game {
 
 	async updateGameMode(mode: string): Promise<void> {
 		this.gameMode = mode;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'game_mode', this.gameMode);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "game_mode", this.gameMode);
 	}
 
 	async updateTalkType(type: number): Promise<void> {
 		this.talkType = type;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'talk_type', this.talkType);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "talk_type", this.talkType);
 	}
 
 	async switchZeroGuru(): Promise<void> {
 		this.zeroGuru = !this.zeroGuru;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'zero_guru', this.zeroGuru);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "zero_guru", this.zeroGuru);
 	}
 
 	async switchZeroDetective(): Promise<void> {
 		this.zeroDetective = !this.zeroDetective;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'zero_detective', this.zeroDetective);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "zero_detective", this.zeroDetective);
 	}
 
 	async updateDefaultBrainwashStatus(): Promise<void> {
@@ -233,7 +233,7 @@ export class CrazyNoisy extends dabyss.Game {
 				this.brainwashStatus[i] = false;
 			}
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'brainwash_status', this.brainwashStatus);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "brainwash_status", this.brainwashStatus);
 	}
 
 	async isBrainwash(index: number): Promise<boolean> {
@@ -258,7 +258,7 @@ export class CrazyNoisy extends dabyss.Game {
 
 	async updateBrainwashStateTrue(index: number): Promise<void> {
 		this.brainwashStatus[index] = true;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'brainwash_status', this.brainwashStatus);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "brainwash_status", this.brainwashStatus);
 	}
 
 	async chooseCrazinessId(type: number): Promise<number> {
@@ -276,7 +276,7 @@ export class CrazyNoisy extends dabyss.Game {
 				this.crazinessIds[i].push(crazinessId);
 			}
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'craziness_ids', this.crazinessIds);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "craziness_ids", this.crazinessIds);
 	}
 
 	async updateDefaultCrazinessIdsInDemo(): Promise<void> {
@@ -287,7 +287,7 @@ export class CrazyNoisy extends dabyss.Game {
 			const crazinessId = await this.chooseCrazinessId(this.talkType);
 			this.crazinessIds[i].push(crazinessId);
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'craziness_ids', this.crazinessIds);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "craziness_ids", this.crazinessIds);
 	}
 
 	async addCrazinessId(index: number): Promise<void> {
@@ -304,7 +304,7 @@ export class CrazyNoisy extends dabyss.Game {
 			status = true;
 		}
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, 'craziness_ids', this.crazinessIds);
+		dabyss.dynamoUpdate(gameTable, this.gameKey, "craziness_ids", this.crazinessIds);
 	}
 
 	async isGuru(index: number): Promise<boolean> {
@@ -315,7 +315,7 @@ export class CrazyNoisy extends dabyss.Game {
 	async getWinnerIndexes() {
 		const res: number[] = [];
 		for (let i = 0; i < this.positions.length; i++) {
-			if (this.winner == 'guru') {
+			if (this.winner == "guru") {
 				// 教団陣営勝利なら
 				if (this.positions[i] == this.positionNames.guru || this.positions[i] == this.positionNames.fanatic) {
 					res.push(i);

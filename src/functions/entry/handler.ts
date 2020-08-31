@@ -1,8 +1,8 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../modules/dabyss');
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import line = require("@line/bot-sdk");
+import dabyss = require("../../modules/dabyss");
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
 	console.log(err);
 });
 
@@ -17,10 +17,10 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 
 	const replyToken: string = lineEvent.replyToken;
 	const eventTable = process.env.eventTable;
-	const data = await dabyss.dynamoQuery(eventTable, 'reply_token', replyToken);
+	const data = await dabyss.dynamoQuery(eventTable, "reply_token", replyToken);
 	if (data.Count == 1) {
-		console.log('duplicate event');
-		return { game: 'none' };
+		console.log("duplicate event");
+		return { game: "none" };
 	} else {
 		console.log(lineEvent);
 		const item: DocumentClient.AttributeMap = {
@@ -43,21 +43,21 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 
 		// TODO 友達追加されていないユーザーの場合の分岐
 		if (isFriend) {
-			if (lineEvent.type == 'message') {
-				if (lineEvent.message.type == 'text') {
+			if (lineEvent.type == "message") {
+				if (lineEvent.message.type == "text") {
 					// テキストメッセージイベントなら
 					const text: string = lineEvent.message.text;
 
-					if (lineEvent.source.type == 'group' || lineEvent.source.type == 'room') {
+					if (lineEvent.source.type == "group" || lineEvent.source.type == "room") {
 						let groupId!: string;
-						if (lineEvent.source.type == 'group') {
+						if (lineEvent.source.type == "group") {
 							groupId = lineEvent.source.groupId;
-						} else if (lineEvent.source.type == 'room') {
+						} else if (lineEvent.source.type == "room") {
 							groupId = lineEvent.source.roomId; // roomIdもgroupId扱いしよう
 						}
 						const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
 
-						if (text == 'ゲーム一覧') {
+						if (text == "ゲーム一覧") {
 							return replyGameList(replyToken);
 						}
 
@@ -70,11 +70,11 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 								const isRestarting: boolean = group.isRestarting;
 								if (!isRestarting) {
 									const status: string = group.status;
-									if (status == 'recruit') {
+									if (status == "recruit") {
 										// 参加者募集中のゲームがあるが新しくゲームの参加者を募集するかどうかを聞く旨のリプライを返す
 										return replyRestartConfirmIfRecruiting(group, replyToken);
 									}
-									if (status == 'play') {
+									if (status == "play") {
 										const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 										const isUserParticipate: boolean = await game.isUserExists(userId);
 										if (isUserParticipate) {
@@ -96,11 +96,11 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 
 								await group.updateIsRestarting(false); // 発言グループのリスタート待ちを解除
 
-								if (status == 'recruit') {
+								if (status == "recruit") {
 									// 参加者募集中の場合
 									const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 
-									if (text == '参加') {
+									if (text == "参加") {
 										if (isUser) {
 											// ユーザーテーブルにデータがあるか
 											const hasGroupId: boolean = await user.hasGroupId();
@@ -129,7 +129,7 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 									if (isUserParticipate) {
 										// 参加受付を終了できるのは参加済みの者のみ
 
-										if (text == '受付終了') {
+										if (text == "受付終了") {
 											const userNumber: number = await game.getUserNumber();
 											const minNumber: number = await game.getMinNumber();
 											if (userNumber < minNumber) {
@@ -139,13 +139,13 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 												// 参加受付終了の意思表明に対するリプライ
 												// 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
 												const gameName: string = game.gameName;
-												return { game: gameName, eventType: 'groupMessage', event: lineEvent };
+												return { game: gameName, eventType: "groupMessage", event: lineEvent };
 											}
 										}
 									}
 								}
 
-								if (status == 'play') {
+								if (status == "play") {
 									// プレイ中の場合
 									const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 
@@ -158,7 +158,7 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 										//     }
 
 										const gameName = game.gameName;
-										return { game: gameName, eventType: 'groupMessage', event: lineEvent };
+										return { game: gameName, eventType: "groupMessage", event: lineEvent };
 										//     if (gameId == 2) { // プレイするゲームがクレイジーノイジーの場合
 
 										//         await crazyNoisyBranch.playingMessageBranch(plId, text, replyToken);
@@ -173,7 +173,7 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 						}
 
 						// await replyDefaultGroupMessage(lineEvent));
-					} else if (lineEvent.source.type == 'user') {
+					} else if (lineEvent.source.type == "user") {
 						// const hasPlId = await user.hasPlId();
 						// if (hasPlId) { // 参加中の参加者リストがあるなら
 						//     const plId = await user.getPlid();
@@ -186,12 +186,12 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 					}
 				}
 			}
-			if (lineEvent.type == 'postback') {
-				if (lineEvent.source.type == 'group' || lineEvent.source.type == 'room') {
-					let groupId = '';
-					if (lineEvent.source.type == 'group') {
+			if (lineEvent.type == "postback") {
+				if (lineEvent.source.type == "group" || lineEvent.source.type == "room") {
+					let groupId = "";
+					if (lineEvent.source.type == "group") {
 						groupId = lineEvent.source.groupId;
-					} else if (lineEvent.source.type == 'room') {
+					} else if (lineEvent.source.type == "room") {
 						groupId = lineEvent.source.roomId; // roomIdもgroupId扱いしよう
 					}
 
@@ -200,34 +200,34 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 
 					if (groupExists) {
 						const status = group.status;
-						if (status == 'play') {
+						if (status == "play") {
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 							const isUserParticipate: boolean = await game.isUserExists(userId);
 							if (isUserParticipate) {
 								if (lineEvent.postback.params != undefined) {
 									const gameName = game.gameName;
-									return { game: gameName, eventType: 'groupDatetimepicker', event: lineEvent };
+									return { game: gameName, eventType: "groupDatetimepicker", event: lineEvent };
 								} else {
 									const gameName = game.gameName;
-									return { game: gameName, eventType: 'groupPostback', event: lineEvent };
+									return { game: gameName, eventType: "groupPostback", event: lineEvent };
 								}
 							}
 						}
 					}
 				}
-				if (lineEvent.source.type == 'user') {
+				if (lineEvent.source.type == "user") {
 					const groupId: string = user.groupId;
 					const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
 					const groupExists: boolean = group.exists;
 
 					if (groupExists) {
 						const status: string = group.status;
-						if (status == 'play') {
+						if (status == "play") {
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 							const isUserParticipate: boolean = await game.isUserExists(userId);
 							if (isUserParticipate) {
 								const gameName = game.gameName;
-								return { game: gameName, eventType: 'userPostback', event: lineEvent };
+								return { game: gameName, eventType: "userPostback", event: lineEvent };
 							}
 						}
 					}
@@ -236,7 +236,7 @@ exports.handler = async (event: any): Promise<StateOutput> => {
 		}
 	}
 
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 /**
@@ -245,15 +245,15 @@ exports.handler = async (event: any): Promise<StateOutput> => {
  * @param {*} replyToken
  */
 const replyGameList = async (replyToken: string): Promise<StateOutput> => {
-	const replyMessage = await import('./template/replyGameList');
+	const replyMessage = await import("./template/replyGameList");
 	await dabyss.replyMessage(replyToken, await replyMessage.main());
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyRollCall = async (group: dabyss.Group, text: string, replyToken: string): Promise<StateOutput> => {
 	const promises: Promise<void>[] = [];
 
-	const replyMessage = await import('./template/replyRollCall');
+	const replyMessage = await import("./template/replyRollCall");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(text)));
 
 	if (group.exists) {
@@ -266,7 +266,7 @@ const replyRollCall = async (group: dabyss.Group, text: string, replyToken: stri
 	promises.push(game.putGame(text));
 
 	await Promise.all(promises);
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyParticipate = async (game: dabyss.Game, user: dabyss.User, replyToken: string): Promise<StateOutput> => {
@@ -284,7 +284,7 @@ const replyParticipate = async (game: dabyss.Game, user: dabyss.User, replyToken
 			const displayNames: string[] = await game.getDisplayNames(); // 参加者リストのユーザー全員の表示名の配列
 			displayNames.push(displayName);
 			const gameName = await game.getJpGameName();
-			const replyMessage = await import('./template/replyParticipate');
+			const replyMessage = await import("./template/replyParticipate");
 			promises.push(
 				dabyss.replyMessage(replyToken, await replyMessage.main(gameName, displayName, displayNames))
 			);
@@ -309,7 +309,7 @@ const replyParticipate = async (game: dabyss.Game, user: dabyss.User, replyToken
 							promises.push(oldGroup.finishGroup());
 
 							try {
-								const pushMessage = await import('./template/pushGameFinish');
+								const pushMessage = await import("./template/pushGameFinish");
 								// 終了したゲームのグループにその旨を送る
 								promises.push(dabyss.pushMessage(oldGroupId, await pushMessage.main()));
 							} catch (err) {
@@ -325,16 +325,16 @@ const replyParticipate = async (game: dabyss.Game, user: dabyss.User, replyToken
 			}
 		} else {
 			// 同じ名前のユーザーが存在するなら
-			const replyMessage = await import('./template/replyDisplayNameExists');
+			const replyMessage = await import("./template/replyDisplayNameExists");
 			promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 		}
 	} else {
 		// 既に参加していた場合
-		const replyMessage = await import('./template/replyAlreadyParticipate');
+		const replyMessage = await import("./template/replyAlreadyParticipate");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 	}
 	await Promise.all(promises);
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyParticipateConfirm = async (user: dabyss.User, replyToken: string): Promise<StateOutput> => {
@@ -343,11 +343,11 @@ const replyParticipateConfirm = async (user: dabyss.User, replyToken: string): P
 	promises.push(user.updateIsRestarting(true)); // 確認状況をtrueにする
 	const displayName = await user.getDisplayName();
 
-	const replyMessage = await import('./template/replyParticipateConfirm');
+	const replyMessage = await import("./template/replyParticipateConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 
 	await Promise.all(promises);
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, replyToken: string): Promise<StateOutput> => {
@@ -361,11 +361,11 @@ const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, replyToken: 
 
 	// 一応newGameNameも渡すがまだ使ってない
 	// TODO is_restartingをrestart_game_idに変更する
-	const replyMessage = await import('./template/replyRestartConfirmIfRecruiting');
+	const replyMessage = await import("./template/replyRestartConfirmIfRecruiting");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(recruitingGameName)));
 
 	await Promise.all(promises);
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyRestartConfirmIfPlaying = async (group: dabyss.Group, replyToken: string): Promise<StateOutput> => {
@@ -378,11 +378,11 @@ const replyRestartConfirmIfPlaying = async (group: dabyss.Group, replyToken: str
 	const playingGameName = await game.getJpGameName();
 
 	// 一応newGameNameも渡すがまだ使ってない
-	const replyMessage = await import('./template/replyRestartConfirmIfPlaying');
+	const replyMessage = await import("./template/replyRestartConfirmIfPlaying");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(playingGameName)));
 
 	await Promise.all(promises);
-	return { game: 'none' };
+	return { game: "none" };
 };
 
 const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Promise<StateOutput> => {
@@ -390,7 +390,7 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 	const recruitingGameName = game.gameName;
 	const minNumber = await game.getMinNumber();
 
-	const replyMessage = await import('./template/replyTooFewParticipant');
+	const replyMessage = await import("./template/replyTooFewParticipant");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, recruitingGameName, minNumber));
-	return { game: 'none' };
+	return { game: "none" };
 };

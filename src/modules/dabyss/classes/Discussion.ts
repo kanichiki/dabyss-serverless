@@ -1,6 +1,6 @@
-import * as aws from '../clients/awsClient';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
-import * as commonFunction from '../utils/commonFunction';
+import * as aws from "../clients/awsClient";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import * as commonFunction from "../utils/commonFunction";
 
 const discussionTable = process.env.discussionTable;
 
@@ -36,10 +36,10 @@ export class Discussion {
 			day: this.day,
 		};
 		this.groupId = groupId;
-		this.timer = '';
-		this.startTime = '';
-		this.endTime = '';
-		this.isDiscussing = '';
+		this.timer = "";
+		this.startTime = "";
+		this.endTime = "";
+		this.isDiscussing = "";
 	}
 
 	/**
@@ -60,7 +60,7 @@ export class Discussion {
 			}
 		} catch (err) {
 			console.error(err);
-			console.error('discussionの初期化失敗');
+			console.error("discussionの初期化失敗");
 		}
 	}
 
@@ -102,7 +102,7 @@ export class Discussion {
 				timer: timer,
 				start_time: startTime,
 				end_time: endTime,
-				is_discussing: 'discussing',
+				is_discussing: "discussing",
 			};
 
 			await aws.dynamoPut(discussionTable, item);
@@ -129,7 +129,7 @@ export class Discussion {
 	 * @memberof Discussion
 	 */
 	async updateIsDiscussingFalse(): Promise<void> {
-		this.isDiscussing = 'none';
-		await aws.dynamoUpdate(discussionTable, this.discussionKey, 'is_discussing', this.isDiscussing);
+		this.isDiscussing = "none";
+		await aws.dynamoUpdate(discussionTable, this.discussionKey, "is_discussing", this.isDiscussing);
 	}
 }

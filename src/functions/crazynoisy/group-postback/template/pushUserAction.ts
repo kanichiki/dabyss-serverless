@@ -1,6 +1,6 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
-import crazynoisy = require('../../../../modules/crazynoisy');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../../modules/dabyss");
+import crazynoisy = require("../../../../modules/crazynoisy");
 
 export const main = async (
 	displayName: string,
@@ -9,21 +9,21 @@ export const main = async (
 	targetDisplayNames: string[],
 	targetUserIndexes: number[]
 ): Promise<line.Message[]> => {
-	let actionMessage = '';
+	let actionMessage = "";
 	const targetMessages: line.FlexComponent[] = [
 		{
-			type: 'spacer',
+			type: "spacer",
 		},
 	];
 
 	if (position == crazynoisy.guru || position == crazynoisy.detective) {
 		if (position == crazynoisy.guru) {
-			actionMessage = '洗脳する人を選んでください';
+			actionMessage = "洗脳する人を選んでください";
 			for (let i = 0; i < targetDisplayNames.length; i++) {
 				const targetMessage: line.FlexButton = {
-					type: 'button',
+					type: "button",
 					action: {
-						type: 'postback',
+						type: "postback",
 						label: targetDisplayNames[i],
 						data: targetUserIndexes[i].toString(),
 					},
@@ -33,14 +33,14 @@ export const main = async (
 			}
 		} else {
 			if (isBrainwash) {
-				actionMessage = '狂っているため調査できません';
+				actionMessage = "狂っているため調査できません";
 			} else {
-				actionMessage = '調査する人を選んでください';
+				actionMessage = "調査する人を選んでください";
 				for (let i = 0; i < targetDisplayNames.length; i++) {
 					const targetMessage: line.FlexButton = {
-						type: 'button',
+						type: "button",
 						action: {
-							type: 'postback',
+							type: "postback",
 							label: targetDisplayNames[i],
 							data: targetUserIndexes[i].toString(),
 						},
@@ -51,56 +51,56 @@ export const main = async (
 			}
 		}
 	} else {
-		actionMessage = 'アクションはありません';
+		actionMessage = "アクションはありません";
 	}
 
 	return [
 		{
-			type: 'flex',
-			altText: 'アクション',
+			type: "flex",
+			altText: "アクション",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				body: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'box',
-							layout: 'vertical',
+							type: "box",
+							layout: "vertical",
 							contents: [
 								{
-									type: 'text',
-									text: 'text',
-									size: 'md',
+									type: "text",
+									text: "text",
+									size: "md",
 									contents: [
 										{
-											type: 'span',
+											type: "span",
 											text: `${displayName}さんの役職は『`,
 										},
 										{
-											type: 'span',
+											type: "span",
 											text: position,
-											weight: 'bold',
+											weight: "bold",
 											color: dabyss.mainColor,
 										},
 										{
-											type: 'span',
-											text: '』です',
+											type: "span",
+											text: "』です",
 										},
 									],
 									wrap: true,
 								},
 								{
-									type: 'text',
+									type: "text",
 									text: actionMessage,
-									size: 'md',
+									size: "md",
 									wrap: true,
 								},
 							],
 						},
 						{
-							type: 'box',
-							layout: 'vertical',
+							type: "box",
+							layout: "vertical",
 							contents: targetMessages,
 						},
 					],

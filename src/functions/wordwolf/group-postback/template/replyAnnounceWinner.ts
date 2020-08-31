@@ -1,5 +1,5 @@
-import line = require('@line/bot-sdk');
-import dabyss = require('../../../../modules/dabyss');
+import line = require("@line/bot-sdk");
+import dabyss = require("../../../../modules/dabyss");
 
 export const main = async (
 	voterDisplayName: string,
@@ -10,9 +10,9 @@ export const main = async (
 ): Promise<line.Message[]> => {
 	let message: string;
 	if (!isExecutorWolf) {
-		message = 'ウルフ側の勝利です！！';
+		message = "ウルフ側の勝利です！！";
 	} else {
-		message = '市民側の勝利です！！';
+		message = "市民側の勝利です！！";
 	}
 
 	const winners = [];
@@ -21,55 +21,55 @@ export const main = async (
 			winners.push(displayNames[i]);
 		}
 	}
-	const winnerMessage = winners.join('さん、');
+	const winnerMessage = winners.join("さん、");
 
 	return [
 		{
-			type: 'text',
+			type: "text",
 			text: `${voterDisplayName}さん、投票完了しました！`,
 		},
 		{
-			type: 'text',
+			type: "text",
 			text: `${executorDisplayName}さんが処刑されました`,
 		},
 		{
-			type: 'flex',
-			altText: '勝者',
+			type: "flex",
+			altText: "勝者",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				body: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'text',
+							type: "text",
 							text: message,
-							size: 'lg',
+							size: "lg",
 							wrap: true,
-							align: 'center',
+							align: "center",
 						},
 						{
-							type: 'separator',
-							margin: 'md',
+							type: "separator",
+							margin: "md",
 						},
 						{
-							type: 'text',
+							type: "text",
 							text: `勝者 : ${winnerMessage}さん`,
-							margin: 'md',
+							margin: "md",
 							wrap: true,
 						},
 					],
 				},
 				footer: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'button',
+							type: "button",
 							action: {
-								type: 'message',
-								label: 'ワードを見る',
-								text: 'ワードを見る',
+								type: "message",
+								label: "ワードを見る",
+								text: "ワードを見る",
 							},
 							color: dabyss.mainColor,
 						},

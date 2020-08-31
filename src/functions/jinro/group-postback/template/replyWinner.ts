@@ -1,4 +1,4 @@
-import line = require('@line/bot-sdk');
+import line = require("@line/bot-sdk");
 
 export const main = async (
 	displayNames: string[],
@@ -9,66 +9,66 @@ export const main = async (
 	for (const winnerIndex of winnerIndexes) {
 		winners.push(displayNames[winnerIndex]);
 	}
-	const winnerMessage = winners.join('さん、');
+	const winnerMessage = winners.join("さん、");
 
-	let message1 = '';
-	let message2 = '';
+	let message1 = "";
+	let message2 = "";
 	if (isWinnerWerewolf) {
-		message1 = '人狼の数が市民の数と並びました';
-		message2 = '人狼陣営の勝利です！！';
+		message1 = "人狼の数が市民の数と並びました";
+		message2 = "人狼陣営の勝利です！！";
 	} else {
-		message1 = 'すべての人狼を処刑しました';
-		message2 = '市民陣営の勝利です！！';
+		message1 = "すべての人狼を処刑しました";
+		message2 = "市民陣営の勝利です！！";
 	}
 
 	return [
 		{
-			type: 'flex',
-			altText: '勝者',
+			type: "flex",
+			altText: "勝者",
 			contents: {
-				type: 'bubble',
+				type: "bubble",
 				body: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'text',
+							type: "text",
 							text: message1,
-							size: 'md',
+							size: "md",
 							wrap: true,
-							align: 'center',
+							align: "center",
 						},
 						{
-							type: 'text',
+							type: "text",
 							text: message2,
-							size: 'lg',
+							size: "lg",
 							wrap: true,
-							align: 'center',
+							align: "center",
 						},
 						{
-							type: 'separator',
-							margin: 'md',
+							type: "separator",
+							margin: "md",
 						},
 						{
-							type: 'text',
+							type: "text",
 							text: `勝者 : ${winnerMessage}さん`,
-							margin: 'md',
+							margin: "md",
 							wrap: true,
 						},
 					],
 				},
 				footer: {
-					type: 'box',
-					layout: 'vertical',
+					type: "box",
+					layout: "vertical",
 					contents: [
 						{
-							type: 'button',
+							type: "button",
 							action: {
-								type: 'message',
-								label: '役職を見る',
-								text: '役職を見る',
+								type: "message",
+								label: "役職を見る",
+								text: "役職を見る",
 							},
-							color: '#E83b10',
+							color: "#E83b10",
 						},
 					],
 				},
