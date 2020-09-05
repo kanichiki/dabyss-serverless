@@ -57,6 +57,22 @@ export class JinroPlayer extends dabyss.User {
 			}
 		}
     }
+
+    /**
+	 * playerインスタンスを作る
+	 *
+	 * @static
+	 * @param {string} playerId
+	 * @returns {Promise<JinroPlayer>}
+	 * @memberof JinroPlayer
+	 */
+	static async createPlayerInstance(userId: string): Promise<JinroPlayer> {
+		const player: JinroPlayer = new JinroPlayer(userId);
+		await player.init();
+		return player;
+	}
+
+
     /**
 	 * playerデータ挿入
 	 *
