@@ -1,8 +1,10 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Action } from "../../dabyss";
+import { JinroPlayer } from "../classes/JinroPlayer"
 
 const gameTable = process.env.gameTable;
+const playerTable = process.env.gameTable;
 
 export interface PositionNumbers {
 	werewolf: number;
@@ -36,7 +38,6 @@ export class Jinro extends dabyss.Game {
 	positionNames: PositionNames;
 
 	talkType: number;
-	isAliveStatus: boolean[];
 
 	positionNumbers: PositionNumbers;
 
@@ -63,7 +64,6 @@ export class Jinro extends dabyss.Game {
 		};
 
 		this.talkType = -1;
-		this.isAliveStatus = [];
 
 		this.positionNumbers = {
 			werewolf: 0,
@@ -110,12 +110,6 @@ export class Jinro extends dabyss.Game {
 
 						this.talkType = game.talk_type as number;
 
-						if (game.positions) {
-							this.positions = game.positions as string[];
-						}
-						if (game.is_alive_status) {
-							this.isAliveStatus = game.is_alive_status as boolean[];
-						}
 						if (game.position_numbers) {
 							this.positionNumbers = game.position_numbers as PositionNumbers;
 						}
@@ -140,6 +134,20 @@ export class Jinro extends dabyss.Game {
 		const jinro: Jinro = new Jinro(groupId);
 		await jinro.init();
 		return jinro;
+	}
+
+	/**
+	 * playerインスタンス作成
+	 *
+	 * @static
+	 * @param {string} userId
+	 * @returns {Promise<JinroPlayer>}
+	 * @memberof Jinro
+	 */
+	static async createPlayerInstance(userId: string): Promise<JinroPlayer> {
+		const player: JinroPlayer = new JinroPlayer(userId);
+		await player.init();
+		return player;
 	}
 
 	async updatePositionNumbers(): Promise<void> {
@@ -224,8 +232,10 @@ export class Jinro extends dabyss.Game {
 		dabyss.dynamoUpdate(gameTable, this.gameKey, "positions", this.positions);
 	}
 
-	async getPosition(userIndex: number): Promise<string> {
-		const position = this.positions[userIndex];
+	async getPosition(playerId: number): Promise<string> {
+        const userId = this.userIds[playerId]
+        const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+		const position = player.position;
 		return position;
 	}
 
@@ -235,67 +245,80 @@ export class Jinro extends dabyss.Game {
 	}
 
 	async updateDefaultAliveStatus(): Promise<void> {
-		for (let i = 0; i < this.userIds.length; i++) {
-			this.isAliveStatus[i] = true;
-			console.log(this.isAliveStatus);
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId]
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+            player.isAlive = true;
+            dabyss.dynamoUpdate(playerTable, player.userKey, "is_alive", player.isAlive);
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
+		
 	}
 
-	async isAlive(index: number): Promise<boolean> {
-		return this.isAliveStatus[index];
+	async isAlive(playerId: number): Promise<boolean> {
+        const userId = this.userIds[playerId]
+        const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+		return player.isAlive;
 	}
 
-	async die(index: number): Promise<void> {
-		this.isAliveStatus[index] = false;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
+	async die(playerId: number): Promise<void> {
+		const userId = this.userIds[playerId]
+        const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+		player.die()
 	}
 
-	async isWerewolf(index: number): Promise<boolean> {
-		const res: boolean = this.positions[index] == this.positionNames.werewolf;
-		return res;
+	async isWerewolf(playerId: number): Promise<boolean> {
+		const userId = this.userIds[playerId]
+        const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+        const isWewrewolf = (player.position == this.positionNames.werewolf)
+        return isWewrewolf
 	}
 
 	async getWinnerIndexes(): Promise<number[]> {
-		const res: number[] = [];
-		for (let i = 0; i < this.positions.length; i++) {
+		const winnerIndexes: number[] = [];
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId]
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
 			if (this.winner == "werewolf") {
 				// 人狼陣営勝利なら
 				if (
-					this.positions[i] == this.positionNames.werewolf ||
-					this.positions[i] == this.positionNames.madman
+					player.position == this.positionNames.werewolf ||
+					player.position == this.positionNames.madman
 				) {
-					res.push(i);
+					winnerIndexes.push(playerId);
 				}
 			} else {
 				// 市民陣営勝利なら
 				if (
-					this.positions[i] == this.positionNames.forecaster ||
-					this.positions[i] == this.positionNames.psychic ||
-					this.positionNames.hunter
+					player.position == this.positionNames.forecaster ||
+					player.position == this.positionNames.psychic ||
+					player.position == this.positionNames.hunter
 				) {
-					res.push(i);
+					winnerIndexes.push(playerId);
 				}
 			}
 		}
-		return res;
+		return winnerIndexes;
 	}
 
 	async getAliveNumber(): Promise<number> {
 		let aliveNum = 0;
-		for (const state of this.isAliveStatus) {
-			if (state) {
-				aliveNum++;
-			}
-		}
-		return aliveNum;
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (player.isAlive) {
+                aliveNum++;
+            }
+        }
+        return aliveNum
 	}
 
 	async getAliveWerewolfNumber(): Promise<number> {
 		let aliveNum = 0;
-		for (let i = 0; i < this.userIds.length; i++) {
-			if (this.positions[i] == this.positionNames.werewolf) {
-				if (this.isAliveStatus[i]) {
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (player.position == this.positionNames.werewolf) {
+				if (player.isAlive) {
 					aliveNum++;
 				}
 			}
@@ -324,9 +347,11 @@ export class Jinro extends dabyss.Game {
 
 	async getDeadIndexes(): Promise<number[]> {
 		const deadIndexes: number[] = [];
-		for (let i = 0; i < this.userIds.length; i++) {
-			if (!this.isAliveStatus[i]) {
-				deadIndexes.push(i);
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (!player.isAlive) {
+				deadIndexes.push(playerId);
 			}
 		}
 		return deadIndexes;
@@ -335,51 +360,59 @@ export class Jinro extends dabyss.Game {
 	async putAction() {
 		const userNumber: number = await this.getUserNumber();
 		const status: boolean[] = [];
-		for (let i = 0; i < userNumber; i++) {
+		for (let playerId = 0; playerId < userNumber; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
 			if (
-				this.positions[i] == this.positionNames.madman ||
-				this.positions[i] == this.positionNames.citizen ||
-				!this.isAliveStatus[i]
+				player.position == this.positionNames.madman ||
+				player.position == this.positionNames.citizen ||
+				!player.isAlive
 			) {
-				status[i] = true;
+				status[playerId] = true;
 			} else {
-				status[i] = false;
+				status[playerId] = false;
 			}
 		}
 		await Action.putAction(this.gameId, this.day, status);
 	}
 
 	async getAliveUserIndexesExceptOneself(index: number): Promise<number[]> {
-		const res: number[] = [];
-		for (let i = 0; i < this.userIds.length; i++) {
-			if (i != index && this.isAlive(i)) {
-				res.push(i);
+		const Indexes: number[] = [];
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (playerId != index && player.isAlive) {
+				Indexes.push(playerId);
 			}
 		}
-		return res;
+		return Indexes;
 	}
 
 	async getAliveDisplayNamesExceptOneself(index: number): Promise<string[]> {
-		const res: string[] = [];
-		for (let i = 0; i < this.userIds.length; i++) {
-			if (i != index && (await this.isAlive(i))) {
-				const user: dabyss.User = new dabyss.User(this.userIds[i]);
+		const winnerIndexes: string[] = [];
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (playerId != index && player.isAlive) {
+				const user: dabyss.User = new dabyss.User(this.userIds[playerId]);
 				const displayName: string = await user.getDisplayName();
-				res.push(displayName);
+				winnerIndexes.push(displayName);
 			}
 		}
-		return res;
+		return winnerIndexes;
 	}
 
 	async getDeadDisplayNamesExceptOneself(index: number): Promise<string[]> {
-		const res: string[] = [];
-		for (let i = 0; i < this.userIds.length; i++) {
-			if (i != index && !(await this.isAlive(i))) {
-				const user: dabyss.User = new dabyss.User(this.userIds[i]);
+		const winnerIndexes: string[] = [];
+		for (let playerId = 0; playerId < this.userIds.length; playerId++) {
+            const userId = this.userIds[playerId];
+            const player: JinroPlayer = await JinroPlayer.createPlayerInstance(userId);
+			if (playerId != index && !player.isAlive) {
+				const user: dabyss.User = new dabyss.User(this.userIds[playerId]);
 				const displayName: string = await user.getDisplayName();
-				res.push(displayName);
+				winnerIndexes.push(displayName);
 			}
 		}
-		return res;
+		return winnerIndexes;
 	}
 }

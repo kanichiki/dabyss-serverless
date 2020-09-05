@@ -62,7 +62,7 @@ export class JinroPlayer extends dabyss.User {
 	 * playerインスタンスを作る
 	 *
 	 * @static
-	 * @param {string} playerId
+	 * @param {string} userId
 	 * @returns {Promise<JinroPlayer>}
 	 * @memberof JinroPlayer
 	 */
@@ -98,7 +98,7 @@ export class JinroPlayer extends dabyss.User {
 	 */
     async updatePosition(position: string): Promise<void> {
         this.position = position;
-        aws.dynamoUpdate(playerTable, this.playerKey, "position", this.position);
+        aws.dynamoUpdate(playerTable, this.userKey, "position", this.position);
     }
 
     /**
@@ -109,7 +109,7 @@ export class JinroPlayer extends dabyss.User {
 	 */
     async die(): Promise<void> {
         this.isAlive = false;
-        aws.dynamoUpdate(playerTable, this.playerKey, "is_alive", this.isAlive);
+        aws.dynamoUpdate(playerTable, this.userKey, "is_alive", this.isAlive);
     }
 
 
