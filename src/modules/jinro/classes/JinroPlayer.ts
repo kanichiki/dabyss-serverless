@@ -1,5 +1,4 @@
 import * as aws from "../../dabyss/clients/awsClient";
-import * as line from "../../dabyss/clients/lineClient";
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
@@ -30,10 +29,7 @@ export class JinroPlayer extends dabyss.User {
 
     constructor(userId: string) {
         super(userId);
-        this.playerId = userId;
-        this.playerKey = {
-            player_id: this.playerId,
-        };
+        this.playerId = "-1";
         this.position = "citizen";
         this.isAlive = true;
     };
@@ -54,6 +50,7 @@ export class JinroPlayer extends dabyss.User {
 					const player: DocumentClient.AttributeMap = data.Items[0];
 					this.groupId = player.group_id;
                     this.isRestarting = player.is_restarting;
+                    this.playerId = player.player_id;
                     this.position = player.position;
                     this.isAlive = player.is_alive;
 				}
