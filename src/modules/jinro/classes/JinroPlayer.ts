@@ -13,7 +13,7 @@ const playerTable = process.env.gameTable;
  */
 
 export class JinroPlayer extends dabyss.User {
-    playerId: string;
+    playerId: number;
     playerKey: DocumentClient.Key;
     position: string;
     isAlive: boolean;
@@ -29,8 +29,8 @@ export class JinroPlayer extends dabyss.User {
 
     constructor(userId: string) {
         super(userId);
-        this.playerId = "-1";
-        this.position = "citizen";
+        this.playerId = -1;
+        this.position = "市民";
         this.isAlive = true;
     };
 
