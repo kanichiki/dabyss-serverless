@@ -9,11 +9,14 @@
     "lint:fix": "eslint --fix src"
   },
   "dependencies": {
+    "aws-lambda": "^1.0.6",
     "express": "^4.17.1",
     "path": "^0.12.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "serverless-dynamodb-local": "^0.2.30",
     "serverless-http": "^2.5.0",
+    "serverless-offline": "^6.7.0",
     "source-map-support": "^0.5.10"
   },
   "devDependencies": {

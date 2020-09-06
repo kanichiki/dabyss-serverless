@@ -11,7 +11,14 @@ if (!documentClient) {
 	//     });
 	//     documentClient = new aws.DynamoDB.DocumentClient({ service: dax });
 	// } else {
-	documentClient = new aws.DynamoDB.DocumentClient();
+	if (process.env.stage == "dev") {
+		documentClient = new aws.DynamoDB.DocumentClient({
+			region: "localhost",
+			endpoint: "http://localhost:8000",
+		});
+	} else {
+		documentClient = new aws.DynamoDB.DocumentClient();
+	}
 	// }
 }
 import * as commonFunction from "../utils/commonFunction";
@@ -46,7 +53,7 @@ export /**
 const dynamoQuery = async (
 	tableName: string,
 	partitionKey: string,
-	value: any,
+	value: aws.DynamoDB.DocumentClient.AttributeValue,
 	asc = true,
 	consistentRead = true
 ): Promise<DocumentClient.QueryOutput> => {
@@ -182,4 +189,19 @@ export const dynamoAppend = async (
 			console.log(err);
 		}
 	});
+};
+
+export const getLambdaClient = async (): Promise<aws.Lambda> => {
+	let endpoint!: string;
+	if (process.env.stage == "dev") {
+		endpoint = "http://localhost:3002";
+	} else {
+		endpoint = "https://lambda.ap-northeast-1.amazonaws.com";
+	}
+
+	const lambda = new aws.Lambda({
+		apiVersion: "latest",
+		endpoint: endpoint,
+	});
+	return lambda;
 };

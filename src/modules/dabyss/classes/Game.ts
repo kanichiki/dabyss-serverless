@@ -6,18 +6,21 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Action } from "./Action";
 
 // インスタンス変数にしちゃうとstatic関数で参照できないから
-const games: { [key: string]: { jpName: string; minNumber: number } } = {
+const games: { [key: string]: { jpName: string; minNumber: number; functionName: string } } = {
 	wordwolf: {
 		jpName: "ワードウルフ",
 		minNumber: 2,
+		functionName: process.env.wordwolfFunction,
 	},
 	crazynoisy: {
 		jpName: "クレイジーノイジー",
 		minNumber: 2,
+		functionName: process.env.crazynoisyFunction,
 	},
 	jinro: {
 		jpName: "人狼",
 		minNumber: 2,
+		functionName: process.env.jinroFunction,
 	},
 };
 
@@ -122,6 +125,10 @@ export class Game {
 
 	async getJpGameName(): Promise<string> {
 		return games[this.gameName].jpName;
+	}
+
+	async getFunctionName(): Promise<string> {
+		return games[this.gameName].functionName;
 	}
 
 	/**

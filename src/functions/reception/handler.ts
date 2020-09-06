@@ -1,38 +1,64 @@
 import line = require("@line/bot-sdk");
 import aws = require("aws-sdk");
-import { StartExecutionInput } from "aws-sdk/clients/stepfunctions";
-import { Lambda } from "aws-sdk";
-import { InvocationRequest } from "aws-sdk/clients/lambda";
+import { APIGatewayProxyHandler } from "aws-lambda";
 
-exports.handler = async (event: any): Promise<any> => {
-	const promises: Promise<any>[] = [];
+export const handler: APIGatewayProxyHandler = async (event) => {
 	const obj = JSON.parse(event.body);
+	if (obj.events == undefined) {
+		return {
+			statusCode: 400,
+			body: JSON.stringify(
+				{
+					message: "Bad Request",
+				},
+				null,
+				2
+			),
+		};
+	}
 	const lineEvents: (line.MessageEvent | line.PostbackEvent)[] = obj.events;
 	console.log(lineEvents);
-	const stepFunctions = new aws.StepFunctions();
 
-	for (const lineEvent of lineEvents) {
-		if (lineEvent.replyToken != undefined) {
-			const eventObject: { [key: string]: line.WebhookEvent } = {
-				event: lineEvent,
-			};
-			const input: StartExecutionInput = {
-				stateMachineArn: process.env.stateMachineArn,
-				input: JSON.stringify(eventObject),
-			};
-			promises.push(stepFunctions.startExecution(input).promise());
-		}
+	let endpoint!: string;
+	if (process.env.stage == "dev") {
+		endpoint = "http://localhost:3002";
+	} else {
+		endpoint = "https://lambda.ap-northeast-1.amazonaws.com";
 	}
 
-	const lambda = new Lambda();
-	const input: InvocationRequest = {
-		FunctionName: process.env.notifyFunctionArn,
-		InvocationType: "Event",
-	};
-	promises.push(lambda.invoke(input).promise());
+	const lambda = new aws.Lambda({
+		apiVersion: "latest",
+		endpoint: endpoint,
+	});
 
-	await Promise.all(promises);
+	console.log(process.env.entryFunction);
+	for (const lineEvent of lineEvents) {
+		if (lineEvent.replyToken != undefined) {
+			await lambda
+				.invoke({
+					FunctionName: process.env.entryFunction,
+					InvocationType: "Event",
+					Payload: JSON.stringify(lineEvent),
+				})
+				.promise();
+		}
+	}
+	//
+	// await lambda
+	// 	.invoke({
+	// 		FunctionName: process.env.notifyFunction,
+	// 		InvocationType: "Event",
+	// 	})
+	// 	.promise();
+
 	return {
 		statusCode: 200,
+		body: JSON.stringify(
+			{
+				message: "success",
+			},
+			null,
+			2
+		),
 	};
 };

@@ -1,14 +1,29 @@
 service: dabyss-sls-ts
 app: dabyss-sls-ts
-org: kanichiki 
-custom:
-  webpack: 
-    webpackConfig: ./webpack.config.js
-    includeModules: true
+org: kanichiki
 
 plugins:
   - serverless-webpack
-  - serverless-step-functions
+  - serverless-dynamodb-local
+  - serverless-offline
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+  serverless-offline:
+    useChildProcesses: true
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      development:
+        sources:
+          - table: dabyss-event-${opt:stage, self:provider.stage, 'dev'}
+            sources: [./migrations/events.json]
 
 provider:
   name: aws
@@ -19,6 +34,7 @@ provider:
     minimumCompressionSize: 1024
   environment: 
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    AWS_REGION: ap-northeast-1
     TZ: Asia/Tokyo
     stage: ${opt:stage, self:provider.stage, 'dev'}
     eventTable: ${self:resources.Resources.eventTable.Properties.TableName}
@@ -45,8 +61,8 @@ functions:
     name: dabyss-reception-${opt:stage, self:provider.stage, 'dev'}
     environment:
       stateMachineArn: ${self:resources.Outputs.DabyssMachine.Value}
-      notifyFunctionArn: 
-        Fn::GetAtt: [NotifyLambdaFunction, Arn]
+      notifyFunction: ${self:functions.Notify.name}
+      entryFunction: ${self:functions.Entry.name}
     events: 
       - http: 
           method: post
@@ -57,16 +73,11 @@ functions:
   Entry:
     handler: src/functions/entry/handler.handler
     name: dabyss-entry-${opt:stage, self:provider.stage, 'dev'}
-  # Cardgame:
-  #   handler: src/functions/cardgame/handler.handler
-  #   name: dabyss-cardgame-${opt:stage, self:provider.stage, 'dev'}
-  #   events: 
-  #     - http: 
-  #         method: any
-  #         path: hoge
-  #     - http:
-  #         method: any
-  #         path: '/'
+    environment:
+      wordwolfFunction: ${self:functions.WordWolf.name}
+  WordWolf:
+    handler: src/functions/wordwolf/handler.handler
+    name: dabyss-wordwolf-${opt:stage, self:provider.stage, 'dev'}
   CrazyNoisyGroupMessage:
     handler: src/functions/crazynoisy/group-message/handler.handler
     name: dabyss-crazynoisy-group-message-${opt:stage, self:provider.stage, 'dev'}
@@ -104,188 +115,188 @@ functions:
     name: dabyss-jinro-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
 
 
-stepFunctions:
-  stateMachines:
-    DabyssMachine:
-      name: dabyss-state-machine-${opt:stage, self:provider.stage, 'dev'}
-      definition: 
-        Comment: "DabyssのLambda分岐"
-        StartAt: Entry
-        States: 
-          Entry: 
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName:
-                Fn::GetAtt: [EntryLambdaFunction, Arn]
-              Payload:
-                Input.$: $
-            OutputPath: $.Payload
-            Next: GameChoice
-          GameChoice: 
-            Type: Choice
-            Choices:
-              - Variable: $.game
-                StringEquals: wordwolf
-                Next: WordWolf
-              - Variable: $.game
-                StringEquals: crazynoisy
-                Next: CrazyNoisy
-              - Variable: $.game
-                StringEquals: jinro
-                Next: Jinro
-            Default: DefaultState
-
-          CrazyNoisy:
-            Type: Choice
-            Choices:
-            - Variable: "$.eventType"
-              StringEquals: groupMessage
-              Next: CrazyNoisyGroupMessage
-            - Variable: "$.eventType"
-              StringEquals: groupPostback
-              Next: CrazyNoisyGroupPostback
-            - Variable: "$.eventType"
-              StringEquals: groupDatetimepicker
-              Next: CrazyNoisyGroupDatetimepicker
-            - Variable: "$.eventType"
-              StringEquals: userPostback
-              Next: CrazyNoisyUserPostback
-
-          CrazyNoisyGroupMessage:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [CrazyNoisyGroupMessageLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          CrazyNoisyGroupPostback:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [CrazyNoisyGroupPostbackLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          CrazyNoisyUserPostback:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [CrazyNoisyUserPostbackLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          CrazyNoisyGroupDatetimepicker:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [CrazyNoisyGroupDatetimepickerLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-
-          WordWolf:
-            Type: Choice
-            Choices:
-            - Variable: "$.eventType"
-              StringEquals: groupMessage
-              Next: WordWolfGroupMessage
-            - Variable: "$.eventType"
-              StringEquals: groupPostback
-              Next: WordWolfGroupPostback
-            - Variable: "$.eventType"
-              StringEquals: groupDatetimepicker
-              Next: WordWolfGroupDatetimepicker
-          
-          WordWolfGroupMessage:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [WordWolfGroupMessageLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          WordWolfGroupPostback:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [WordWolfGroupPostbackLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          WordWolfGroupDatetimepicker:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [WordWolfGroupDatetimepickerLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-
-          Jinro:
-            Type: Choice
-            Choices:
-            - Variable: "$.eventType"
-              StringEquals: groupMessage
-              Next: JinroGroupMessage
-            - Variable: "$.eventType"
-              StringEquals: groupPostback
-              Next: JinroGroupPostback
-            - Variable: "$.eventType"
-              StringEquals: groupDatetimepicker
-              Next: JinroGroupDatetimepicker
-            - Variable: "$.eventType"
-              StringEquals: userPostback
-              Next: JinroUserPostback
-
-          JinroGroupMessage:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [JinroGroupMessageLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          JinroGroupPostback:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [JinroGroupPostbackLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          JinroUserPostback:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [JinroUserPostbackLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-          JinroGroupDatetimepicker:
-            Type: Task
-            Resource: arn:aws:states:::lambda:invoke
-            Parameters:
-              FunctionName: 
-                Fn::GetAtt: [JinroGroupDatetimepickerLambdaFunction, Arn]
-              Payload:
-                Input.$: "$"
-            End: true
-
-          DefaultState:
-            Type: Pass
-            End: true
+#stepFunctions:
+#  stateMachines:
+#    DabyssMachine:
+#      name: dabyss-state-machine-${opt:stage, self:provider.stage, 'dev'}
+#      definition:
+#        Comment: "DabyssのLambda分岐"
+#        StartAt: Entry
+#        States:
+#          Entry:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [EntryLambdaFunction, Arn]
+#              Payload:
+#                Input.$: $
+#            OutputPath: $.Payload
+#            Next: GameChoice
+#          GameChoice:
+#            Type: Choice
+#            Choices:
+#              - Variable: $.game
+#                StringEquals: wordwolf
+#                Next: WordWolf
+#              - Variable: $.game
+#                StringEquals: crazynoisy
+#                Next: CrazyNoisy
+#              - Variable: $.game
+#                StringEquals: jinro
+#                Next: Jinro
+#            Default: DefaultState
+#
+#          CrazyNoisy:
+#            Type: Choice
+#            Choices:
+#            - Variable: "$.eventType"
+#              StringEquals: groupMessage
+#              Next: CrazyNoisyGroupMessage
+#            - Variable: "$.eventType"
+#              StringEquals: groupPostback
+#              Next: CrazyNoisyGroupPostback
+#            - Variable: "$.eventType"
+#              StringEquals: groupDatetimepicker
+#              Next: CrazyNoisyGroupDatetimepicker
+#            - Variable: "$.eventType"
+#              StringEquals: userPostback
+#              Next: CrazyNoisyUserPostback
+#
+#          CrazyNoisyGroupMessage:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [CrazyNoisyGroupMessageLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          CrazyNoisyGroupPostback:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [CrazyNoisyGroupPostbackLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          CrazyNoisyUserPostback:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [CrazyNoisyUserPostbackLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          CrazyNoisyGroupDatetimepicker:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [CrazyNoisyGroupDatetimepickerLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#
+#          WordWolf:
+#            Type: Choice
+#            Choices:
+#            - Variable: "$.eventType"
+#              StringEquals: groupMessage
+#              Next: WordWolfGroupMessage
+#            - Variable: "$.eventType"
+#              StringEquals: groupPostback
+#              Next: WordWolfGroupPostback
+#            - Variable: "$.eventType"
+#              StringEquals: groupDatetimepicker
+#              Next: WordWolfGroupDatetimepicker
+#
+#          WordWolfGroupMessage:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [WordWolfGroupMessageLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          WordWolfGroupPostback:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [WordWolfGroupPostbackLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          WordWolfGroupDatetimepicker:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [WordWolfGroupDatetimepickerLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#
+#          Jinro:
+#            Type: Choice
+#            Choices:
+#            - Variable: "$.eventType"
+#              StringEquals: groupMessage
+#              Next: JinroGroupMessage
+#            - Variable: "$.eventType"
+#              StringEquals: groupPostback
+#              Next: JinroGroupPostback
+#            - Variable: "$.eventType"
+#              StringEquals: groupDatetimepicker
+#              Next: JinroGroupDatetimepicker
+#            - Variable: "$.eventType"
+#              StringEquals: userPostback
+#              Next: JinroUserPostback
+#
+#          JinroGroupMessage:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [JinroGroupMessageLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          JinroGroupPostback:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [JinroGroupPostbackLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          JinroUserPostback:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [JinroUserPostbackLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#          JinroGroupDatetimepicker:
+#            Type: Task
+#            Resource: arn:aws:states:::lambda:invoke
+#            Parameters:
+#              FunctionName:
+#                Fn::GetAtt: [JinroGroupDatetimepickerLambdaFunction, Arn]
+#              Payload:
+#                Input.$: "$"
+#            End: true
+#
+#          DefaultState:
+#            Type: Pass
+#            End: true
 
 resources:
   Outputs:
