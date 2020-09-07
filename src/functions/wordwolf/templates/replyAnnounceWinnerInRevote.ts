@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import dabyss = require("../../../../modules/dabyss");
+import dabyss = require("../../../modules/dabyss");
 
 export const main = async (
 	voterDisplayName: string,
@@ -8,7 +8,7 @@ export const main = async (
 	displayNames: string[],
 	isWinnerArray: boolean[]
 ): Promise<line.Message[]> => {
-	let message: string;
+	let message = "";
 	if (!isExecutorWolf) {
 		message = "ウルフ側の勝利です！！";
 	} else {
@@ -30,7 +30,7 @@ export const main = async (
 		},
 		{
 			type: "text",
-			text: `${executorDisplayName}さんが処刑されました`,
+			text: `得票数が並んだため、ランダムで${executorDisplayName}さんが処刑されました`,
 		},
 		{
 			type: "flex",

@@ -2,11 +2,7 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-export const handler = async (event: any): Promise<void> => {
+export const handleGroupPostback = async (event: any): Promise<void> => {
 	const lineEvent: line.PostbackEvent = event.Input.event;
 	console.log(lineEvent);
 
@@ -68,7 +64,7 @@ export const handler = async (event: any): Promise<void> => {
 const replyRemainingTime = async (wordWolf: wordwolf.WordWolf, replyToken: string): Promise<void> => {
 	const remainingTime = await wordWolf.getRemainingTime();
 
-	const replyMessage = await import("./template/replyRemainingTime");
+	const replyMessage = await import("../templates/replyRemainingTime");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(remainingTime));
 };
 
@@ -105,7 +101,7 @@ const replyVoteSuccess = async (
 			const displayNames: string[] = await wordWolf.getDisplayNames();
 			const isWinnerArray: boolean[] = await wordWolf.isWinnerArray();
 
-			const replyMessage = await import("./template/replyAnnounceWinner");
+			const replyMessage = await import("../templates/replyAnnounceWinner");
 			promises.push(
 				dabyss.replyMessage(
 					replyToken,
@@ -135,7 +131,7 @@ const replyVoteSuccess = async (
 
 				const displayNames: string[] = await wordWolf.getDisplayNamesFromIndexes(shuffleMostVotedUserIndexes);
 
-				const replyMessage = await import("./template/replyRevote");
+				const replyMessage = await import("../templates/replyRevote");
 				promises.push(
 					dabyss.replyMessage(
 						replyToken,
@@ -156,7 +152,7 @@ const replyVoteSuccess = async (
 				const displayNames = await wordWolf.getDisplayNames();
 				const isWinnerArray = await wordWolf.isWinnerArray();
 
-				const replyMessage = await import("./template/replyAnnounceWinnerInRevote");
+				const replyMessage = await import("../templates/replyAnnounceWinnerInRevote");
 				promises.push(
 					dabyss.replyMessage(
 						replyToken,
@@ -172,7 +168,7 @@ const replyVoteSuccess = async (
 			}
 		}
 	} else {
-		const replyMessage = await import("./template/replyVoteSuccess");
+		const replyMessage = await import("../templates/replyVoteSuccess");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(voterDisplayName)));
 	}
 
@@ -181,7 +177,7 @@ const replyVoteSuccess = async (
 };
 
 const replySelfVote = async (replyToken: string): Promise<void> => {
-	const replyMessage = await import("./template/replySelfVote");
+	const replyMessage = await import("../templates/replySelfVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
@@ -191,6 +187,6 @@ const replyDuplicateVote = async (
 	replyToken: string
 ): Promise<void> => {
 	const displayName = await wordWolf.getDisplayName(userIndex);
-	const replyMessage = await import("./template/replyDuplicateVote");
+	const replyMessage = await import("../templates/replyDuplicateVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
 };

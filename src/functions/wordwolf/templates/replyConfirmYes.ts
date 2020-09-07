@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import dabyss = require("../../../../modules/dabyss");
+import dabyss = require("../../../modules/dabyss");
 
 export const main = async (timer: string): Promise<line.FlexMessage[]> => {
 	const channelId: string = await dabyss.getChannelId();

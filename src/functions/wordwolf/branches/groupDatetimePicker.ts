@@ -2,11 +2,7 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-exports.handler = async (event: any): Promise<void> => {
+export const handleGroupDatetimePicker = async (event: any): Promise<void> => {
 	const lineEvent: line.PostbackEvent = event.Input.event;
 	console.log(lineEvent);
 
@@ -64,7 +60,7 @@ const replyConfirm = async (wordWolf: wordwolf.WordWolf, replyToken: string): Pr
 	const lunaticNumber: number = wordWolf.lunaticIndexes.length;
 	const timerString: string = await wordWolf.getTimerString();
 
-	const replyMessage = await import("./template/replyChanged");
+	const replyMessage = await import("../templates/replyChanged");
 	await dabyss.replyMessage(
 		replyToken,
 		await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timerString)

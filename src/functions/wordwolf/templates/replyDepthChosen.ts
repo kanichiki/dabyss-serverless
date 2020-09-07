@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import wordwolf = require("../../../../modules/wordwolf");
+import wordwolf = require("../../../modules/wordwolf");
 
 export const main = async (text: string, wolfNumberOptions: number[]): Promise<line.Message[]> => {
 	return [

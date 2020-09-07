@@ -2,11 +2,7 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-exports.handler = async (event: any): Promise<void> => {
+export const handleGroupMessage = async (event: any): Promise<void> => {
 	const lineEvent: line.MessageEvent = event.Input.event;
 	console.log(lineEvent);
 
@@ -115,7 +111,7 @@ const replyRollCallEnd = async (
 	promises.push(wordWolf.updateDefaultSettingStatus());
 	promises.push(group.updateStatus("play")); // 参加者リストをプレイ中にして、募集中を解除する
 
-	const replyMessage = await import("./template/replyRollCallEnd");
+	const replyMessage = await import("../templates/replyRollCallEnd");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames)));
 
 	await Promise.all(promises);
@@ -135,7 +131,7 @@ const replyDepthChosen = async (wordWolf: wordwolf.WordWolf, text: string, reply
 		// 設定が完了していなかったら
 		const wolfNumberOptions: number[] = await wordWolf.getWolfNumberOptions();
 
-		const replyMessage = await import("./template/replyDepthChosen");
+		const replyMessage = await import("../templates/replyDepthChosen");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(text, wolfNumberOptions)));
 	} else {
 		promises.push(replyConfirm(wordWolf, replyToken));
@@ -161,7 +157,7 @@ const replyWolfNumberChosen = async (
 	if (!isSettingCompleted) {
 		const lunaticNumberOptions: number[] = await wordWolf.getLunaticNumberOptions();
 
-		const replyMessage = await import("./template/replyWolfNumberChosen");
+		const replyMessage = await import("../templates/replyWolfNumberChosen");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(wolfNumber, lunaticNumberOptions)));
 	} else {
 		promises.push(replyConfirm(wordWolf, replyToken));
@@ -200,7 +196,7 @@ const replyConfirm = async (wordWolf: wordwolf.WordWolf, replyToken: string): Pr
 	const lunaticNumber: number = wordWolf.lunaticIndexes.length;
 	const timerString: string = await wordWolf.getTimerString();
 
-	const replyMessage = await import("./template/replyChanged");
+	const replyMessage = await import("../templates/replyChanged");
 	await dabyss.replyMessage(
 		replyToken,
 		await replyMessage.main(userNumber, depth, wolfNumber, lunaticNumber, timerString)
@@ -214,7 +210,7 @@ const replyDepthChange = async (wordWolf: wordwolf.WordWolf, replyToken: string)
 	const index = await wordWolf.getSettingIndex("depth");
 	promises.push(wordWolf.updateSettingStateFalse(index)); // 設定状態をfalseに
 
-	const replyMessage = await import("./template/replyDepthChange");
+	const replyMessage = await import("../templates/replyDepthChange");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
 	await Promise.all(promises);
@@ -228,7 +224,7 @@ const replyWolfNumberChange = async (wordWolf: wordwolf.WordWolf, replyToken: st
 	promises.push(wordWolf.updateSettingStateFalse(index)); // 設定状態をfalseに
 
 	const wolfNumberOptions = await wordWolf.getWolfNumberOptions();
-	const replyMessage = await import("./template/replyWolfNumberChange");
+	const replyMessage = await import("../templates/replyWolfNumberChange");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(wolfNumberOptions)));
 
 	await Promise.all(promises);
@@ -242,7 +238,7 @@ const replyLunaticNumberChange = async (wordWolf: wordwolf.WordWolf, replyToken:
 	promises.push(wordWolf.updateSettingStateFalse(index)); // 設定状態をfalseに
 
 	const lunaticNumberOptions = await wordWolf.getLunaticNumberOptions();
-	const replyMessage = await import("./template/replyLunaticNumberChange");
+	const replyMessage = await import("../templates/replyLunaticNumberChange");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(lunaticNumberOptions)));
 
 	await Promise.all(promises);
@@ -255,7 +251,7 @@ const replyTimerChange = async (wordWolf: wordwolf.WordWolf, replyToken: string)
 	const index = await wordWolf.getSettingIndex("timer");
 	promises.push(wordWolf.updateSettingStateFalse(index)); // 設定状態をfalseに
 
-	const replyMessage = await import("./template/replyTimerChange");
+	const replyMessage = await import("../templates/replyTimerChange");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
 	await Promise.all(promises);
@@ -290,7 +286,7 @@ const replyConfirmYes = async (wordWolf: wordwolf.WordWolf, replyToken: string):
 	for (let i = 0; i < userIds.length; i++) {
 		// プッシュメッセージ数節約のため開発時は一時的に無効化
 		try {
-			const pushMessage = await import("./template/pushUserWord");
+			const pushMessage = await import("../templates/pushUserWord");
 			promises.push(
 				dabyss.pushMessage(userIds[i], await pushMessage.main(displayNames[i], userWords[i], isLunatic[i]))
 			);
@@ -301,7 +297,7 @@ const replyConfirmYes = async (wordWolf: wordwolf.WordWolf, replyToken: string):
 
 	const timer = await wordWolf.getTimerString(); // タイマー設定を取得
 
-	const replyMessage = await import("./template/replyConfirmYes");
+	const replyMessage = await import("../templates/replyConfirmYes");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(timer)));
 
 	await Promise.all(promises);
@@ -325,7 +321,7 @@ const replyDiscussFinish = async (wordWolf: wordwolf.WordWolf, replyToken: strin
 		displayNames[i] = await wordWolf.getDisplayName(shuffleUserIndexes[i]);
 	}
 
-	const replyMessage = await import("./template/replyDiscussFinish");
+	const replyMessage = await import("../templates/replyDiscussFinish");
 
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
@@ -342,7 +338,7 @@ const replyAnnounceResult = async (wordWolf: wordwolf.WordWolf, replyToken: stri
 	const group: dabyss.Group = await dabyss.Group.createInstance(wordWolf.groupId);
 	promises.push(group.finishGroup());
 
-	const replyMessage = await import("./template/replyAnnounceResult");
+	const replyMessage = await import("../templates/replyAnnounceResult");
 
 	promises.push(
 		dabyss.replyMessage(

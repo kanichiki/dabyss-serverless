@@ -1,0 +1,272 @@
+service: dabyss-sls-ts
+app: dabyss-sls-ts
+org: kanichiki
+
+plugins:
+  - serverless-webpack
+  - serverless-dynamodb-local
+  - serverless-offline
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+  serverless-offline:
+    useChildProcesses: true
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      development:
+        sources:
+          - table: dabyss-event-${opt:stage, self:provider.stage, 'debug'}
+            sources: [./migrations/events.json]
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'debug'}
+  region: ap-northeast-1
+  runtime: nodejs12.x
+  apiGateway: 
+    minimumCompressionSize: 1024
+  environment: 
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    AWS_REGION: ap-northeast-1
+    TZ: Asia/Tokyo
+    stage: ${opt:stage, self:provider.stage, 'debug'}
+    eventTable: ${self:resources.Resources.eventTable.Properties.TableName}
+    userTable: ${self:resources.Resources.userTable.Properties.TableName}
+    groupTable: ${self:resources.Resources.groupTable.Properties.TableName}
+    gameTable: ${self:resources.Resources.gameTable.Properties.TableName}
+    sequenceTable: ${self:resources.Resources.sequenceTable.Properties.TableName}
+    actionTable: ${self:resources.Resources.actionTable.Properties.TableName}
+    discussionTable: ${self:resources.Resources.discussionTable.Properties.TableName}
+    voteTable: ${self:resources.Resources.voteTable.Properties.TableName}
+    crazinessTable: ${self:resources.Resources.crazinessTable.Properties.TableName}
+    wordsetTable: ${self:resources.Resources.wordsetTable.Properties.TableName}
+
+  cfnRole: arn:aws:iam::126640255293:role/ServerlessFrameworkRole
+  role: arn:aws:iam::126640255293:role/dabyss-dev-lambda
+
+package:
+  include:
+    - src/**/*
+
+functions: 
+  Reception: 
+    handler: src/functions/reception/debugHandler.handler
+    name: dabyss-reception-${opt:stage, self:provider.stage, 'debug'}
+    events: 
+      - http: 
+          method: post
+          path: webhook
+
+resources:
+  Outputs:
+    DabyssMachine:
+      Value:
+        Ref: DabyssDashstateDashmachineDash${opt:stage, self:provider.stage, 'debug'}
+  Resources:
+    eventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-event-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: reply_token
+            AttributeType: S
+        KeySchema:
+          - AttributeName: reply_token
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    userTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-user-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    groupTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-group-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: group_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: group_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    gameTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-game-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: group_id
+            AttributeType: S
+          - AttributeName: game_id
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: group_id
+            KeyType: HASH
+          - AttributeName: game_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: game_id-index
+            KeySchema:
+              - AttributeName: game_id
+                KeyType: HASH
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+    sequenceTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-sequence-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    actionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-action-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: day
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: day
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    discussionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-discussion-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: day
+            AttributeType: 'N'
+          - AttributeName: is_discussing
+            AttributeType: S
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: day
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: is_discussing-game_id-index
+            KeySchema:
+              - AttributeName: is_discussing
+                KeyType: HASH
+              - AttributeName: game_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+    voteTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-vote-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: 'N'
+          - AttributeName: vote_id
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+          - AttributeName: vote_id
+            KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+    crazinessTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-craziness-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: craziness_id
+            AttributeType: 'N'
+          - AttributeName: type
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: craziness_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: type-craziness_id-index
+            KeySchema:
+              - AttributeName: type
+                KeyType: HASH
+              - AttributeName: craziness_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+    wordsetTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: dabyss-wordset-${opt:stage, self:provider.stage, 'debug'}
+        AttributeDefinitions:
+          - AttributeName: wordset_id
+            AttributeType: 'N'
+          - AttributeName: depth
+            AttributeType: 'N'
+        KeySchema:
+          - AttributeName: wordset_id
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: depth-wordset_id-index
+            KeySchema:
+              - AttributeName: depth
+                KeyType: HASH
+              - AttributeName: wordset_id
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: ALL
+            ProvisionedThroughput:
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+
+  

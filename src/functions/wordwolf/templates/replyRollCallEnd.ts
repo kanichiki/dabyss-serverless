@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import wordwolf = require("../../../../modules/wordwolf");
+import wordwolf = require("../../../modules/wordwolf");
 
 /* ジャンル
 exports.main = async (displayNames, genres) => {

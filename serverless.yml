@@ -90,16 +90,6 @@ functions:
   CrazyNoisyGroupDatetimepicker:
     handler: src/functions/crazynoisy/group-datetimepicker/handler.handler
     name: dabyss-crazynoisy-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
-
-  WordWolfGroupMessage:
-    handler: src/functions/wordwolf/group-message/handler.handler
-    name: dabyss-wordwolf-group-message-${opt:stage, self:provider.stage, 'dev'}
-  WordWolfGroupPostback:
-    handler: src/functions/wordwolf/group-postback/handler.handler
-    name: dabyss-wordwolf-group-postback-${opt:stage, self:provider.stage, 'dev'}
-  WordWolfGroupDatetimepicker:
-    handler: src/functions/wordwolf/group-datetimepicker/handler.handler
-    name: dabyss-wordwolf-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
   
   JinroGroupMessage:
     handler: src/functions/jinro/group-message/handler.handler

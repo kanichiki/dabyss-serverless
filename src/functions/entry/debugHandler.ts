@@ -1,9 +1,9 @@
 import line = require("@line/bot-sdk");
 import dabyss = require("../../modules/dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import * as wordwolf from "../wordwolf/handler";
 
-export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent) => {
-	console.log(lineEvent);
+export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
 	const promises: Promise<void>[] = [];
 	promises.push(handleEvent(lineEvent));
 
@@ -25,7 +25,6 @@ export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent)
 };
 
 const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
-	const lambda = await dabyss.getLambdaClient();
 	const replyToken = lineEvent.replyToken;
 
 	if (lineEvent.source.userId != undefined) {
@@ -137,15 +136,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 											} else {
 												// 参加受付終了の意思表明に対するリプライ
 												// 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
-												const functionName = await game.getFunctionName();
-												await lambda
-													.invoke({
-														FunctionName: functionName,
-														InvocationType: "Event",
-														Payload: JSON.stringify(lineEvent),
-													})
-													.promise();
-												return;
+												return callGameHandler(game, lineEvent);
 											}
 										}
 									}
@@ -163,15 +154,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 										//         continue;
 										//     }
 
-										const functionName = await game.getFunctionName();
-										await lambda
-											.invoke({
-												FunctionName: functionName,
-												InvocationType: "Event",
-												Payload: JSON.stringify(lineEvent),
-											})
-											.promise();
-										return;
+										return callGameHandler(game, lineEvent);
 									}
 								}
 							}
@@ -199,15 +182,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 							const isUserParticipate: boolean = await game.isUserExists(userId);
 							if (isUserParticipate) {
-								const functionName = await game.getFunctionName();
-								await lambda
-									.invoke({
-										FunctionName: functionName,
-										InvocationType: "Event",
-										Payload: JSON.stringify(lineEvent),
-									})
-									.promise();
-								return;
+								return callGameHandler(game, lineEvent);
 							}
 						}
 					}
@@ -223,15 +198,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
 							const isUserParticipate: boolean = await game.isUserExists(userId);
 							if (isUserParticipate) {
-								const functionName = await game.getFunctionName();
-								await lambda
-									.invoke({
-										FunctionName: functionName,
-										InvocationType: "Event",
-										Payload: JSON.stringify(lineEvent),
-									})
-									.promise();
-								return;
+								return callGameHandler(game, lineEvent);
 							}
 						}
 					}
@@ -396,5 +363,14 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 
 	const replyMessage = await import("./template/replyTooFewParticipant");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, recruitingGameName, minNumber));
+	return;
+};
+
+const callGameHandler = async (game: dabyss.Game, lineEvent: line.MessageEvent | line.PostbackEvent) => {
+	switch (game.gameName) {
+		case "wordwolf":
+			await wordwolf.handler(lineEvent);
+			break;
+	}
 	return;
 };

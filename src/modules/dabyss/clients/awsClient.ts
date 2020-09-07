@@ -11,7 +11,7 @@ if (!documentClient) {
 	//     });
 	//     documentClient = new aws.DynamoDB.DocumentClient({ service: dax });
 	// } else {
-	if (process.env.stage == "dev") {
+	if (process.env.stage == "local" || process.env.stage == "debug") {
 		documentClient = new aws.DynamoDB.DocumentClient({
 			region: "localhost",
 			endpoint: "http://localhost:8000",
