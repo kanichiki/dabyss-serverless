@@ -1,28 +1,12 @@
-import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-export const handleGroupPostback = async (event: any): Promise<void> => {
-	const lineEvent: line.PostbackEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	const postback: line.Postback = lineEvent.postback;
-	const postbackData: string = postback.data;
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	let userId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
-	if (source.userId != undefined) {
-		userId = source.userId;
-	}
-
+export const handleGroupPostback = async (
+	postbackData: string,
+	groupId: string,
+	userId: string,
+	replyToken: string
+): Promise<void> => {
 	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 

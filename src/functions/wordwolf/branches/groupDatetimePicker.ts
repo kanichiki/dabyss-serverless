@@ -1,28 +1,7 @@
-import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-export const handleGroupDatetimePicker = async (event: any): Promise<void> => {
-	const lineEvent: line.PostbackEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	const postback: line.Postback = lineEvent.postback;
-	let time!: string;
-	if (postback.params != undefined) {
-		if (postback.params.time != undefined) {
-			time = postback.params.time;
-		}
-	}
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
+export const handleGroupDatetimePicker = async (time: string, groupId: string, replyToken: string): Promise<void> => {
 	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 

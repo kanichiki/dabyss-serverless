@@ -2,25 +2,7 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-export const handleGroupMessage = async (event: any): Promise<void> => {
-	const lineEvent: line.MessageEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	let message!: line.TextEventMessage;
-	if (lineEvent.message.type == "text") {
-		message = lineEvent.message;
-	}
-	const text: string = message.text;
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
+export const handleGroupMessage = async (text: string, groupId: string, replyToken: string): Promise<void> => {
 	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 
