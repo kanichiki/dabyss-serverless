@@ -3,11 +3,10 @@ import wordwolf = require("../../../modules/wordwolf");
 
 export const handleGroupPostback = async (
 	postbackData: string,
-	groupId: string,
+	wordWolf: wordwolf.WordWolf,
 	userId: string,
 	replyToken: string
 ): Promise<void> => {
-	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
 	const status: string = wordWolf.gameStatus;
 
 	if (status == "discuss") {
@@ -105,8 +104,6 @@ const replyVoteSuccess = async (
 			if (!isRevoting) {
 				// 一回目の投票の場合
 
-				// DB変更操作３’，４’
-				// 再投票データを作成したら、投票データを初期化する同期処理
 				promises.push(wordWolf.putRevote());
 				const shuffleMostVotedUserIndexes: number[] = await dabyss.getRandomIndexes(
 					mostVotedUserIndexes,

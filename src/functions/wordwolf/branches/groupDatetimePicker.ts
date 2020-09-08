@@ -1,8 +1,11 @@
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-export const handleGroupDatetimePicker = async (time: string, groupId: string, replyToken: string): Promise<void> => {
-	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
+export const handleGroupDatetimePicker = async (
+	time: string,
+	wordWolf: wordwolf.WordWolf,
+	replyToken: string
+): Promise<void> => {
 	const status: string = wordWolf.gameStatus;
 
 	if (status == "setting") {

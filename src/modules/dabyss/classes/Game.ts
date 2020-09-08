@@ -113,6 +113,10 @@ export class Game {
 		return res;
 	}
 
+	static async getFunctionName(gameName: string): Promise<string> {
+		return games[gameName].functionName;
+	}
+
 	async getGameName(jpName: string): Promise<string> {
 		let res: string;
 		for (const game of Object.keys(games)) {
@@ -125,10 +129,6 @@ export class Game {
 
 	async getJpGameName(): Promise<string> {
 		return games[this.gameName].jpName;
-	}
-
-	async getFunctionName(): Promise<string> {
-		return games[this.gameName].functionName;
 	}
 
 	/**

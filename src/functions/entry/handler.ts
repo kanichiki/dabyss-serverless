@@ -61,8 +61,8 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 						const groupExists: boolean = group.exists;
 						const isUser: boolean = user.exists; // ユーザーのデータがあるかどうか
 
-						const gameNameExists: boolean = await dabyss.Game.gameJPNameExists(text);
-						if (gameNameExists) {
+						const gameCalled: boolean = await dabyss.Game.gameJPNameExists(text);
+						if (gameCalled) {
 							// 発言内容がゲーム名なら
 							if (groupExists) {
 								const isRestarting: boolean = group.isRestarting;
@@ -137,32 +137,17 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 												// 参加受付終了の意思表明に対するリプライ
 												// 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
 
-												return invokeLambda(game, lineEvent);
+												return invokeLambda(group.playingGame, lineEvent);
 											}
 										}
 									}
 								}
 
 								if (status == "play") {
-									// プレイ中の場合
-									const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-
-									const isUserParticipate = await game.isUserExists(userId);
-									if (isUserParticipate) {
-										// 参加者の発言の場合
-										//     if (text == "強制終了") {
-										//         await replyTerminate(plId, replyToken);
-										//         continue;
-										//     }
-
-										return invokeLambda(game, lineEvent);
-										return;
-									}
+									return invokeLambda(group.playingGame, lineEvent);
 								}
 							}
 						}
-
-						// await replyDefaultGroupMessage(lineEvent));
 					}
 				}
 			}
@@ -181,11 +166,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 					if (groupExists) {
 						const status = group.status;
 						if (status == "play") {
-							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-							const isUserParticipate: boolean = await game.isUserExists(userId);
-							if (isUserParticipate) {
-								return invokeLambda(game, lineEvent);
-							}
+							return invokeLambda(group.playingGame, lineEvent);
 						}
 					}
 				}
@@ -197,11 +178,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 					if (groupExists) {
 						const status: string = group.status;
 						if (status == "play") {
-							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-							const isUserParticipate: boolean = await game.isUserExists(userId);
-							if (isUserParticipate) {
-								return invokeLambda(game, lineEvent);
-							}
+							return invokeLambda(group.playingGame, lineEvent);
 						}
 					}
 				}
@@ -237,6 +214,7 @@ const replyRollCall = async (group: dabyss.Group, text: string, replyToken: stri
 
 	const game = await dabyss.Game.createInstance(group.groupId);
 	promises.push(game.putGame(text));
+	promises.push(group.updatePlayingGame(text));
 
 	await Promise.all(promises);
 	return;
@@ -368,14 +346,14 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 	return;
 };
 
-const invokeLambda = async (game: dabyss.Game, lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
+const invokeLambda = async (gameName: string, lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
 	const lambda = await dabyss.getLambdaClient();
-	const functionName = await game.getFunctionName();
+	const functionName = await dabyss.Game.getFunctionName(gameName);
 	await lambda
 		.invoke({
 			FunctionName: functionName,
 			InvocationType: "Event",
-			Payload: JSON.stringify(lineEvent),
+			Payload: JSON.stringify({ event: lineEvent }),
 		})
 		.promise();
 };

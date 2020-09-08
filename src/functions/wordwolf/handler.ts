@@ -1,5 +1,6 @@
 import line = require("@line/bot-sdk");
 import branches = require("./branches");
+import wordwolf = require("../../modules/wordwolf");
 
 export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent) => {
 	console.log(lineEvent);
@@ -13,23 +14,27 @@ export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent)
 		} else if (lineEvent.source.type == "room") {
 			groupId = lineEvent.source.roomId; // roomIdもgroupId扱いします
 		}
-		if (lineEvent.type == "message") {
-			if (lineEvent.message.type == "text") {
-				// テキストメッセージイベントなら
-				const text: string = lineEvent.message.text;
+		const wordWolf = await wordwolf.WordWolf.createInstance(groupId);
+		const isUserParticipant = wordWolf.isUserExists(userId);
+		if (isUserParticipant) {
+			if (lineEvent.type == "message") {
+				if (lineEvent.message.type == "text") {
+					// テキストメッセージイベントなら
+					const text: string = lineEvent.message.text;
 
-				await branches.handleGroupMessage(text, groupId, replyToken);
-			}
-		}
-		if (lineEvent.type == "postback") {
-			const postback: line.Postback = lineEvent.postback;
-			if (postback.params != undefined) {
-				if (postback.params.time != undefined) {
-					const time = postback.params.time;
-					await branches.handleGroupDatetimePicker(time, groupId, replyToken);
+					await branches.handleGroupMessage(text, wordWolf, replyToken);
 				}
-			} else {
-				await branches.handleGroupPostback(postback.data, groupId, userId, replyToken);
+			}
+			if (lineEvent.type == "postback") {
+				const postback: line.Postback = lineEvent.postback;
+				if (postback.params != undefined) {
+					if (postback.params.time != undefined) {
+						const time = postback.params.time;
+						await branches.handleGroupDatetimePicker(time, wordWolf, replyToken);
+					}
+				} else {
+					await branches.handleGroupPostback(postback.data, wordWolf, userId, replyToken);
+				}
 			}
 		}
 	}

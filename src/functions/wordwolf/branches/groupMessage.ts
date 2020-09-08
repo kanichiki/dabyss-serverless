@@ -1,16 +1,18 @@
-import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import wordwolf = require("../../../modules/wordwolf");
 
-export const handleGroupMessage = async (text: string, groupId: string, replyToken: string): Promise<void> => {
-	const wordWolf: wordwolf.WordWolf = await wordwolf.WordWolf.createInstance(groupId);
+export const handleGroupMessage = async (
+	text: string,
+	wordWolf: wordwolf.WordWolf,
+	replyToken: string
+): Promise<void> => {
 	const status: string = wordWolf.gameStatus;
 
 	if (status == "setting") {
 		const settingNames: string[] = wordWolf.settingNames;
 		const settingStatus: boolean[] = wordWolf.settingStatus;
 		if (settingStatus == [] || settingStatus == undefined) {
-			const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
+			const group: dabyss.Group = await dabyss.Group.createInstance(wordWolf.groupId);
 			if (group.status == "recruit") {
 				return replyRollCallEnd(group, wordWolf, replyToken);
 			}
