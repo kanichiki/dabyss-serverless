@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import crazynoisy = require("../../../../modules/crazynoisy");
+import crazynoisy = require("../../../modules/crazynoisy");
 
 export const main = async (userNumber: number, numberOption: number): Promise<line.Message[]> => {
 	return [

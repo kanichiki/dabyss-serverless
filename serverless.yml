@@ -78,18 +78,9 @@ functions:
   WordWolf:
     handler: src/functions/wordwolf/handler.handler
     name: dabyss-wordwolf-${opt:stage, self:provider.stage, 'dev'}
-  CrazyNoisyGroupMessage:
-    handler: src/functions/crazynoisy/group-message/handler.handler
-    name: dabyss-crazynoisy-group-message-${opt:stage, self:provider.stage, 'dev'}
-  CrazyNoisyGroupPostback:
-    handler: src/functions/crazynoisy/group-postback/handler.handler
-    name: dabyss-crazynoisy-group-postback-${opt:stage, self:provider.stage, 'dev'}
-  CrazyNoisyUserPostback:
-    handler: src/functions/crazynoisy/user-postback/handler.handler
-    name: dabyss-crazynoisy-user-postback-${opt:stage, self:provider.stage, 'dev'}
-  CrazyNoisyGroupDatetimepicker:
-    handler: src/functions/crazynoisy/group-datetimepicker/handler.handler
-    name: dabyss-crazynoisy-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
+  CrazyNoisy:
+    handler: src/functions/crazynoisy/handler.handler
+    name: dabyss-crazynoisy-${opt:stage, self:provider.stage, 'dev'}
   
   JinroGroupMessage:
     handler: src/functions/jinro/group-message/handler.handler

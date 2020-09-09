@@ -2,32 +2,12 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import crazynoisy = require("../../../modules/crazynoisy");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-exports.handler = async (event: any): Promise<void> => {
-	const lineEvent: line.PostbackEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	const postback: line.Postback = lineEvent.postback;
-	const postbackData: string = postback.data;
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	let userId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
-	if (source.userId != undefined) {
-		userId = source.userId;
-	}
-
-	const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
+export const handleGroupPostback = async (
+	postbackData: string,
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	userId: string,
+	replyToken: string
+): Promise<void> => {
 	const status: string = crazyNoisy.gameStatus;
 
 	if (status == "action" && crazyNoisy.day == 0) {
@@ -82,14 +62,14 @@ const replyConfirmStatus = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 		}
 	}
 
-	const replyMessage = await import("./template/replyConfirmStatus");
+	const replyMessage = await import("../templates/replyConfirmStatus");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(unconfirmed));
 };
 
 const replyRemainingTime = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
 	const remainingTime = await crazyNoisy.discussion.getRemainingTime();
 
-	const replyMessage = await import("./template/replyRemainingTime");
+	const replyMessage = await import("../templates/replyRemainingTime");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(remainingTime));
 };
 
@@ -107,7 +87,7 @@ const replyVoteSuccess = async (
 
 	let replyMessage: line.Message[] = [];
 
-	const replyVoteSuccess = await import("./template/replyVoteSuccess");
+	const replyVoteSuccess = await import("../templates/replyVoteSuccess");
 	replyMessage = replyMessage.concat(await replyVoteSuccess.main(voterDisplayName));
 
 	const isVoteCompleted: boolean = await crazyNoisy.vote.isVoteCompleted();
@@ -121,7 +101,7 @@ const replyVoteSuccess = async (
 			const mostVotedUserIndex = await crazyNoisy.vote.getMostPolledUserIndex(); // 最多得票者
 			const executorDisplayName = await crazyNoisy.getDisplayName(mostVotedUserIndex);
 
-			const replyExecutor = await import("./template/replyExecutor");
+			const replyExecutor = await import("../templates/replyExecutor");
 			const replyExecutorMessage = await replyExecutor.main(executorDisplayName);
 			replyMessage = replyMessage.concat(replyExecutorMessage);
 
@@ -151,7 +131,7 @@ const replyVoteSuccess = async (
 			if (!isRevoting) {
 				// 一回目の投票の場合
 
-				const replyRevote = await import("./template/replyRevote");
+				const replyRevote = await import("../templates/replyRevote");
 				const replyRevoteMessage = await replyRevote.main(mostVotedUserIndexes, displayNames);
 				replyMessage = replyMessage.concat(replyRevoteMessage);
 
@@ -164,7 +144,7 @@ const replyVoteSuccess = async (
 				const executorIndex = await crazyNoisy.vote.chooseExecutorRandomly(); // 処刑者をランダムで決定
 				const executorDisplayName = await crazyNoisy.getDisplayName(executorIndex);
 
-				const replyExecutorInRevote = await import("./template/replyExecutorInRevote");
+				const replyExecutorInRevote = await import("../templates/replyExecutorInRevote");
 				const replyExecutorInRevoteMessage = await replyExecutorInRevote.main(executorDisplayName);
 				replyMessage = replyMessage.concat(replyExecutorInRevoteMessage);
 
@@ -202,7 +182,7 @@ const replyExecutorIsNotGuru = async (
 	const promises: Promise<void>[] = [];
 	await crazyNoisy.updateBrainwashStateTrue(executorIndex); // 最多投票者洗脳
 	promises.push(crazyNoisy.addCrazinessId(executorIndex)); // 最多投票者狂気追加
-	const replyExecutorIsNotGuru = await import("./template/replyExecutorIsNotGuru");
+	const replyExecutorIsNotGuru = await import("../templates/replyExecutorIsNotGuru");
 	const replyExecutorIsNotGuruMessage = await replyExecutorIsNotGuru.main(executorDisplayName);
 
 	await Promise.all(promises);
@@ -222,7 +202,7 @@ const replyVoteFinish = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.
 
 		const isBrainwash = await crazyNoisy.isBrainwash(i);
 
-		const pushUserAction = await import("./template/pushUserAction");
+		const pushUserAction = await import("../templates/pushUserAction");
 		promises.push(
 			dabyss.pushMessage(
 				crazyNoisy.userIds[i],
@@ -236,11 +216,10 @@ const replyVoteFinish = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.
 			)
 		);
 	}
+	await Promise.all(promises);
 
-	const replyVoteFinish = await import("./template/replyVoteFinish");
-	const replyVoteFinishMessage = await replyVoteFinish.main(crazyNoisy.day);
-
-	return replyVoteFinishMessage;
+	const replyVoteFinish = await import("../templates/replyVoteFinish");
+	return await replyVoteFinish.main(crazyNoisy.day);
 };
 
 const replyBrainwashCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.Message[]> => {
@@ -249,9 +228,8 @@ const replyBrainwashCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promi
 	const winnerIndexes = await crazyNoisy.getWinnerIndexes();
 
 	const displayNames = await crazyNoisy.getDisplayNames();
-	const replyWinner = await import("./template/replyWinner");
-	const replyWinnerMessage = await replyWinner.main(displayNames, true, winnerIndexes);
-	return replyWinnerMessage;
+	const replyWinner = await import("../templates/replyWinner");
+	return await replyWinner.main(displayNames, true, winnerIndexes);
 };
 
 const replyCitizenWin = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.Message[]> => {
@@ -261,14 +239,12 @@ const replyCitizenWin = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<line.
 	console.log("勝者:" + winnerIndexes);
 
 	const displayNames = await crazyNoisy.getDisplayNames();
-	const replyWinner = await import("./template/replyWinner");
-	const replyWinnerMessage = await replyWinner.main(displayNames, false, winnerIndexes);
-
-	return replyWinnerMessage;
+	const replyWinner = await import("../templates/replyWinner");
+	return await replyWinner.main(displayNames, false, winnerIndexes);
 };
 
 const replySelfVote = async (replyToken: string): Promise<void> => {
-	const replyMessage = await import("./template/replySelfVote");
+	const replyMessage = await import("../templates/replySelfVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main());
 };
 
@@ -278,6 +254,6 @@ const replyDuplicateVote = async (
 	replyToken: string
 ): Promise<void> => {
 	const displayName = await crazyNoisy.getDisplayName(userIndex);
-	const replyMessage = await import("./template/replyDuplicateVote");
+	const replyMessage = await import("../templates/replyDuplicateVote");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(displayName));
 };

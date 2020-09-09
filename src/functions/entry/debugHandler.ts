@@ -2,6 +2,7 @@ import line = require("@line/bot-sdk");
 import dabyss = require("../../modules/dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import * as wordwolf from "../wordwolf/handler";
+import * as crazynoisy from "../crazynoisy/handler";
 
 export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
 	const promises: Promise<void>[] = [];
@@ -370,6 +371,9 @@ const callGameHandler = async (game: dabyss.Game, lineEvent: line.MessageEvent |
 	switch (game.gameName) {
 		case "wordwolf":
 			await wordwolf.handler(lineEvent);
+			break;
+		case "crazynoisy":
+			await crazynoisy.handler(lineEvent);
 			break;
 	}
 	return;

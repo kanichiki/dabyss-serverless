@@ -1,28 +1,12 @@
-import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
 import crazynoisy = require("../../../modules/crazynoisy");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-exports.handler = async (event: any): Promise<void> => {
-	const lineEvent: line.PostbackEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	const postback: line.Postback = lineEvent.postback;
-	const postbackData: string = postback.data;
-	const source: line.EventSource = lineEvent.source;
-
-	let userId!: string;
-	if (source.userId != undefined) {
-		userId = source.userId;
-	}
-	const user: dabyss.User = await dabyss.User.createInstance(userId);
-	const groupId: string = user.groupId;
-
-	const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
+export const handleUserPostback = async (
+	postbackData: string,
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	userId: string,
+	replyToken: string
+): Promise<void> => {
 	const status: string = crazyNoisy.gameStatus;
 	const day: number = crazyNoisy.day;
 
@@ -91,7 +75,7 @@ const replyBasicAction = async (
 	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
 	if (position == crazyNoisy.positionNames.guru) {
-		const replyMessage = await import("./template/replyGuruAction");
+		const replyMessage = await import("../templates/replyGuruAction");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
 	}
 
@@ -116,7 +100,7 @@ const replyDetectiveAction = async (
 	const isGuru = await crazyNoisy.isGuru(targetIndex);
 	const displayName = await crazyNoisy.getDisplayName(targetIndex);
 
-	const replyMessage = await import("./template/replyDetectiveAction");
+	const replyMessage = await import("../templates/replyDetectiveAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isGuru)));
 
 	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
@@ -137,7 +121,7 @@ const replyPositionConfirm = async (
 
 	await crazyNoisy.action.updateActionStateTrue(userIndex);
 
-	const replyMessage = await import("./template/replyPositionConfirm");
+	const replyMessage = await import("../templates/replyPositionConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
 	const isActionsCompleted = await crazyNoisy.action.isActionCompleted();
@@ -152,7 +136,7 @@ const replyPositionConfirm = async (
 const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	const pushCraziness = await import("./template/pushUserCraziness");
+	const pushCraziness = await import("../templates/pushUserCraziness");
 
 	const brainwashTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.guru);
 	const spTarget = await crazyNoisy.getTargetOfPosition(crazyNoisy.positionNames.sp);
@@ -178,7 +162,7 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 	}
 
 	await crazyNoisy.updateDay(); // 日付更新
-	const pushDay = await import("./template/pushDay");
+	const pushDay = await import("../templates/pushDay");
 	let pushMessage = await pushDay.main(crazyNoisy.day);
 
 	const isBrainwashCompleted = await crazyNoisy.isBrainwashCompleted();
@@ -186,7 +170,7 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 		// ゲームが続く場合
 		const timer = await crazyNoisy.getTimerString(); // タイマー設定を取得
 
-		const pushFinishActions = await import("./template/pushFinishActions");
+		const pushFinishActions = await import("../templates/pushFinishActions");
 		const pushFinishActionsMessage = await pushFinishActions.main(crazyNoisy.day, timer);
 
 		promises.push(crazyNoisy.updateGameStatus("discuss"));
@@ -201,7 +185,7 @@ const replyActionCompleted = async (crazyNoisy: crazynoisy.CrazyNoisy): Promise<
 		const isWinnerGuru = true;
 		const winnerIndexes = await crazyNoisy.getWinnerIndexes();
 
-		const replyWinner = await import("./template/replyWinner");
+		const replyWinner = await import("../templates/replyWinner");
 		const displayNames = await crazyNoisy.getDisplayNames();
 		const pushWinnerMessage = await replyWinner.main(displayNames, isWinnerGuru, winnerIndexes);
 

@@ -1,34 +1,18 @@
-import line = require("@line/bot-sdk");
 import crazynoisy = require("../../../modules/crazynoisy");
 import dabyss = require("../../../modules/dabyss");
 
-exports.handler = async (event: any): Promise<void> => {
-	const lineEvent: line.MessageEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	let message!: line.TextEventMessage;
-	if (lineEvent.message.type == "text") {
-		message = lineEvent.message;
-	}
-	const text: string = message.text;
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
-	const crazyNoisy: crazynoisy.CrazyNoisy = await crazynoisy.CrazyNoisy.createInstance(groupId);
+export const handleGroupMessage = async (
+	text: string,
+	crazyNoisy: crazynoisy.CrazyNoisy,
+	replyToken: string
+): Promise<void> => {
 	const status: string = crazyNoisy.gameStatus;
 
 	if (status == "setting") {
 		const settingNames = crazyNoisy.settingNames;
 		const settingStatus = crazyNoisy.settingStatus;
 		if (settingStatus == [] || settingStatus == undefined) {
-			const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
+			const group: dabyss.Group = await dabyss.Group.createInstance(crazyNoisy.groupId);
 			if (group.status == "recruit") {
 				return replyRollCallEnd(group, crazyNoisy, replyToken);
 			}
@@ -112,7 +96,7 @@ const replyRollCallEnd = async (
 	promises.push(crazyNoisy.updateDefaultSettingStatus());
 	promises.push(group.updateStatus("play")); // 参加者リストをプレイ中にして、募集中を解除する
 
-	const replyMessage = await import("./template/replyRollCallEnd");
+	const replyMessage = await import("../templates/replyRollCallEnd");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames)));
 
 	await Promise.all(promises);
@@ -127,7 +111,7 @@ const replyModeChosen = async (crazyNoisy: crazynoisy.CrazyNoisy, text: string, 
 
 	const isSettingCompleted: boolean = await crazyNoisy.isSettingCompleted();
 	if (!isSettingCompleted) {
-		const replyMessage = await import("./template/replyModeChosen");
+		const replyMessage = await import("../templates/replyModeChosen");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(text)));
 	} else {
 		promises.push(replyConfirm(crazyNoisy, replyToken));
@@ -158,17 +142,17 @@ const replySettingChange = async (
 
 	if (setting == "mode") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import("./template/replyModeChange");
+		const replyMessage = await import("../templates/replyModeChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
 	if (setting == "type") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import("./template/replyTypeChange");
+		const replyMessage = await import("../templates/replyTypeChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
 	if (setting == "timer") {
 		promises.push(crazyNoisy.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import("./template/replyTimerChange");
+		const replyMessage = await import("../templates/replyTimerChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
 	if (setting == "zeroGuru") {
@@ -194,7 +178,7 @@ const replyConfirm = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: strin
 	const zeroGuru = crazyNoisy.zeroGuru;
 	const zeroDetective = crazyNoisy.zeroDetective;
 
-	const replyMessage = await import("./template/replyChanged");
+	const replyMessage = await import("../templates/replyChanged");
 	promises.push(
 		dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, mode, type, timer, zeroGuru, zeroDetective))
 	);
@@ -232,7 +216,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 		const targetDisplayNames = await crazyNoisy.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await crazyNoisy.getUserIndexesExceptOneself(i);
 
-		const pushPosition = await import("./template/pushUserPosition");
+		const pushPosition = await import("../templates/pushUserPosition");
 		promises.push(
 			dabyss.pushMessage(
 				userIds[i],
@@ -250,7 +234,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 
 	const numberOption = Math.floor((userNumber - 1) / 3);
 
-	const replyMessage = await import("./template/replyConfirmYes");
+	const replyMessage = await import("../templates/replyConfirmYes");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, numberOption)));
 
 	await Promise.all(promises);
@@ -260,7 +244,7 @@ const replyConfirmYes = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: st
 const replyPositionNumber = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken: string): Promise<void> => {
 	const userNumber = await crazyNoisy.getUserNumber();
 	const numberOption = Math.floor((userNumber - 1) / 3);
-	const replyMessage = await import("./template/replyPositionNumber");
+	const replyMessage = await import("../templates/replyPositionNumber");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, numberOption));
 	return;
 };
@@ -283,7 +267,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 	}
 
 	//if (usePostback) { // postbackを使う設定の場合
-	const replyMessage = await import("./template/replyDiscussFinish");
+	const replyMessage = await import("../templates/replyDiscussFinish");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
 	await Promise.all(promises);
@@ -315,7 +299,7 @@ const replyAnnounceResult = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken
 		contentsList.push(contents);
 	}
 
-	const replyMessage = await import("./template/replyAnnounceResult");
+	const replyMessage = await import("../templates/replyAnnounceResult");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, positions, contentsList)));
 
 	await Promise.all(promises);
