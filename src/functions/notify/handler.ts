@@ -23,13 +23,7 @@ exports.handler = async (): Promise<void> => {
 
 				const userNumber: number = await game.getUserNumber();
 				const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
-
-				const displayNames: string[] = [];
-
-				// 公平にするため投票用の順番はランダムにする
-				for (let i = 0; i < userNumber; i++) {
-					displayNames[i] = await game.getDisplayName(shuffleUserIndexes[i]);
-				}
+				const displayNames = await game.getDisplayNames();
 
 				//if (usePostback) { // postbackを使う設定の場合
 				const replyMessage = await import("./template/replyDiscussFinish");

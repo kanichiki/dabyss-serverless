@@ -1,5 +1,5 @@
 import line = require("@line/bot-sdk");
-import jinro_module = require("../../../../modules/jinro");
+import jinro_module = require("../../../modules/jinro");
 
 export const main = async (userNumber: number, timer: string): Promise<line.Message[]> => {
 	return [

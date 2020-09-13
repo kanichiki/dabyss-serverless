@@ -1,38 +1,14 @@
-import line = require("@line/bot-sdk");
 import dabyss = require("../../../modules/dabyss");
-import jinro_module = require("../../../modules/jinro");
+import jinroModule = require("../../../modules/jinro");
 
-process.on("uncaughtException", function (err) {
-	console.log(err);
-});
-
-exports.handler = async (event: any): Promise<void> => {
-	const lineEvent: line.MessageEvent = event.Input.event;
-	console.log(lineEvent);
-
-	const replyToken: string = lineEvent.replyToken;
-	let message!: line.TextEventMessage;
-	if (lineEvent.message.type == "text") {
-		message = lineEvent.message;
-	}
-	const text: string = message.text;
-	const source: line.EventSource = lineEvent.source;
-
-	let groupId!: string;
-	if (source.type == "group") {
-		groupId = source.groupId;
-	} else if (source.type == "room") {
-		groupId = source.roomId; // roomIdもgroupId扱いしよう
-	}
-
-	const jinro: jinro_module.Jinro = await jinro_module.Jinro.createInstance(groupId);
+export const handleGroupMessage = async (text: string, jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const status: string = jinro.gameStatus;
 
 	if (status == "setting") {
 		const settingNames = jinro.settingNames;
 		const settingStatus = jinro.settingStatus;
 		if (settingStatus == [] || settingStatus == undefined) {
-			const group: dabyss.Group = await dabyss.Group.createInstance(groupId);
+			const group: dabyss.Group = await dabyss.Group.createInstance(jinro.groupId);
 			if (group.status == "recruit") {
 				return replyRollCallEnd(group, jinro, replyToken);
 			}
@@ -89,7 +65,7 @@ exports.handler = async (event: any): Promise<void> => {
 	}
 };
 
-const replyRollCallEnd = async (group: dabyss.Group, jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
+const replyRollCallEnd = async (group: dabyss.Group, jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
 	const displayNames: string[] = await jinro.getDisplayNames(); // 参加者の表示名リスト
@@ -100,14 +76,14 @@ const replyRollCallEnd = async (group: dabyss.Group, jinro: jinro_module.Jinro, 
 
 	const userNumber = await jinro.getUserNumber();
 	const timer = await jinro.getTimerString();
-	const replyMessage = await import("./template/replyRollCallEnd");
+	const replyMessage = await import("../templates/replyRollCallEnd");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, userNumber, timer)));
 
 	await Promise.all(promises);
 	return;
 };
 
-const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, replyToken: string): Promise<void> => {
+const replySettingChange = async (jinro: jinroModule.Jinro, setting: string, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
 	// if (setting == "type") {
@@ -117,7 +93,7 @@ const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, re
 	// }
 	if (setting == "timer") {
 		promises.push(jinro.updateSettingState(setting, false)); // 設定状態をfalseに
-		const replyMessage = await import("./template/replyTimerChange");
+		const replyMessage = await import("../templates/replyTimerChange");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 	}
 
@@ -125,7 +101,7 @@ const replySettingChange = async (jinro: jinro_module.Jinro, setting: string, re
 	return;
 };
 
-const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
+const replyConfirmYes = async (jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
 	promises.push(jinro.updateGameStatus("action"));
@@ -144,7 +120,7 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 		const targetDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await jinro.getUserIndexesExceptOneself(i);
 
-		const pushPosition = await import("./template/pushUserPosition");
+		const pushPosition = await import("../templates/pushUserPosition");
 		promises.push(
 			dabyss.pushMessage(
 				userIds[i],
@@ -153,7 +129,7 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 		);
 	}
 
-	const replyMessage = await import("./template/replyConfirmYes");
+	const replyMessage = await import("../templates/replyConfirmYes");
 	// promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, werewolfNumber, forecasterNumber, psychicNumber, hunterNumber, madmanNumber)));
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers)));
 
@@ -161,13 +137,13 @@ const replyConfirmYes = async (jinro: jinro_module.Jinro, replyToken: string): P
 	return;
 };
 
-const replyPositionNumber = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
-	const replyMessage = await import("./template/replyPositionNumber");
+const replyPositionNumber = async (jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
+	const replyMessage = await import("../templates/replyPositionNumber");
 	await dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers));
 	return;
 };
 
-const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
+const replyDiscussFinish = async (jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
 	promises.push(jinro.discussion.updateIsDiscussingFalse());
@@ -176,23 +152,17 @@ const replyDiscussFinish = async (jinro: jinro_module.Jinro, replyToken: string)
 
 	const userNumber: number = await jinro.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
-
-	const displayNames: string[] = [];
-
-	// 公平にするため投票用の順番はランダムにする
-	for (let i = 0; i < userNumber; i++) {
-		displayNames[i] = await jinro.getDisplayName(shuffleUserIndexes[i]);
-	}
+	const displayNames = await jinro.getDisplayNames();
 
 	//if (usePostback) { // postbackを使う設定の場合
-	const replyMessage = await import("./template/replyDiscussFinish");
+	const replyMessage = await import("../templates/replyDiscussFinish");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
 	await Promise.all(promises);
 	return;
 };
 
-const replyAnnounceResult = async (jinro: jinro_module.Jinro, replyToken: string): Promise<void> => {
+const replyAnnounceResult = async (jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
 	promises.push(jinro.updateGameStatus("result"));
@@ -202,7 +172,7 @@ const replyAnnounceResult = async (jinro: jinro_module.Jinro, replyToken: string
 	const displayNames = await jinro.getDisplayNames();
 	const positions = jinro.positions;
 
-	const replyMessage = await import("./template/replyAnnounceResult");
+	const replyMessage = await import("../templates/replyAnnounceResult");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, positions)));
 
 	await Promise.all(promises);

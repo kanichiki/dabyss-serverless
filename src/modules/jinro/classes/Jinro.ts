@@ -259,21 +259,16 @@ export class Jinro extends dabyss.Game {
 	async getWinnerIndexes(): Promise<number[]> {
 		const res: number[] = [];
 		for (let i = 0; i < this.positions.length; i++) {
+			const isWolfSide =
+				this.positions[i] == this.positionNames.werewolf || this.positions[i] == this.positionNames.madman;
 			if (this.winner == "werewolf") {
 				// 人狼陣営勝利なら
-				if (
-					this.positions[i] == this.positionNames.werewolf ||
-					this.positions[i] == this.positionNames.madman
-				) {
+				if (isWolfSide) {
 					res.push(i);
 				}
 			} else {
 				// 市民陣営勝利なら
-				if (
-					this.positions[i] == this.positionNames.forecaster ||
-					this.positions[i] == this.positionNames.psychic ||
-					this.positionNames.hunter
-				) {
+				if (!isWolfSide) {
 					res.push(i);
 				}
 			}

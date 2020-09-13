@@ -258,13 +258,7 @@ const replyDiscussFinish = async (crazyNoisy: crazynoisy.CrazyNoisy, replyToken:
 
 	const userNumber: number = await crazyNoisy.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
-
-	const displayNames: string[] = [];
-
-	// 公平にするため投票用の順番はランダムにする
-	for (let i = 0; i < userNumber; i++) {
-		displayNames[i] = await crazyNoisy.getDisplayName(shuffleUserIndexes[i]);
-	}
+	const displayNames = await crazyNoisy.getDisplayNames();
 
 	//if (usePostback) { // postbackを使う設定の場合
 	const replyMessage = await import("../templates/replyDiscussFinish");

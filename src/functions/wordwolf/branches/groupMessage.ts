@@ -297,13 +297,7 @@ const replyDiscussFinish = async (wordWolf: wordwolf.WordWolf, replyToken: strin
 
 	const userNumber: number = await wordWolf.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
-
-	const displayNames: string[] = [];
-
-	// 公平にするため投票用の順番はランダムにする
-	for (let i = 0; i < userNumber; i++) {
-		displayNames[i] = await wordWolf.getDisplayName(shuffleUserIndexes[i]);
-	}
+	const displayNames = await wordWolf.getDisplayNames();
 
 	const replyMessage = await import("../templates/replyDiscussFinish");
 
