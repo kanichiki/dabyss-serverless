@@ -6,7 +6,7 @@ export const subColor = "#036568";
 export const voteMessage = async (userIndexes: number[], displayNames: string[]): Promise<line.FlexBubble[]> => {
 	const voteMessages: line.FlexBubble[] = [];
 
-	for (let i = 0; i < userIndexes.length; i++) {
+	for (const userIndex of userIndexes) {
 		const voteMessage: line.FlexBubble = {
 			type: "bubble",
 			size: "micro",
@@ -18,8 +18,8 @@ export const voteMessage = async (userIndexes: number[], displayNames: string[])
 						type: "button",
 						action: {
 							type: "postback",
-							label: displayNames[i],
-							data: userIndexes[i].toString(),
+							label: displayNames[userIndex],
+							data: userIndex.toString(),
 						},
 						color: mainColor,
 					},

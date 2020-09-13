@@ -15,6 +15,7 @@ export class Group {
 	groupKey: DocumentClient.Key;
 	exists: boolean;
 	status: string;
+	playingGame: string;
 	isRestarting: boolean;
 	isFinishing: boolean;
 
@@ -30,6 +31,7 @@ export class Group {
 		};
 		this.exists = false;
 		this.status = "";
+		this.playingGame = "";
 		this.isRestarting = false;
 		this.isFinishing = false;
 	}
@@ -48,6 +50,7 @@ export class Group {
 				if (data.Items != undefined) {
 					const group: DocumentClient.AttributeMap = data.Items[0];
 					this.status = group.status;
+					this.playingGame = group.playing_game;
 					this.isRestarting = group.is_restarting;
 					this.isFinishing = group.is_finishing;
 				}
@@ -114,6 +117,11 @@ export class Group {
 	async updateStatus(status: string): Promise<void> {
 		this.status = status;
 		await aws.dynamoUpdate(groupTable, this.groupKey, "status", this.status);
+	}
+
+	async updatePlayingGame(gameName: string): Promise<void> {
+		this.playingGame = gameName;
+		await aws.dynamoUpdate(groupTable, this.groupKey, "playing_game", this.playingGame);
 	}
 
 	/**

@@ -199,8 +199,8 @@ export class Vote {
 	 * @memberof Vote
 	 */
 	async vote(voterIndex: number, polledIndex: number): Promise<void> {
-		this.updateVoteState(voterIndex);
-		this.updatePolledNumber(polledIndex);
+		await this.updateVoteState(voterIndex);
+		await this.updatePolledNumber(polledIndex);
 	}
 
 	/**
