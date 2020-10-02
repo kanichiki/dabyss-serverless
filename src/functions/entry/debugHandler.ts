@@ -371,7 +371,7 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 const callGameHandler = async (game: dabyss.Game, lineEvent: line.MessageEvent | line.PostbackEvent) => {
 	switch (game.gameName) {
 		case "wordwolf":
-			await wordwolf.handler(lineEvent);
+			await wordwolf.handler({ event: lineEvent });
 			break;
 		case "crazynoisy":
 			await crazynoisy.handler(lineEvent);

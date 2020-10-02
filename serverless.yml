@@ -34,7 +34,7 @@ provider:
     minimumCompressionSize: 1024
   environment: 
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    AWS_REGION: ap-northeast-1
+#    AWS_REGION: ap-northeast-1
     TZ: Asia/Tokyo
     stage: ${opt:stage, self:provider.stage, 'dev'}
     eventTable: ${self:resources.Resources.eventTable.Properties.TableName}
@@ -74,26 +74,23 @@ functions:
     handler: src/functions/entry/handler.handler
     name: dabyss-entry-${opt:stage, self:provider.stage, 'dev'}
     environment:
-      wordwolfFunction: ${self:functions.WordWolf.name}
+#      wordwolfFunction: ${self:functions.WordWolf.name}
+      wordwolfFunction:
+        Fn::GetAtt: [WordWolfLambdaFunction, Arn]
+      crazynoisyFunction:
+        Fn::GetAtt: [CrazyNoisyLambdaFunction, Arn]
+      jinroFunction:
+        Fn::GetAtt: [JinroLambdaFunction, Arn]
+
   WordWolf:
     handler: src/functions/wordwolf/handler.handler
     name: dabyss-wordwolf-${opt:stage, self:provider.stage, 'dev'}
   CrazyNoisy:
     handler: src/functions/crazynoisy/handler.handler
     name: dabyss-crazynoisy-${opt:stage, self:provider.stage, 'dev'}
-  
-  JinroGroupMessage:
-    handler: src/functions/jinro/group-message/handler.handler
-    name: dabyss-jinro-group-message-${opt:stage, self:provider.stage, 'dev'}
-  JinroGroupPostback:
-    handler: src/functions/jinro/group-postback/handler.handler
-    name: dabyss-jinro-group-postback-${opt:stage, self:provider.stage, 'dev'}
-  JinroUserPostback:
-    handler: src/functions/jinro/user-postback/handler.handler
-    name: dabyss-jinro-user-postback-${opt:stage, self:provider.stage, 'dev'}
-  JinroGroupDatetimepicker:
-    handler: src/functions/jinro/group-datetimepicker/handler.handler
-    name: dabyss-jinro-group-datetimepicker-${opt:stage, self:provider.stage, 'dev'}
+  Jinro:
+    handler: src/functions/jinro/handler.handler
+    name: dabyss-jinro-${opt:stage, self:provider.stage, 'dev'}
 
 
 #stepFunctions:
@@ -280,10 +277,10 @@ functions:
 #            End: true
 
 resources:
-  Outputs:
-    DabyssMachine:
-      Value:
-        Ref: DabyssDashstateDashmachineDash${opt:stage, self:provider.stage, 'dev'}
+#  Outputs:
+#    DabyssMachine:
+#      Value:
+#        Ref: DabyssDashstateDashmachineDash${opt:stage, self:provider.stage, 'dev'}
   Resources:
     eventTable:
       Type: AWS::DynamoDB::Table

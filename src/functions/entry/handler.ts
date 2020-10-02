@@ -214,7 +214,8 @@ const replyRollCall = async (group: dabyss.Group, text: string, replyToken: stri
 
 	const game = await dabyss.Game.createInstance(group.groupId);
 	promises.push(game.putGame(text));
-	promises.push(group.updatePlayingGame(text));
+	const gameName = await game.getGameName(text);
+	promises.push(group.updatePlayingGame(gameName));
 
 	await Promise.all(promises);
 	return;
@@ -349,11 +350,12 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 const invokeLambda = async (gameName: string, lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
 	const lambda = await dabyss.getLambdaClient();
 	const functionName = await dabyss.Game.getFunctionName(gameName);
+	console.log(functionName);
 	await lambda
 		.invoke({
 			FunctionName: functionName,
 			InvocationType: "Event",
-			Payload: JSON.stringify({ event: lineEvent }),
+			Payload: JSON.stringify(lineEvent),
 		})
 		.promise();
 };

@@ -20,7 +20,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 	console.log(lineEvents);
 
 	let endpoint!: string;
-	if (process.env.stage == "dev") {
+	if (process.env.stage == "local") {
 		endpoint = "http://localhost:3002";
 	} else {
 		endpoint = "https://lambda.ap-northeast-1.amazonaws.com";
