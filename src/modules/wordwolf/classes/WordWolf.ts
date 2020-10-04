@@ -73,6 +73,7 @@ export class WordWolf extends dabyss.Game {
 						this.gameStatus = game.game_status;
 						this.settingStatus = game.setting_status;
 						this.timer = game.timer;
+						this.winner = game.winner;
 
 						this.wordSetId = game.word_set_id;
 						this.depth = game.depth;
@@ -101,6 +102,26 @@ export class WordWolf extends dabyss.Game {
 		const wordWolf: WordWolf = new WordWolf(groupId);
 		await wordWolf.init();
 		return wordWolf;
+	}
+
+	async update(): Promise<void> {
+		const wordwolf = {
+			game_id: this.gameId,
+			user_ids: this.userIds,
+			day: this.day,
+			game_name: this.gameName,
+			game_status: this.gameStatus,
+			setting_status: this.settingStatus,
+			timer: this.timer,
+			winner: this.winner,
+			word_set_id: this.wordSetId,
+			depth: this.depth,
+			citizen_word: this.citizenWord,
+			wolf_word: this.wolfWord,
+			wolf_indexes: this.wolfIndexes,
+			lunatic_indexes: this.lunaticIndexes,
+		}
+		await dabyss.dynamoUpdate(gameTable, wordwolf);
 	}
 
 	/**
@@ -191,11 +212,8 @@ export class WordWolf extends dabyss.Game {
 	 */
 	async updateWordSet(depth: number): Promise<void> {
 		try {
-			const promises: Promise<void>[] = [];
 			this.depth = depth;
-			promises.push(dabyss.dynamoUpdate(gameTable, this));
 			this.wordSetId = await this.chooseWordSetIdMatchDepth(depth);
-			promises.push(dabyss.dynamoUpdate(gameTable, this));
 			const isReverse: boolean = await dabyss.getRandomBoolean();
 			const wordSet: DocumentClient.AttributeMap = await this.getWordSet();
 			if (isReverse) {
@@ -205,10 +223,7 @@ export class WordWolf extends dabyss.Game {
 				this.citizenWord = wordSet.word2;
 				this.wolfWord = wordSet.word1;
 			}
-			promises.push(dabyss.dynamoUpdate(gameTable, this));
-			promises.push(dabyss.dynamoUpdate(gameTable, this));
-			await Promise.all(promises);
-			return;
+			await this.update();
 		} catch (err) {
 			console.log(err);
 		}
@@ -236,7 +251,7 @@ export class WordWolf extends dabyss.Game {
 	 */
 	async updateWolfIndexes(wolfNumber: number): Promise<void> {
 		this.wolfIndexes = await this.chooseWolfIndexes(wolfNumber);
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	// ウルフの数についての関数
@@ -411,7 +426,7 @@ export class WordWolf extends dabyss.Game {
 	 */
 	async updateLunaticIndexes(lunaticNumber: number): Promise<void> {
 		this.lunaticIndexes = await this.chooseLunaticIndexes(lunaticNumber);
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	// 狂人の数ここまで

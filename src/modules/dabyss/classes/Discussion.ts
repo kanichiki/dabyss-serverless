@@ -80,6 +80,19 @@ export class Discussion {
 		return discussion;
 	}
 
+	async update(): Promise<void> {
+		const discussion = {
+			group_id: this.groupId,
+			game_id: this.gameId,
+			day: this.day,
+			timer: this.timer,
+			start_time: this.startTime,
+			end_time: this.endTime,
+			is_discussing: this.isDiscussing,
+		}
+		await aws.dynamoUpdate(discussionTable, discussion);
+	}
+
 	/**
 	 * ディスカッションのデータ挿入
 	 *
@@ -130,6 +143,6 @@ export class Discussion {
 	 */
 	async updateIsDiscussingFalse(): Promise<void> {
 		this.isDiscussing = "none";
-		await aws.dynamoUpdate(discussionTable, this);
+		await this.update();
 	}
 }

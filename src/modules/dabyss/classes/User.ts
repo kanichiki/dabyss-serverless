@@ -3,7 +3,7 @@ import * as line from "../clients/lineClient";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const userTable = process.env.userTable;
-
+// TODO: 大規模変更。ユーザーオブジェクト作る
 /**
  * Userクラス
  *
@@ -69,6 +69,15 @@ export class User {
 		return user;
 	}
 
+	async update(): Promise<void> {
+		const user = {
+			user_id: this.userId,
+			group_id: this.groupId,
+			is_restarting: this.isRestarting
+		}
+		await aws. dynamoUpdate(userTable, user);
+	}
+
 	/**
 	 * group_idを持ってるかどうか
 	 *
@@ -108,7 +117,7 @@ export class User {
 	 */
 	async updateGroupId(groupId: string): Promise<void> {
 		this.groupId = groupId;
-		await aws.dynamoUpdate(userTable, this);
+		await this.update();
 	}
 
 	/**
@@ -119,7 +128,7 @@ export class User {
 	 */
 	async deleteGroupId(): Promise<void> {
 		this.groupId = "none";
-		await aws.dynamoUpdate(userTable, this);
+		await this.update();
 	}
 
 	/**
@@ -130,7 +139,7 @@ export class User {
 	 */
 	async updateIsRestarting(bool: boolean): Promise<void> {
 		this.isRestarting = bool;
-		aws.dynamoUpdate(userTable, this);
+		await this.update();
 	}
 
 	/**

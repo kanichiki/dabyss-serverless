@@ -68,6 +68,15 @@ export class Action {
 		return action;
 	}
 
+	async update(): Promise<void> {
+		const action = {
+			game_id: this.gameId,
+			day: this.day,
+			action_status: this.actionStatus,
+			targets: this.targets
+		}
+		await aws.dynamoUpdate(actionTable, action);
+	}
 	/**
 	 * アクションデータ挿入
 	 *
@@ -114,7 +123,7 @@ export class Action {
 	 */
 	async updateActionStateTrue(index: number): Promise<void> {
 		this.actionStatus[index] = true;
-		await aws.dynamoUpdate(actionTable, this);
+		await this.update();
 	}
 
 	/**
@@ -127,7 +136,7 @@ export class Action {
 	 */
 	async updateTarget(index: number, target: number): Promise<void> {
 		this.targets[index] = target;
-		await aws.dynamoUpdate(actionTable, this);
+		await this.update();
 	}
 
 	/**

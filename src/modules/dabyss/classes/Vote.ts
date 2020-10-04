@@ -87,6 +87,18 @@ export class Vote {
 		return vote;
 	}
 
+	async update(): Promise<void> {
+		const vote = {
+			game_id: this.gameId,
+			vote_id: this.voteId,
+			day: this.day,
+			count: this.count,
+			candidate_indexes: this.candidateIndexes,
+			polled_numbers: this.polledNumbers,
+			vote_status: this.voteStatus
+		}
+		await aws.dynamoUpdate(voteTable, vote);
+	}
 	/**
 	 * Voteデータ追加
 	 *
@@ -165,7 +177,7 @@ export class Vote {
 	 */
 	async updateVoteState(userIndex: number): Promise<void> {
 		this.voteStatus[userIndex] = true;
-		aws.dynamoUpdate(voteTable, this);
+		await this.update();
 	}
 
 	/**
@@ -177,8 +189,7 @@ export class Vote {
 	 */
 	async updatePolledNumber(userIndex: number): Promise<void> {
 		this.polledNumbers[userIndex] += 1;
-		console.log(this.polledNumbers);
-		aws.dynamoUpdate(voteTable, this);
+		await this.update();
 	}
 
 	/**

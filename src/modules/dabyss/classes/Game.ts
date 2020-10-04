@@ -182,6 +182,20 @@ export class Game {
 		return game;
 	}
 
+	async update(): Promise<void> {
+		const game = {
+			game_id: this.gameId,
+			user_ids: this.userIds,
+			day: this.day,
+			game_name: this.gameName,
+			game_status: this.gameStatus,
+			setting_status: this.settingStatus,
+			timer: this.timer,
+			winner: this.winner,
+			positions: this.positions
+		};
+		await aws.dynamoUpdate(gameTable, game)
+	}
 	/**
 	 * ゲームデータ挿入
 	 *
@@ -215,7 +229,7 @@ export class Game {
 	 */
 	async updateDay(): Promise<void> {
 		this.day++;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -340,7 +354,7 @@ export class Game {
 		if (!isUserExists) {
 			this.userIds.push(userId);
 		}
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -430,7 +444,7 @@ export class Game {
 	 */
 	async updateDefaultSettingStatus(): Promise<void> {
 		this.settingStatus = this.defaultSettingStatus;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update()
 	}
 
 	/**
@@ -462,7 +476,7 @@ export class Game {
 	async updateSettingState(name: string, bool: boolean): Promise<void> {
 		const settingIndex: number = await this.getSettingIndex(name);
 		this.settingStatus[settingIndex] = bool;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -475,7 +489,7 @@ export class Game {
 	async updateSettingStateTrue(index: number): Promise<void> {
 		this.settingStatus[index] = true;
 		console.log(this.settingStatus);
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -487,7 +501,7 @@ export class Game {
 	 */
 	async updateSettingStateFalse(index: number): Promise<void> {
 		this.settingStatus[index] = false;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -539,7 +553,7 @@ export class Game {
 	 */
 	async updateTimer(time: string): Promise<void> {
 		this.timer = "00:" + time;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -551,7 +565,7 @@ export class Game {
 	 */
 	async updateGameStatus(status: string): Promise<void> {
 		this.gameStatus = status;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -590,6 +604,7 @@ export class Game {
 	 * @returns {Promise<void>}
 	 * @memberof Game
 	 */
+	// TODO: Voteクラスはなくなるからこのへんの仕様が変わる
 	async putFirstVote(): Promise<void> {
 		const indexes = await this.getUserIndexes();
 		await Vote.putVote(this.gameId, this.day, 1, indexes, indexes.length);
@@ -601,6 +616,7 @@ export class Game {
 	 * @returns {Promise<void>}
 	 * @memberof Game
 	 */
+	// TODO: Voteクラスはなくなるからこのへんの仕様が変わる
 	async putRevote(): Promise<void> {
 		const indexes = await this.vote.getMostPolledUserIndexes();
 		const count = this.vote.count + 1;
@@ -627,7 +643,7 @@ export class Game {
 	 */
 	async updateWinner(winner: string): Promise<void> {
 		this.winner = winner;
-		await aws.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	/**
@@ -665,6 +681,7 @@ export class Game {
 	 * @returns {Promise<void>}
 	 * @memberof Game
 	 */
+	// TODO: Actionクラスなくなるからここの仕様が変わるよ
 	async putZeroAction(): Promise<void> {
 		const userNumber: number = await this.getUserNumber();
 		const status: boolean[] = Array(userNumber).fill(false);
