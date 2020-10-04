@@ -1,6 +1,6 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Action } from "../../dabyss";
+import { Player } from "../classes/JinroPlayer"
 
 const gameTable = process.env.gameTable;
 
@@ -37,7 +37,6 @@ export class Jinro extends dabyss.Game {
 
 	talkType: number;
 	isAliveStatus: boolean[];
-
 	positionNumbers: PositionNumbers;
 
 	/**
@@ -63,8 +62,6 @@ export class Jinro extends dabyss.Game {
 		};
 
 		this.talkType = -1;
-		this.isAliveStatus = [];
-
 		this.positionNumbers = {
 			werewolf: 0,
 			madman: 0,
@@ -100,25 +97,14 @@ export class Jinro extends dabyss.Game {
 							group_id: this.groupId,
 							game_id: this.gameId,
 						};
-						this.userIds = game.user_ids as string[];
+						// this.userIds = game.user_ids as string[];
 						this.day = game.day as number;
 						this.gameName = game.game_name as string;
 						this.gameStatus = game.game_status as string;
 						this.settingStatus = game.setting_status as boolean[];
 						this.timer = game.timer as string;
 						this.winner = game.winner as string;
-
 						this.talkType = game.talk_type as number;
-
-						if (game.positions) {
-							this.positions = game.positions as string[];
-						}
-						if (game.is_alive_status) {
-							this.isAliveStatus = game.is_alive_status as boolean[];
-						}
-						if (game.position_numbers) {
-							this.positionNumbers = game.position_numbers as PositionNumbers;
-						}
 					}
 				}
 			}
@@ -157,7 +143,7 @@ export class Jinro extends dabyss.Game {
 
 			talk_type: this.talkType,
 			is_alive_status: this.isAliveStatus,
-			position_numbers: this.positionNumbers,
+
 		};
 		await dabyss.dynamoUpdate(gameTable, jinro);
 	}
