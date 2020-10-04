@@ -95,8 +95,8 @@ export class Vote {
 			count: this.count,
 			candidate_indexes: this.candidateIndexes,
 			polled_numbers: this.polledNumbers,
-			vote_status: this.voteStatus
-		}
+			vote_status: this.voteStatus,
+		};
 		await aws.dynamoUpdate(voteTable, vote);
 	}
 	/**
@@ -119,7 +119,7 @@ export class Vote {
 		userNumber: number
 	): Promise<void> {
 		const items: DocumentClient.QueryOutput = await aws.dynamoScan(voteTable, 1);
-		const voteId = items.Items[0].vote_id ? items.Items[0].vote_id + 1 : 1;
+		const voteId = items.Items[0] ? items.Items[0].vote_id + 1 : 1;
 		const polledNumbers: number[] = new Array(userNumber).fill(0);
 		const voteStatus: boolean[] = new Array(userNumber).fill(false);
 		const item: DocumentClient.AttributeMap = {

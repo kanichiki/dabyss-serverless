@@ -106,6 +106,7 @@ export class WordWolf extends dabyss.Game {
 
 	async update(): Promise<void> {
 		const wordwolf = {
+			group_id: this.groupId,
 			game_id: this.gameId,
 			user_ids: this.userIds,
 			day: this.day,
@@ -120,7 +121,7 @@ export class WordWolf extends dabyss.Game {
 			wolf_word: this.wolfWord,
 			wolf_indexes: this.wolfIndexes,
 			lunatic_indexes: this.lunaticIndexes,
-		}
+		};
 		await dabyss.dynamoUpdate(gameTable, wordwolf);
 	}
 

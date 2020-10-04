@@ -128,6 +128,7 @@ export class CrazyNoisy extends dabyss.Game {
 
 	async update(): Promise<void> {
 		const crazynoisy = {
+			group_id: this.groupId,
 			game_id: this.gameId,
 			user_ids: this.userIds,
 			day: this.day,
@@ -143,8 +144,10 @@ export class CrazyNoisy extends dabyss.Game {
 			zero_detective: this.zeroDetective,
 			zero_guru: this.zeroGuru,
 			brainwash_status: this.brainwashStatus,
-			craziness_ids: this.crazinessIds
-		}
+			craziness_ids: this.crazinessIds,
+		};
+
+		await dabyss.dynamoUpdate(gameTable, crazynoisy);
 	}
 
 	async chooseFanaticNumber(): Promise<number> {

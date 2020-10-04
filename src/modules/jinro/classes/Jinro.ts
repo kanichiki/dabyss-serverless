@@ -142,6 +142,26 @@ export class Jinro extends dabyss.Game {
 		return jinro;
 	}
 
+	async update(): Promise<void> {
+		const jinro = {
+			group_id: this.groupId,
+			game_id: this.gameId,
+			user_ids: this.userIds,
+			day: this.day,
+			game_name: this.gameName,
+			game_status: this.gameStatus,
+			setting_status: this.settingStatus,
+			timer: this.timer,
+			winner: this.winner,
+			positions: this.positions,
+
+			talk_type: this.talkType,
+			is_alive_status: this.isAliveStatus,
+			position_numbers: this.positionNumbers,
+		};
+		await dabyss.dynamoUpdate(gameTable, jinro);
+	}
+
 	async updatePositionNumbers(): Promise<void> {
 		const userNumber: number = await this.getUserNumber();
 		if (userNumber < 5) {
@@ -185,7 +205,7 @@ export class Jinro extends dabyss.Game {
 				this.positionNumbers.psychic +
 				this.positionNumbers.hunter);
 
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	async updatePositions() {
@@ -221,7 +241,7 @@ export class Jinro extends dabyss.Game {
 
 		this.positions = positions;
 
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	async getPosition(userIndex: number): Promise<string> {
@@ -231,7 +251,7 @@ export class Jinro extends dabyss.Game {
 
 	async updateTalkType(type: number): Promise<void> {
 		this.talkType = type;
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	async updateDefaultAliveStatus(): Promise<void> {
@@ -239,7 +259,7 @@ export class Jinro extends dabyss.Game {
 			this.isAliveStatus[i] = true;
 			console.log(this.isAliveStatus);
 		}
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	async isAlive(index: number): Promise<boolean> {
@@ -248,7 +268,7 @@ export class Jinro extends dabyss.Game {
 
 	async die(index: number): Promise<void> {
 		this.isAliveStatus[index] = false;
-		dabyss.dynamoUpdate(gameTable, this);
+		await this.update();
 	}
 
 	async isWerewolf(index: number): Promise<boolean> {

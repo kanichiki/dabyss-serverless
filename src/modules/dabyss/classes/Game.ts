@@ -143,7 +143,7 @@ export class Game {
 				if (data.Count > 0) {
 					this.exists = true;
 
-					if (data.Items != undefined) {
+					if (data.Items[0] != undefined) {
 						const game: DocumentClient.AttributeMap = data.Items[0];
 						this.gameId = game.game_id as number;
 						this.gameKey = {
@@ -184,6 +184,7 @@ export class Game {
 
 	async update(): Promise<void> {
 		const game = {
+			group_id: this.groupId,
 			game_id: this.gameId,
 			user_ids: this.userIds,
 			day: this.day,
@@ -192,9 +193,9 @@ export class Game {
 			setting_status: this.settingStatus,
 			timer: this.timer,
 			winner: this.winner,
-			positions: this.positions
+			positions: this.positions,
 		};
-		await aws.dynamoUpdate(gameTable, game)
+		await aws.dynamoUpdate(gameTable, game);
 	}
 	/**
 	 * ゲームデータ挿入
@@ -205,7 +206,7 @@ export class Game {
 	 */
 	async putGame(jpName: string): Promise<void> {
 		const items: DocumentClient.QueryOutput = await aws.dynamoScan(gameTable, 1);
-		this.gameId = items.Items[0].game_id + 1;
+		this.gameId = items.Items[0] ? items.Items[0].game_id + 1 : 1;
 
 		const gameName = await this.getGameName(jpName);
 		const item: DocumentClient.AttributeMap = {
@@ -444,7 +445,7 @@ export class Game {
 	 */
 	async updateDefaultSettingStatus(): Promise<void> {
 		this.settingStatus = this.defaultSettingStatus;
-		await this.update()
+		await this.update();
 	}
 
 	/**
