@@ -15,15 +15,15 @@ export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent)
 		} else if (lineEvent.source.type == "room") {
 			groupId = lineEvent.source.roomId; // roomIdもgroupId扱いします
 		}
-		const crazyNoisy = await jinroModule.Jinro.createInstance(groupId);
-		const isUserParticipant = crazyNoisy.isUserExists(userId);
+		const jinro = await jinroModule.Jinro.createInstance(groupId);
+		const isUserParticipant = jinro.isUserExists(userId);
 		if (isUserParticipant) {
 			if (lineEvent.type == "message") {
 				if (lineEvent.message.type == "text") {
 					// テキストメッセージイベントなら
 					const text: string = lineEvent.message.text;
 
-					await branches.handleGroupMessage(text, crazyNoisy, replyToken);
+					await branches.handleGroupMessage(text, jinro, replyToken);
 				}
 			}
 			if (lineEvent.type == "postback") {
@@ -31,10 +31,10 @@ export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent)
 				if (postback.params != undefined) {
 					if (postback.params.time != undefined) {
 						const time = postback.params.time;
-						await branches.handleGroupDatetimePicker(time, crazyNoisy, replyToken);
+						await branches.handleGroupDatetimePicker(time, jinro, replyToken);
 					}
 				} else {
-					await branches.handleGroupPostback(postback.data, crazyNoisy, userId, replyToken);
+					await branches.handleGroupPostback(postback.data, jinro, userId, replyToken);
 				}
 			}
 		}
