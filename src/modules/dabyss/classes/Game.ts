@@ -25,7 +25,6 @@ const games: { [key: string]: { jpName: string; minNumber: number; functionName:
 };
 
 const gameTable: string = process.env.gameTable;
-const sequenceTable: string = process.env.sequenceTable;
 
 /**
  * ゲームのクラス
@@ -128,7 +127,7 @@ export class Game {
 	}
 
 	async getJpGameName(): Promise<string> {
-		return games[this.gameName].jpName;
+		return this.gameName ? games[this.gameName].jpName : "";
 	}
 
 	/**
@@ -191,27 +190,21 @@ export class Game {
 	 * @memberof Game
 	 */
 	async putGame(jpName: string): Promise<void> {
-		try {
-			const key: { name: string } = { name: gameTable };
-			const data: DocumentClient.GetItemOutput = await aws.dynamoGet(sequenceTable, key);
-			if (data.Item != undefined) {
-				this.gameId = data.Item.number + 1;
-			}
-			const gameName = await this.getGameName(jpName);
-			const item: DocumentClient.AttributeMap = {
-				group_id: this.groupId,
-				game_id: this.gameId,
-				user_ids: [],
-				game_status: "setting",
-				game_name: gameName,
-				day: 0,
-				timer: "00:03:00",
-			};
-			// groupデータをputできたらsequenceをプラス１
-			aws.dynamoPut(gameTable, item).then(await aws.dynamoUpdate(sequenceTable, key, "number", this.gameId));
-		} catch (err) {
-			console.log(err);
-		}
+		const items: DocumentClient.QueryOutput = await aws.dynamoScan(gameTable, 1);
+		this.gameId = items.Items[0].game_id + 1;
+
+		const gameName = await this.getGameName(jpName);
+		const item: DocumentClient.AttributeMap = {
+			group_id: this.groupId,
+			game_id: this.gameId,
+			user_ids: [],
+			game_status: "setting",
+			game_name: gameName,
+			day: 0,
+			timer: "00:03:00",
+		};
+		// groupデータをputできたらsequenceをプラス１
+		await aws.dynamoPut(gameTable, item).catch((err) => console.log(err));
 	}
 
 	/**
@@ -222,7 +215,7 @@ export class Game {
 	 */
 	async updateDay(): Promise<void> {
 		this.day++;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "day", this.day);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -347,7 +340,7 @@ export class Game {
 		if (!isUserExists) {
 			this.userIds.push(userId);
 		}
-		await aws.dynamoUpdate(gameTable, this.gameKey, "user_ids", this.userIds);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -437,7 +430,7 @@ export class Game {
 	 */
 	async updateDefaultSettingStatus(): Promise<void> {
 		this.settingStatus = this.defaultSettingStatus;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -469,7 +462,7 @@ export class Game {
 	async updateSettingState(name: string, bool: boolean): Promise<void> {
 		const settingIndex: number = await this.getSettingIndex(name);
 		this.settingStatus[settingIndex] = bool;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -482,7 +475,7 @@ export class Game {
 	async updateSettingStateTrue(index: number): Promise<void> {
 		this.settingStatus[index] = true;
 		console.log(this.settingStatus);
-		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -494,7 +487,7 @@ export class Game {
 	 */
 	async updateSettingStateFalse(index: number): Promise<void> {
 		this.settingStatus[index] = false;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "setting_status", this.settingStatus);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -546,7 +539,7 @@ export class Game {
 	 */
 	async updateTimer(time: string): Promise<void> {
 		this.timer = "00:" + time;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "timer", this.timer);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -558,7 +551,7 @@ export class Game {
 	 */
 	async updateGameStatus(status: string): Promise<void> {
 		this.gameStatus = status;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "game_status", this.gameStatus);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**
@@ -634,7 +627,7 @@ export class Game {
 	 */
 	async updateWinner(winner: string): Promise<void> {
 		this.winner = winner;
-		await aws.dynamoUpdate(gameTable, this.gameKey, "winner", this.winner);
+		await aws.dynamoUpdate(gameTable, this);
 	}
 
 	/**

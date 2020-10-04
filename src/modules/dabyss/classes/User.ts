@@ -108,7 +108,7 @@ export class User {
 	 */
 	async updateGroupId(groupId: string): Promise<void> {
 		this.groupId = groupId;
-		await aws.dynamoUpdate(userTable, this.userKey, "group_id", this.groupId);
+		await aws.dynamoUpdate(userTable, this);
 	}
 
 	/**
@@ -119,7 +119,7 @@ export class User {
 	 */
 	async deleteGroupId(): Promise<void> {
 		this.groupId = "none";
-		await aws.dynamoUpdate(userTable, this.userKey, "group_id", this.groupId);
+		await aws.dynamoUpdate(userTable, this);
 	}
 
 	/**
@@ -130,7 +130,7 @@ export class User {
 	 */
 	async updateIsRestarting(bool: boolean): Promise<void> {
 		this.isRestarting = bool;
-		aws.dynamoUpdate(userTable, this.userKey, "is_restarting", this.isRestarting);
+		aws.dynamoUpdate(userTable, this);
 	}
 
 	/**

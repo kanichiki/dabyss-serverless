@@ -2,7 +2,6 @@ import * as aws from "../clients/awsClient";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 const voteTable = process.env.voteTable;
-const sequenceTable = process.env.sequenceTable;
 
 /**
  * Voteクラス
@@ -107,29 +106,21 @@ export class Vote {
 		candidateIndexes: number[],
 		userNumber: number
 	): Promise<void> {
-		try {
-			const key: { name: string } = { name: voteTable };
-			const data: DocumentClient.GetItemOutput = await aws.dynamoGet(sequenceTable, key);
-			let voteId = 0;
-			if (data.Item != undefined) {
-				voteId = data.Item.number + 1;
-			}
-			const polledNumbers: number[] = new Array(userNumber).fill(0);
-			const voteStatus: boolean[] = new Array(userNumber).fill(false);
-			const item: DocumentClient.AttributeMap = {
-				game_id: gameId,
-				vote_id: voteId,
-				day: day,
-				count: count,
-				candidate_indexes: candidateIndexes,
-				polled_numbers: polledNumbers,
-				vote_status: voteStatus,
-			};
-			// voteデータをputできたらsequenceをプラス１
-			aws.dynamoPut(voteTable, item).then(await aws.dynamoUpdate(sequenceTable, key, "number", voteId));
-		} catch (err) {
-			console.log(err);
-		}
+		const items: DocumentClient.QueryOutput = await aws.dynamoScan(voteTable, 1);
+		const voteId = items.Items[0].vote_id ? items.Items[0].vote_id + 1 : 1;
+		const polledNumbers: number[] = new Array(userNumber).fill(0);
+		const voteStatus: boolean[] = new Array(userNumber).fill(false);
+		const item: DocumentClient.AttributeMap = {
+			game_id: gameId,
+			vote_id: voteId,
+			day: day,
+			count: count,
+			candidate_indexes: candidateIndexes,
+			polled_numbers: polledNumbers,
+			vote_status: voteStatus,
+		};
+		// voteデータをputできたらsequenceをプラス１
+		aws.dynamoPut(voteTable, item).catch((err) => console.log(err));
 	}
 
 	/**
@@ -174,7 +165,7 @@ export class Vote {
 	 */
 	async updateVoteState(userIndex: number): Promise<void> {
 		this.voteStatus[userIndex] = true;
-		aws.dynamoUpdate(voteTable, this.voteKey, "vote_status", this.voteStatus);
+		aws.dynamoUpdate(voteTable, this);
 	}
 
 	/**
@@ -187,7 +178,7 @@ export class Vote {
 	async updatePolledNumber(userIndex: number): Promise<void> {
 		this.polledNumbers[userIndex] += 1;
 		console.log(this.polledNumbers);
-		aws.dynamoUpdate(voteTable, this.voteKey, "polled_numbers", this.polledNumbers);
+		aws.dynamoUpdate(voteTable, this);
 	}
 
 	/**

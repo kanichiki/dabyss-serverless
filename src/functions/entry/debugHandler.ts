@@ -5,7 +5,8 @@ import * as wordwolf from "../wordwolf/handler";
 import * as crazynoisy from "../crazynoisy/handler";
 import * as jinro from "../jinro/handler";
 
-export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent): Promise<void> => {
+export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent) => {
+	console.log(lineEvent);
 	const promises: Promise<void>[] = [];
 	promises.push(handleEvent(lineEvent));
 
@@ -63,8 +64,8 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 						const groupExists: boolean = group.exists;
 						const isUser: boolean = user.exists; // ユーザーのデータがあるかどうか
 
-						const gameNameExists: boolean = await dabyss.Game.gameJPNameExists(text);
-						if (gameNameExists) {
+						const gameCalled: boolean = await dabyss.Game.gameJPNameExists(text);
+						if (gameCalled) {
 							// 発言内容がゲーム名なら
 							if (groupExists) {
 								const isRestarting: boolean = group.isRestarting;
@@ -138,6 +139,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 											} else {
 												// 参加受付終了の意思表明に対するリプライ
 												// 参加受付を終了した旨（TODO 参加者を変更したい場合はもう一度「参加者が」ゲーム名を発言するように言う）、参加者のリスト、該当ゲームの最初の設定のメッセージを送る
+
 												return callGameHandler(game, lineEvent);
 											}
 										}
@@ -145,24 +147,11 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 								}
 
 								if (status == "play") {
-									// プレイ中の場合
 									const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-
-									const isUserParticipate = await game.isUserExists(userId);
-									if (isUserParticipate) {
-										// 参加者の発言の場合
-										//     if (text == "強制終了") {
-										//         await replyTerminate(plId, replyToken);
-										//         continue;
-										//     }
-
-										return callGameHandler(game, lineEvent);
-									}
+									return callGameHandler(game, lineEvent);
 								}
 							}
 						}
-
-						// await replyDefaultGroupMessage(lineEvent));
 					}
 				}
 			}
@@ -182,10 +171,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 						const status = group.status;
 						if (status == "play") {
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-							const isUserParticipate: boolean = await game.isUserExists(userId);
-							if (isUserParticipate) {
-								return callGameHandler(game, lineEvent);
-							}
+							return callGameHandler(game, lineEvent);
 						}
 					}
 				}
@@ -198,10 +184,7 @@ const handleEvent = async (lineEvent: line.MessageEvent | line.PostbackEvent): P
 						const status: string = group.status;
 						if (status == "play") {
 							const game: dabyss.Game = await dabyss.Game.createInstance(groupId);
-							const isUserParticipate: boolean = await game.isUserExists(userId);
-							if (isUserParticipate) {
-								return callGameHandler(game, lineEvent);
-							}
+							return callGameHandler(game, lineEvent);
 						}
 					}
 				}
@@ -237,6 +220,8 @@ const replyRollCall = async (group: dabyss.Group, text: string, replyToken: stri
 
 	const game = await dabyss.Game.createInstance(group.groupId);
 	promises.push(game.putGame(text));
+	const gameName = await game.getGameName(text);
+	promises.push(group.updatePlayingGame(gameName));
 
 	await Promise.all(promises);
 	return;
@@ -337,7 +322,7 @@ const replyRestartConfirmIfRecruiting = async (group: dabyss.Group, replyToken: 
 	const replyMessage = await import("./template/replyRestartConfirmIfRecruiting");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(recruitingGameName)));
 
-	await Promise.all(promises);
+	await Promise.all(promises).catch((err) => console.log(err));
 	return;
 };
 
@@ -371,7 +356,7 @@ const replyTooFewParticipant = async (game: dabyss.Game, replyToken: string): Pr
 const callGameHandler = async (game: dabyss.Game, lineEvent: line.MessageEvent | line.PostbackEvent) => {
 	switch (game.gameName) {
 		case "wordwolf":
-			await wordwolf.handler({ event: lineEvent });
+			await wordwolf.handler(lineEvent);
 			break;
 		case "crazynoisy":
 			await crazynoisy.handler(lineEvent);

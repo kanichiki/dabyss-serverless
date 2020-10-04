@@ -55,7 +55,8 @@ const dynamoQuery = async (
 	partitionKey: string,
 	value: aws.DynamoDB.DocumentClient.AttributeValue,
 	asc = true,
-	consistentRead = true
+	consistentRead = true,
+	limit = 1000
 ): Promise<DocumentClient.QueryOutput> => {
 	const params: aws.DynamoDB.DocumentClient.QueryInput = {
 		TableName: tableName,
@@ -68,8 +69,17 @@ const dynamoQuery = async (
 		},
 		ScanIndexForward: asc,
 		ConsistentRead: consistentRead,
+		Limit: limit,
 	};
 	return documentClient.query(params).promise();
+};
+
+export const dynamoScan = async (tableName: string, limit = 1000): Promise<DocumentClient.ScanOutput> => {
+	const params: aws.DynamoDB.DocumentClient.ScanInput = {
+		TableName: tableName,
+		Limit: limit,
+	};
+	return documentClient.scan(params).promise();
 };
 
 export /**
@@ -128,7 +138,7 @@ const dynamoPut = async (
 	});
 };
 
-export /**
+/**
  * DynamoDB update
  *
  * @param {string} tableName
@@ -137,31 +147,49 @@ export /**
  * @param {*} value
  * @returns {Promise<any>}
  */
-const dynamoUpdate = async (
+// export const dynamoUpdate = async (
+// 	tableName: string,
+// 	key: aws.DynamoDB.DocumentClient.Key,
+// 	name: string,
+// 	value: any
+// ): Promise<any> => {
+// 	const currentTime: string = await commonFunction.getCurrentTime();
+// 	const params: aws.DynamoDB.DocumentClient.UpdateItemInput = {
+// 		TableName: tableName,
+// 		Key: key,
+// 		ExpressionAttributeNames: {
+// 			"#name": name,
+// 			"#t": "updated_at",
+// 		},
+// 		ExpressionAttributeValues: {
+// 			":v": value,
+// 			":t": currentTime,
+// 		},
+// 		UpdateExpression: "SET #name = :v, #t = :t",
+// 	};
+// 	return documentClient.update(params, (err) => {
+// 		if (err) {
+// 			console.log(err);
+// 		}
+// 	});
+// };
+
+export const dynamoUpdate = async (
 	tableName: string,
-	key: aws.DynamoDB.DocumentClient.Key,
-	name: string,
-	value: any
+	item: aws.DynamoDB.DocumentClient.PutItemInputAttributeMap
 ): Promise<any> => {
 	const currentTime: string = await commonFunction.getCurrentTime();
-	const params: aws.DynamoDB.DocumentClient.UpdateItemInput = {
+	item["updated_at"] = currentTime;
+	const params: aws.DynamoDB.DocumentClient.PutItemInput = {
 		TableName: tableName,
-		Key: key,
-		ExpressionAttributeNames: {
-			"#name": name,
-			"#t": "updated_at",
-		},
-		ExpressionAttributeValues: {
-			":v": value,
-			":t": currentTime,
-		},
-		UpdateExpression: "SET #name = :v, #t = :t",
+		Item: item,
 	};
-	return documentClient.update(params, (err) => {
+	await documentClient.put(params, (err) => {
 		if (err) {
 			console.log(err);
 		}
 	});
+	return;
 };
 
 export const dynamoAppend = async (

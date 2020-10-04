@@ -130,6 +130,6 @@ export class Discussion {
 	 */
 	async updateIsDiscussingFalse(): Promise<void> {
 		this.isDiscussing = "none";
-		await aws.dynamoUpdate(discussionTable, this.discussionKey, "is_discussing", this.isDiscussing);
+		await aws.dynamoUpdate(discussionTable, this);
 	}
 }

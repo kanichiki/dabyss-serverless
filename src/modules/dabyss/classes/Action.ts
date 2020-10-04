@@ -114,7 +114,7 @@ export class Action {
 	 */
 	async updateActionStateTrue(index: number): Promise<void> {
 		this.actionStatus[index] = true;
-		await aws.dynamoUpdate(actionTable, this.actionKey, "action_status", this.actionStatus);
+		await aws.dynamoUpdate(actionTable, this);
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class Action {
 	 */
 	async updateTarget(index: number, target: number): Promise<void> {
 		this.targets[index] = target;
-		await aws.dynamoUpdate(actionTable, this.actionKey, "targets", this.targets);
+		await aws.dynamoUpdate(actionTable, this);
 	}
 
 	/**

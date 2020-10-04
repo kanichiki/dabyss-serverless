@@ -72,6 +72,18 @@ export class Group {
 		return group;
 	}
 
+	async update(): Promise<void> {
+		const group = {
+			group_id: this.groupId,
+			status: this.status,
+			playing_game: this.playingGame,
+			is_restarting: this.isRestarting,
+			is_finishing: this.isFinishing,
+		};
+
+		await aws.dynamoUpdate(groupTable, group);
+	}
+
 	/**
 	 * groupを作成
 	 *
@@ -116,12 +128,12 @@ export class Group {
 	 */
 	async updateStatus(status: string): Promise<void> {
 		this.status = status;
-		await aws.dynamoUpdate(groupTable, this.groupKey, "status", this.status);
+		await this.update();
 	}
 
 	async updatePlayingGame(gameName: string): Promise<void> {
 		this.playingGame = gameName;
-		await aws.dynamoUpdate(groupTable, this.groupKey, "playing_game", this.playingGame);
+		await this.update();
 	}
 
 	/**
@@ -132,7 +144,7 @@ export class Group {
 	 */
 	async updateIsRestarting(bool: boolean): Promise<void> {
 		this.isRestarting = bool;
-		await aws.dynamoUpdate(groupTable, this.groupKey, "is_restarting", this.isRestarting);
+		await this.update();
 	}
 
 	/**
@@ -143,7 +155,7 @@ export class Group {
 	 */
 	async updateIsFinishing(bool: boolean): Promise<void> {
 		this.isFinishing = bool;
-		await aws.dynamoUpdate(groupTable, this.groupKey, "is_finishing", this.isFinishing);
+		await this.update();
 	}
 
 	/**

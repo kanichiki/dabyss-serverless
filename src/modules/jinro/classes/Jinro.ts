@@ -185,7 +185,7 @@ export class Jinro extends dabyss.Game {
 				this.positionNumbers.psychic +
 				this.positionNumbers.hunter);
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "position_numbers", this.positionNumbers);
+		dabyss.dynamoUpdate(gameTable, this);
 	}
 
 	async updatePositions() {
@@ -221,7 +221,7 @@ export class Jinro extends dabyss.Game {
 
 		this.positions = positions;
 
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "positions", this.positions);
+		dabyss.dynamoUpdate(gameTable, this);
 	}
 
 	async getPosition(userIndex: number): Promise<string> {
@@ -231,7 +231,7 @@ export class Jinro extends dabyss.Game {
 
 	async updateTalkType(type: number): Promise<void> {
 		this.talkType = type;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "talk_type", this.talkType);
+		dabyss.dynamoUpdate(gameTable, this);
 	}
 
 	async updateDefaultAliveStatus(): Promise<void> {
@@ -239,7 +239,7 @@ export class Jinro extends dabyss.Game {
 			this.isAliveStatus[i] = true;
 			console.log(this.isAliveStatus);
 		}
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
+		dabyss.dynamoUpdate(gameTable, this);
 	}
 
 	async isAlive(index: number): Promise<boolean> {
@@ -248,7 +248,7 @@ export class Jinro extends dabyss.Game {
 
 	async die(index: number): Promise<void> {
 		this.isAliveStatus[index] = false;
-		dabyss.dynamoUpdate(gameTable, this.gameKey, "is_alive_status", this.isAliveStatus);
+		dabyss.dynamoUpdate(gameTable, this);
 	}
 
 	async isWerewolf(index: number): Promise<boolean> {
