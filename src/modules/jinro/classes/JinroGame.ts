@@ -283,4 +283,14 @@ export class JinroGame extends dabyss.Game {
 		return alivePlayers;
 	}
 
+	async isAllMembersGetReady(): Promise<boolean> {
+		let isAllMembersGetReady: boolean = true;
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Player = this.players[i];
+			if (!player.isReady) {
+				isAllMembersGetReady = false;
+			}
+		}
+		return isAllMembersGetReady;
+	}
 }

@@ -2,7 +2,6 @@ import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { User } from "../../dabyss";
 
-const playerTable = process.env.playerTable;
 const userTable = process.env.userTable;
 
 export class Player extends User {
@@ -58,7 +57,7 @@ export class Player extends User {
         this.isAlive = false;
     }
 
-    async resetReady(): Promise<void> {
+    async resetReadyStatus(): Promise<void> {
         this.isReady = false;
     }
 
