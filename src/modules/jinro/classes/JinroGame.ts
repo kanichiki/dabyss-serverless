@@ -213,6 +213,13 @@ export class JinroGame extends dabyss.Game {
 		await this.update();
 	}
 
+	async updateDefaultReadyStatus(): Promise<void> {
+		for (let i = 0; i < this.players.length; i++) {
+			this.players[i].isReady = false;
+		}
+		await this.update();
+	}
+
 	async getAliveNumber(): Promise<number> {
 		let aliveNum = 0;
 		for (let i = 0; i < this.players.length; i++) {
@@ -275,4 +282,5 @@ export class JinroGame extends dabyss.Game {
 		}
 		return alivePlayers;
 	}
+
 }
