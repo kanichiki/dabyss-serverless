@@ -75,7 +75,11 @@ export class JinroGame extends dabyss.Game {
 							group_id: this.groupId,
 							game_id: this.gameId,
 						};
-						// this.userIds = game.user_ids as string[];
+						this.userIds = game.user_ids as string[];
+						// TODO: ここ合ってる？
+						for (let i = 0; i < this.userIds.length; i++) {
+							this.players[i] = new Player(this.userIds[i]);
+						}
 						this.day = game.day as number;
 						this.gameName = game.game_name as string;
 						this.gameStatus = game.game_status as string;
@@ -208,6 +212,67 @@ export class JinroGame extends dabyss.Game {
 		}
 		await this.update();
 	}
-    
 
+	async getAliveNumber(): Promise<number> {
+		let aliveNum = 0;
+		for (let i = 0; i < this.players.length; i++) {
+			if (this.players[i].isAlive) {
+				aliveNum++;
+			}
+		}
+		return aliveNum;
+	}
+
+	async getAliveWerewolfNumber(): Promise<number> {
+		let aliveNum = 0;
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Player = this.players[i]
+			if (player.position == this.positionNames.werewolf) {
+				if (player.isAlive) {
+					aliveNum++;
+				}
+			}
+		}
+		return aliveNum;
+	}
+	
+	async getAliveNotWerewolfNumber(): Promise<number> {
+		const aliveNumber = await this.getAliveNumber();
+		const aliveWerewolfNumber = await this.getAliveWerewolfNumber();
+		return aliveNumber - aliveWerewolfNumber;
+	}
+
+	async isWerewolfWin(): Promise<boolean> {
+		const aliveNumber: number = await this.getAliveNumber();
+		const werewolfNumber: number = this.positionNumbers.werewolf;
+		const isWerewolfWin: boolean = aliveNumber - werewolfNumber <= werewolfNumber;
+		return isWerewolfWin;
+	}
+
+	async isCitizenWin(): Promise<boolean> {
+		const aliveWerewolfNumber = await this.getAliveWerewolfNumber();
+		return aliveWerewolfNumber == 0;
+	}
+
+	async getDeadPlayers(): Promise<Player[]> {
+		const deadPlayers: Player[] = [];
+		for (let i = 0; i < this.players.length; i++) {
+			const player = this.players[i];
+			if (!player.isAlive) {
+				deadPlayers.push(player);
+			}
+		}
+		return deadPlayers
+	}
+
+	async getAlivePlayersExceptOneself(oneself: Player): Promise<Player[]> {
+		const alivePlayers: Player[] = [];
+		for (let i = 0; i < this.players.length; i++) {
+			const player: Player = this.players[i]
+			if (player != oneself && player.isAlive) {
+				alivePlayers.push(player);
+			}
+		}
+		return alivePlayers;
+	}
 }
