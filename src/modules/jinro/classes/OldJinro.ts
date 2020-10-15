@@ -1,6 +1,5 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Player } from "../classes/JinroPlayer"
 
 
 const gameTable = process.env.gameTable;
@@ -23,15 +22,32 @@ export interface PositionNames {
 	citizen: string;
 }
 
-export class JinroGame extends dabyss.Game {
-    settingNames: string[];
-    defaultSettingStatus: boolean[];
-    talkType: number;
-    positionNames: PositionNames;
-    positionNumbers: PositionNumbers;
-    players: Player[];
+/**
+ * (「・ω・)「 がおー
+ *
+ * @export
+ * @class Jinro
+ * @extends {Game}
+ */
+export class Jinro extends dabyss.Game {
+	settingNames: string[];
+	defaultSettingStatus: boolean[];
 
-    constructor(groupId: string) {
+	positionNames: PositionNames;
+
+	talkType: number;
+	isAliveStatus: boolean[];
+	positionNumbers: PositionNumbers;
+
+	/**
+	 * Jinroインスタンス作成
+	 *
+	 * @constructor
+	 * @extends Game
+	 * @param {string} groupId
+	 * @memberof Jinro
+	 */
+	constructor(groupId: string) {
 		super(groupId);
 		this.settingNames = ["type", "timer"];
 		this.defaultSettingStatus = [true, true];
@@ -54,11 +70,17 @@ export class JinroGame extends dabyss.Game {
 			hunter: 0,
 			citizen: 0,
 		};
-    }
-    
-    async init(): Promise<void> {
-        try {
-            const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(
+	}
+
+	/**
+	 * 初期化
+	 *
+	 * @returns {Promise<void>}
+	 * @memberof Jinro
+	 */
+	async init(): Promise<void> {
+		try {
+			const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(
 				gameTable,
 				"group_id",
 				this.groupId,
@@ -75,11 +97,7 @@ export class JinroGame extends dabyss.Game {
 							group_id: this.groupId,
 							game_id: this.gameId,
 						};
-						this.userIds = game.user_ids as string[];
-						// TODO: ここ合ってる？
-						for (let i = 0; i < this.userIds.length; i++) {
-							this.players[i] = new Player(this.userIds[i]);
-						}
+						// this.userIds = game.user_ids as string[];
 						this.day = game.day as number;
 						this.gameName = game.game_name as string;
 						this.gameStatus = game.game_status as string;
@@ -90,22 +108,29 @@ export class JinroGame extends dabyss.Game {
 					}
 				}
 			}
+		} catch (err) {
+			console.error(err);
+			console.error("gameの初期化失敗");
+		}
+	}
 
-        } catch (err) {
-            console.error(err);
-            console.error("JinroGameの初期化失敗")
-        }
-    }
+	/**
+	 * インスタンス作成
+	 *
+	 * @static
+	 * @param {string} groupId
+	 * @returns {Promise<Jinro>}
+	 * @memberof Jinro
+	 */
+	static async createInstance(groupId: string): Promise<Jinro> {
+		const jinro: Jinro = new Jinro(groupId);
+		await jinro.init();
+		return jinro;
+	}
 
-    static async createInstance(groupId: string): Promise<JinroGame> {
-        const jinrogame: JinroGame = new JinroGame(groupId);
-        await jinrogame.init();
-        return jinrogame;
-    }
-
-    async update(): Promise<void> {
-        const jinrogame = {
-            group_id: this.groupId,
+	async update(): Promise<void> {
+		const jinro = {
+			group_id: this.groupId,
 			game_id: this.gameId,
 			user_ids: this.userIds,
 			day: this.day,
@@ -114,15 +139,18 @@ export class JinroGame extends dabyss.Game {
 			setting_status: this.settingStatus,
 			timer: this.timer,
 			winner: this.winner,
-            talk_type: this.talkType,
-            players: this.players,
-        };
-        await dabyss.dynamoUpdate(gameTable, jinrogame)
-    }
+			positions: this.positions,
 
-    async updatePositionNumbers(): Promise<void> {
-        const userNumber: number = await this.getUserNumber();
-        if (userNumber < 5) {
+			talk_type: this.talkType,
+			is_alive_status: this.isAliveStatus,
+
+		};
+		await dabyss.dynamoUpdate(gameTable, jinro);
+	}
+
+	async updatePositionNumbers(): Promise<void> {
+		const userNumber: number = await this.getUserNumber();
+		if (userNumber < 5) {
 			this.positionNumbers.werewolf = 1;
 		} else if (userNumber == 5) {
 			this.positionNumbers.werewolf = 1;
@@ -162,10 +190,11 @@ export class JinroGame extends dabyss.Game {
 				this.positionNumbers.forecaster +
 				this.positionNumbers.psychic +
 				this.positionNumbers.hunter);
-        await this.update();
-    }
 
-    async updatePositions() {
+		await this.update();
+	}
+
+	async updatePositions() {
 		await this.updatePositionNumbers();
 		const positions: string[] = [];
 
@@ -187,6 +216,7 @@ export class JinroGame extends dabyss.Game {
 		for (let i = 0; i < this.positionNumbers.citizen; i++) {
 			positions.push("市民");
 		}
+
 		// ランダム並べ替え
 		for (let i = positions.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
@@ -194,36 +224,68 @@ export class JinroGame extends dabyss.Game {
 			positions[i] = positions[j];
 			positions[j] = tmp;
 		}
-        
-		for (let i = 0; i < this.players.length; i++) {
-            this.players[i].position = positions[i];    
-        }
+
+		this.positions = positions;
+
 		await this.update();
-    }
-    
-    async updateTalkType(type: number): Promise<void> {
+	}
+
+	async getPosition(userIndex: number): Promise<string> {
+		const position = this.positions[userIndex];
+		return position;
+	}
+
+	async updateTalkType(type: number): Promise<void> {
 		this.talkType = type;
 		await this.update();
-    }
-    
-    async updateDefaultAliveStatus(): Promise<void> {
-		for (let i = 0; i < this.players.length; i++) {
-			this.players[i].isAlive = true;
+	}
+
+	async updateDefaultAliveStatus(): Promise<void> {
+		for (let i = 0; i < this.userIds.length; i++) {
+			this.isAliveStatus[i] = true;
+			console.log(this.isAliveStatus);
 		}
 		await this.update();
 	}
 
-	async updateDefaultReadyStatus(): Promise<void> {
-		for (let i = 0; i < this.players.length; i++) {
-			this.players[i].isReady = false;
-		}
+	async isAlive(index: number): Promise<boolean> {
+		return this.isAliveStatus[index];
+	}
+
+	async die(index: number): Promise<void> {
+		this.isAliveStatus[index] = false;
 		await this.update();
+	}
+
+	async isWerewolf(index: number): Promise<boolean> {
+		const res: boolean = this.positions[index] == this.positionNames.werewolf;
+		return res;
+	}
+
+	async getWinnerIndexes(): Promise<number[]> {
+		const res: number[] = [];
+		for (let i = 0; i < this.positions.length; i++) {
+			const isWolfSide =
+				this.positions[i] == this.positionNames.werewolf || this.positions[i] == this.positionNames.madman;
+			if (this.winner == "werewolf") {
+				// 人狼陣営勝利なら
+				if (isWolfSide) {
+					res.push(i);
+				}
+			} else {
+				// 市民陣営勝利なら
+				if (!isWolfSide) {
+					res.push(i);
+				}
+			}
+		}
+		return res;
 	}
 
 	async getAliveNumber(): Promise<number> {
 		let aliveNum = 0;
-		for (let i = 0; i < this.players.length; i++) {
-			if (this.players[i].isAlive) {
+		for (const state of this.isAliveStatus) {
+			if (state) {
 				aliveNum++;
 			}
 		}
@@ -232,23 +294,23 @@ export class JinroGame extends dabyss.Game {
 
 	async getAliveWerewolfNumber(): Promise<number> {
 		let aliveNum = 0;
-		for (let i = 0; i < this.players.length; i++) {
-			const player: Player = this.players[i]
-			if (player.position == this.positionNames.werewolf) {
-				if (player.isAlive) {
+		for (let i = 0; i < this.userIds.length; i++) {
+			if (this.positions[i] == this.positionNames.werewolf) {
+				if (this.isAliveStatus[i]) {
 					aliveNum++;
 				}
 			}
 		}
 		return aliveNum;
 	}
-	
+
 	async getAliveNotWerewolfNumber(): Promise<number> {
 		const aliveNumber = await this.getAliveNumber();
 		const aliveWerewolfNumber = await this.getAliveWerewolfNumber();
 		return aliveNumber - aliveWerewolfNumber;
 	}
 
+	// TODO -> DONE 人狼側の勝利条件が満たされているか判定
 	async isWerewolfWin(): Promise<boolean> {
 		const aliveNumber: number = await this.getAliveNumber();
 		const werewolfNumber: number = this.positionNumbers.werewolf;
@@ -261,36 +323,64 @@ export class JinroGame extends dabyss.Game {
 		return aliveWerewolfNumber == 0;
 	}
 
-	async getDeadPlayers(): Promise<Player[]> {
-		const deadPlayers: Player[] = [];
-		for (let i = 0; i < this.players.length; i++) {
-			const player = this.players[i];
-			if (!player.isAlive) {
-				deadPlayers.push(player);
+	async getDeadIndexes(): Promise<number[]> {
+		const deadIndexes: number[] = [];
+		for (let i = 0; i < this.userIds.length; i++) {
+			if (!this.isAliveStatus[i]) {
+				deadIndexes.push(i);
 			}
 		}
-		return deadPlayers
+		return deadIndexes;
 	}
 
-	async getAlivePlayersExceptOneself(oneself: Player): Promise<Player[]> {
-		const alivePlayers: Player[] = [];
-		for (let i = 0; i < this.players.length; i++) {
-			const player: Player = this.players[i]
-			if (player != oneself && player.isAlive) {
-				alivePlayers.push(player);
+	async putAction() {
+		const userNumber: number = await this.getUserNumber();
+		const status: boolean[] = [];
+		for (let i = 0; i < userNumber; i++) {
+			if (
+				this.positions[i] == this.positionNames.madman ||
+				this.positions[i] == this.positionNames.citizen ||
+				!this.isAliveStatus[i]
+			) {
+				status[i] = true;
+			} else {
+				status[i] = false;
 			}
 		}
-		return alivePlayers;
+		await Action.putAction(this.gameId, this.day, status);
 	}
 
-	async isAllMembersGetReady(): Promise<boolean> {
-		let isAllMembersGetReady: boolean = true;
-		for (let i = 0; i < this.players.length; i++) {
-			const player: Player = this.players[i];
-			if (!player.isReady) {
-				isAllMembersGetReady = false;
+	async getAliveUserIndexesExceptOneself(index: number): Promise<number[]> {
+		const res: number[] = [];
+		for (let i = 0; i < this.userIds.length; i++) {
+			if (i != index && this.isAlive(i)) {
+				res.push(i);
 			}
 		}
-		return isAllMembersGetReady;
+		return res;
+	}
+
+	async getAliveDisplayNamesExceptOneself(index: number): Promise<string[]> {
+		const res: string[] = [];
+		for (let i = 0; i < this.userIds.length; i++) {
+			if (i != index && (await this.isAlive(i))) {
+				const user: dabyss.User = new dabyss.User(this.userIds[i]);
+				const displayName: string = await user.getDisplayName();
+				res.push(displayName);
+			}
+		}
+		return res;
+	}
+
+	async getDeadDisplayNamesExceptOneself(index: number): Promise<string[]> {
+		const res: string[] = [];
+		for (let i = 0; i < this.userIds.length; i++) {
+			if (i != index && !(await this.isAlive(i))) {
+				const user: dabyss.User = new dabyss.User(this.userIds[i]);
+				const displayName: string = await user.getDisplayName();
+				res.push(displayName);
+			}
+		}
+		return res;
 	}
 }

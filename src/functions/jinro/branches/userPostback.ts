@@ -9,7 +9,7 @@ export const handleUserPostback = async (
 ): Promise<void> => {
 	const status: string = jinro.gameStatus;
 	const day: number = jinro.day;
-
+	// TODO　続きここから
 	if (status == "action") {
 		await jinro.setAction();
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);

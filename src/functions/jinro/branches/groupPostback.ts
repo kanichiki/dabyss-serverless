@@ -54,10 +54,11 @@ export const handleGroupPostback = async (
 
 const replyConfirmStatus = async (jinro: jinroModule.Jinro, replyToken: string): Promise<void> => {
 	const displayNames = await jinro.getDisplayNames();
-	const confirmStatus = jinro.action.actionStatus;
+	// const confirmStatus = jinro.action.actionStatus;
 	const unconfirmed = [];
+	const players = jinro.players;
 	for (let i = 0; i < displayNames.length; i++) {
-		if (!confirmStatus[i]) {
+		if (!players[i].isReady) {
 			unconfirmed.push(displayNames[i]);
 		}
 	}
@@ -134,7 +135,8 @@ const replyVoteSuccess = async (
 		}
 
 		if (isVoteFinish) {
-			await jinro.die(executorIndex); // 最多投票者洗脳
+			const executedPlayer = jinro.players[executorIndex]
+			await executedPlayer.die()
 			const isCitizenWin = await jinro.isCitizenWin();
 			const isWerewolfWin = await jinro.isWerewolfWin();
 			if (isCitizenWin) {
@@ -158,14 +160,16 @@ const replyVoteFinish = async (jinro: jinroModule.Jinro): Promise<line.Message[]
 	promises.push(jinro.updateGameStatus("action")); // ステータスをアクション中に
 
 	const displayNames = await jinro.getDisplayNames();
+	// TODO: これなに
 	promises.push(jinro.putAction());
+	const players = jinro.players;
 	for (let i = 0; i < jinro.userIds.length; i++) {
-		const isAlive = await jinro.isAlive(i);
-		if (isAlive) {
-			const targetAliveDisplayNames = await jinro.getAliveDisplayNamesExceptOneself(i);
-			const targetDeadDisplayNames = await jinro.getDeadDisplayNamesExceptOneself(i);
-			const aliveIndexes = await jinro.getAliveUserIndexesExceptOneself(i);
-			const deadIndexes = await jinro.getDeadIndexes();
+		const player = players[i]
+		if (player.isAlive) {
+			const targetAliveDisplayNames = await jinro.getAliveDisplayNamesExceptOneself(player);
+			const targetDeadDisplayNames = await jinro.getDeadDisplayNamesExceptOneself(player);
+			const aliveIndexes = await jinro.getAliveUserIndexesExceptOneself(player);
+			const deadIndexes = await jinro.getDeadIndexes(player);
 
 			const pushUserAction = await import("../templates/pushUserAction");
 			promises.push(
@@ -174,7 +178,7 @@ const replyVoteFinish = async (jinro: jinroModule.Jinro): Promise<line.Message[]
 					await pushUserAction.main(
 						displayNames[i],
 						jinro.positions[i],
-						isAlive,
+						player.isAlive,
 						targetAliveDisplayNames,
 						targetDeadDisplayNames,
 						aliveIndexes,

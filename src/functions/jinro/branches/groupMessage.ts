@@ -111,20 +111,22 @@ const replyConfirmYes = async (jinro: jinroModule.Jinro, replyToken: string): Pr
 	promises.push(jinro.updateDefaultAliveStatus()); // 生死ステータスを初期配置
 	promises.push(jinro.putZeroAction()); // 役職確認ステータスを全員false
 
-	const userIds = jinro.userIds;
-	const displayNames = await jinro.getDisplayNames();
-	const positions = jinro.positions;
+	const players = jinro.players;
+	// const userIds = jinro.userIds;
+	// const displayNames = await jinro.getDisplayNames();
+	// const positions = jinro.positions;
 	const userNumber = await jinro.getUserNumber();
 
 	for (let i = 0; i < userNumber; i++) {
+		const player = players[i]
 		const targetDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await jinro.getUserIndexesExceptOneself(i);
 
 		const pushPosition = await import("../templates/pushUserPosition");
 		promises.push(
 			dabyss.pushMessage(
-				userIds[i],
-				await pushPosition.main(displayNames[i], positions[i], targetDisplayNames, targetUserIndexes)
+				player.userId,
+				await pushPosition.main(player.displayName, player.position, targetDisplayNames, targetUserIndexes)
 			)
 		);
 	}

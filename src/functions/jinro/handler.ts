@@ -40,12 +40,12 @@ export const handler = async (lineEvent: line.MessageEvent | line.PostbackEvent)
 		}
 	} else {
 		const user = await dabyss.User.createInstance(userId);
-		const crazyNoisy = await jinroModule.Jinro.createInstance(user.groupId);
-		const isUserParticipant = crazyNoisy.isUserExists(userId);
+		const jinro = await jinroModule.Jinro.createInstance(user.groupId);
+		const isUserParticipant = jinro.isUserExists(userId);
 		if (isUserParticipant) {
 			if (lineEvent.type == "postback") {
 				const postback: line.Postback = lineEvent.postback;
-				await branches.handleUserPostback(postback.data, crazyNoisy, userId, replyToken);
+				await branches.handleUserPostback(postback.data, jinro, userId, replyToken);
 			}
 		}
 	}

@@ -6,6 +6,7 @@ const userTable = process.env.userTable;
 
 export class Player extends User {
     playerId: number;
+    displayName: string;
     position: string;
     isAlive: boolean;
     isReady: boolean;
@@ -15,6 +16,7 @@ export class Player extends User {
     constructor(userId: string) {
         super(userId);
         this.userId = userId;
+        this.displayName = ""
         this.position = "";
         this.isAlive = true;
         this.isReady = false;
@@ -45,9 +47,9 @@ export class Player extends User {
     static async createInstance(userId: string): Promise<Player> {
         const player: Player = new Player(userId);
         await player.init();
+        player.displayName = await player.getDisplayName();
         return player;
     }
-
     // こんな風にデータをいじるのは書かずに、あとでまとめてデータ処理できるようになりたいねえ
     async updatePosition(newPosition: string): Promise<void>{
         this.position = newPosition;
@@ -75,4 +77,5 @@ export class Player extends User {
         return (this.position == "人狼");
     }
 }
+
 
