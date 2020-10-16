@@ -1,5 +1,6 @@
 import dabyss = require("../../../modules/dabyss");
 import jinroModule = require("../../../modules/jinro");
+import { Player } from "../../../modules/jinro/classes/Player"
 
 export const handleUserPostback = async (
 	postbackData: string,
@@ -9,19 +10,18 @@ export const handleUserPostback = async (
 ): Promise<void> => {
 	const status: string = jinro.gameStatus;
 	const day: number = jinro.day;
-	// TODO　続きここから
 	if (status == "action") {
 		await jinro.setAction();
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);
 		const targetIndex = Number(postbackData);
-
+		const player: Player = jinro.players[userIndex]
 		if (day == 0) {
 			// 0日目なら
-			const confirmsState: boolean = await jinro.action.isActedUser(userIndex);
+			const confirmsState: boolean = player.isReady
+			// const confirmsState: boolean = await jinro.action.isActedUser(userIndex);
 			if (!confirmsState) {
-				const position: string = await jinro.getPosition(userIndex);
-
-				if (position == jinro.positionNames.forecaster) {
+				// const position: string = await jinro.getPosition(userIndex);
+				if (player.position == jinro.positionNames.forecaster) {
 					const targetExists = await jinro.existsUserIndexExceptOneself(userIndex, targetIndex);
 					if (targetExists) {
 						await replyForecasterAction(jinro, userIndex, targetIndex, replyToken);
@@ -35,20 +35,20 @@ export const handleUserPostback = async (
 		} else {
 			// 0日目以外の場合
 
-			const actionsState = await jinro.action.isActedUser(userIndex);
+			// const actionsState = await jinro.action.isActedUser(userIndex);
+			const actionsState: boolean = player.isReady
 			if (!actionsState) {
 				// その人のアクションがまだなら
 
 				const targetExists = await jinro.existsUserIndexExceptOneself(userIndex, targetIndex);
 				if (targetExists) {
-					const position = await jinro.getPosition(userIndex);
-					if (position == jinro.positionNames.werewolf || jinro.positionNames.hunter) {
-						await replyBasicAction(jinro, position, userIndex, targetIndex, replyToken);
+					if (player.position == jinro.positionNames.werewolf || jinro.positionNames.hunter) {
+						await replyBasicAction(jinro, player.position, userIndex, targetIndex, replyToken);
 					}
-					if (position == jinro.positionNames.forecaster) {
+					if (player.position == jinro.positionNames.forecaster) {
 						await replyForecasterAction(jinro, userIndex, targetIndex, replyToken);
 					}
-					if (position == jinro.positionNames.psychic) {
+					if (player.position == jinro.positionNames.psychic) {
 						await replyPsychicAction(jinro, userIndex, targetIndex, replyToken);
 					}
 				}
@@ -97,8 +97,9 @@ const replyForecasterAction = async (
 	const promises: Promise<void>[] = [];
 
 	await jinro.action.act(userIndex, targetIndex);
-	const isWerewolf = await jinro.isWerewolf(targetIndex);
-	const displayName = await jinro.getDisplayName(targetIndex);
+	// const isWerewolf = await jinro.isWerewolf(targetIndex);
+	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
+	const displayName: string = await jinro.players[targetIndex].displayName;
 
 	const replyMessage = await import("../templates/replyForecasterAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
@@ -121,7 +122,7 @@ const replyPsychicAction = async (
 	const promises: Promise<void>[] = [];
 
 	await jinro.action.act(userIndex, targetIndex);
-	const isWerewolf = await jinro.isWerewolf(targetIndex);
+	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
 	const displayName = await jinro.getDisplayName(targetIndex);
 
 	const replyMessage = await import("../templates/replyPsychicAction");
@@ -159,7 +160,7 @@ const replyActionCompleted = async (jinro: jinroModule.Jinro): Promise<void> => 
 	const biteTarget = await jinro.getTargetOfPosition(jinro.positionNames.werewolf);
 	const protectTarget = await jinro.getTargetOfPosition(jinro.positionNames.hunter);
 	if (biteTarget != -1 && biteTarget != protectTarget) {
-		promises.push(jinro.die(biteTarget));
+		promises.push(jinro.players[biteTarget].die());
 	}
 
 	await jinro.updateDay(); // 日付更新

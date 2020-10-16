@@ -1,6 +1,6 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Player } from "../classes/JinroPlayer"
+import { Player } from "../classes/Player"
 
 
 const gameTable = process.env.gameTable;
