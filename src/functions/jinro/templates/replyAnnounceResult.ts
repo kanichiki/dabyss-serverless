@@ -1,10 +1,12 @@
 import line = require("@line/bot-sdk");
+import { Player } from "../../../modules/jinro/classes/Player"
 
-export const main = async (displayNames: string[], positions: string[]): Promise<line.Message[]> => {
+
+export const main = async (players: Player[]): Promise<line.Message[]> => {
 	let positionMessages = "役職一覧\n\n";
 
-	for (let i = 0; i < displayNames.length; i++) {
-		const positionMessage = `・${displayNames[i]} : ${positions[i]}\n`;
+	for (let i = 0; i < players.length; i++) {
+		const positionMessage = `・${players[i].displayName} : ${players[i].position}\n`;
 		positionMessages += positionMessage;
 	}
 

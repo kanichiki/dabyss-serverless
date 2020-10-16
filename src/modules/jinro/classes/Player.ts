@@ -51,6 +51,7 @@ export class Player extends User {
         return player;
     }
     // こんな風にデータをいじるのは書かずに、あとでまとめてデータ処理できるようになりたいねえ
+    // TODO: DBupdateをする関数をかく
     async updatePosition(newPosition: string): Promise<void>{
         this.position = newPosition;
     }

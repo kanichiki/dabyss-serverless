@@ -97,8 +97,8 @@ export class Jinro extends dabyss.Game {
         }
     }
 
-    static async createInstance(groupId: string): Promise<JinroGame> {
-        const jinrogame: JinroGame = new JinroGame(groupId);
+    static async createInstance(groupId: string): Promise<dabyss.Game> {
+        const jinrogame: dabyss.Game = new dabyss.Game(groupId);
         await jinrogame.init();
         return jinrogame;
     }
@@ -331,9 +331,10 @@ export class Jinro extends dabyss.Game {
 	}
 	async getWinnerIndexes(): Promise<number[]> {
 		const res: number[] = [];
-		for (let i = 0; i < this.positions.length; i++) {
+		for (let i = 0; i < this.players.length; i++) {
+			const player = this.players[i]
 			const isWolfSide =
-				this.positions[i] == this.positionNames.werewolf || this.positions[i] == this.positionNames.madman;
+				player.position == this.positionNames.werewolf || player.position == this.positionNames.madman;
 			if (this.winner == "werewolf") {
 				// 人狼陣営勝利なら
 				if (isWolfSide) {
@@ -349,16 +350,74 @@ export class Jinro extends dabyss.Game {
 		return res;
 	}
 
+	async getRevotingCount(): Promise<number> {
+		let count = 0;
+		for (let i = 0; this.players.length; i++) {
+			if (count < this.players[i].voteTarget[-1].length) {
+				count = this.players[i].voteTarget[-1].length;
+			}
+		}
+		return count;
+	}
+	
+	async getMostPolledPlayersIndexes(): Promise<number[]> {
+		let players: number[] = [];
+		let max = -1;
+		let votesArray: number[] = new Array(this.players.length).fill(0);
+		for (let i = 0; i < this.players.length; i++) {
+			const votedPlayerIndex: number = this.players[i].voteTarget[-1][-1];
+			votesArray[votedPlayerIndex] += 1;
+		}
+		for (const votes of votesArray) {
+			if (votes > max) {
+				max = votes;
+			}
+		}
+		for (let i = 0; this.players.length; i++) {
+			if (votesArray[i] == max) {
+				players.push(i);
+			}
+		}
+		return players;
+	}
+
+	async getMostPolledPlayers(): Promise<Player[]> {
+		let players: Player[] = [];
+		let max = -1;
+		let votesArray: number[] = new Array(this.players.length).fill(0);
+		for (let i = 0; i < this.players.length; i++) {
+			const votedPlayerIndex: number = this.players[i].voteTarget[-1][-1];
+			votesArray[votedPlayerIndex] += 1;
+		}
+		for (const votes of votesArray) {
+			if (votes > max) {
+				max = votes;
+			}
+		}
+		for (let i = 0; this.players.length; i++) {
+			if (votesArray[i] == max) {
+				players.push(this.players[i]);
+			}
+		}
+		return players;
+	}
+
+	async chooseExecutedPlayerRandomly(players: Player[]): Promise<Player> {
+		const index = Math.floor(Math.random() * players.length); // これは返さない
+		return players[index];
+	}
+
 	async putAction() {
 		for (let i = 0; i < this.players.length; i++) {
+			const player: Player = this.players[i]
 			if (
-				this.players[i].position == this.positionNames.madman ||
-				this.players[i].position == this.positionNames.citizen ||
-				!this.players[i].isAlive
+				player.position == this.positionNames.madman ||
+				player.position == this.positionNames.citizen ||
+				!player.isAlive
 			) {
-				this.players[i].isReady = true
+				player.isReady = true
 			} else {
-				this.players[i].isReady = false
+				player.isReady = false
 			}
 		}
 		await this.update();

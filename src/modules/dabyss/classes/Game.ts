@@ -1,9 +1,7 @@
 import * as aws from "../clients/awsClient";
 import { User } from "./User";
 import { Discussion } from "./Discussion";
-import { Vote } from "./Vote";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Action } from "./Action";
 
 // インスタンス変数にしちゃうとstatic関数で参照できないから
 const games: { [key: string]: { jpName: string; minNumber: number; functionName: string } } = {
@@ -55,11 +53,8 @@ export class Game {
 	settingStatus: boolean[];
 	timer: string;
 	winner: string;
-	positions: string[];
 
 	discussion: Discussion;
-	vote: Vote;
-	action: Action;
 
 	/**
 	 * Gameインスタンス作成
@@ -87,11 +82,8 @@ export class Game {
 		this.settingStatus = [];
 		this.timer = "00:03:00";
 		this.winner = "";
-		this.positions = [];
 
 		this.discussion = new Discussion(this.gameId, this.day, this.groupId);
-		this.vote = new Vote(this.gameId);
-		this.action = new Action(this.gameId, this.day);
 	}
 
 	/**
@@ -157,7 +149,6 @@ export class Game {
 						this.settingStatus = game.setting_status as boolean[];
 						this.timer = game.timer as string;
 						this.winner = game.winner as string;
-						this.positions = game.positions as string[];
 					}
 				}
 			}
@@ -193,7 +184,6 @@ export class Game {
 			setting_status: this.settingStatus,
 			timer: this.timer,
 			winner: this.winner,
-			positions: this.positions,
 		};
 		await aws.dynamoUpdate(gameTable, game);
 	}
@@ -600,42 +590,6 @@ export class Game {
 	}
 
 	/**
-	 * 最初の投票のデータを挿入
-	 *
-	 * @returns {Promise<void>}
-	 * @memberof Game
-	 */
-	// TODO: Voteクラスはなくなるからこのへんの仕様が変わる
-	async putFirstVote(): Promise<void> {
-		const indexes = await this.getUserIndexes();
-		await Vote.putVote(this.gameId, this.day, 1, indexes, indexes.length);
-	}
-
-	/**
-	 * 再投票データを挿入
-	 *
-	 * @returns {Promise<void>}
-	 * @memberof Game
-	 */
-	// TODO: Voteクラスはなくなるからこのへんの仕様が変わる
-	async putRevote(): Promise<void> {
-		const indexes = await this.vote.getMostPolledUserIndexes();
-		const count = this.vote.count + 1;
-		const userNumber = await this.getUserNumber();
-		await Vote.putVote(this.gameId, this.day, count, indexes, userNumber);
-	}
-
-	/**
-	 * 投票データをセット
-	 *
-	 * @returns {Promise<void>}
-	 * @memberof Game
-	 */
-	async setVote(): Promise<void> {
-		this.vote = await Vote.createInstance(this.gameId);
-	}
-
-	/**
 	 * 勝者を更新
 	 *
 	 * @param {string} winner
@@ -664,73 +618,5 @@ export class Game {
 			}
 		}
 		return res;
-	}
-
-	/**
-	 * アクションデータをセット
-	 *
-	 * @returns {Promise<void>}
-	 * @memberof Game
-	 */
-	async setAction(): Promise<void> {
-		this.action = await Action.createInstance(this.gameId, this.day);
-	}
-
-	/**
-	 * 0日目のアクションデータの初期値を挿入
-	 *
-	 * @returns {Promise<void>}
-	 * @memberof Game
-	 */
-	// TODO: Actionクラスなくなるからここの仕様が変わるよ
-	async putZeroAction(): Promise<void> {
-		const userNumber: number = await this.getUserNumber();
-		const status: boolean[] = Array(userNumber).fill(false);
-		await Action.putAction(this.gameId, this.day, status);
-	}
-
-	/**
-	 * positionNameに一致する役職のインデックスの配列を取得
-	 *
-	 * @param {string} positionName
-	 * @returns {Promise<number[]>}
-	 * @memberof Game
-	 */
-	async getPositionIndexes(positionName: string): Promise<number[]> {
-		const res: number[] = [];
-		for (let i = 0; i < this.positions.length; i++) {
-			if (this.positions[i] == positionName) {
-				res.push(i);
-			}
-		}
-		return res;
-	}
-
-	/**
-	 * 入力の役職のターゲットを配列で取得
-	 *
-	 * @param {string} positionName
-	 * @returns {Promise<number[]>}
-	 * @memberof Game
-	 */
-	async getTargetsOfPosition(positionName: string): Promise<number[]> {
-		const indexes: number[] = await this.getPositionIndexes(positionName);
-		const targets = [];
-		for (const index of indexes) {
-			targets.push(this.action.targets[index]);
-		}
-		return targets;
-	}
-
-	/**
-	 * 入力の役職のターゲットを取得
-	 *
-	 * @param {string} positionName
-	 * @returns {Promise<number>}
-	 * @memberof Game
-	 */
-	async getTargetOfPosition(positionName: string): Promise<number> {
-		const targets = await this.getTargetsOfPosition(positionName);
-		return targets[0];
 	}
 }

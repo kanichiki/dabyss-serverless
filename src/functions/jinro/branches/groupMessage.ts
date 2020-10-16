@@ -109,12 +109,9 @@ const replyConfirmYes = async (jinro: jinroModule.Jinro, replyToken: string): Pr
 	await jinro.updatePositions();
 
 	promises.push(jinro.updateDefaultAliveStatus()); // 生死ステータスを初期配置
-	promises.push(jinro.putZeroAction()); // 役職確認ステータスを全員false
+	promises.push(jinro.updateDefaultReadyStatus()); // 役職確認ステータスを全員false
 
 	const players = jinro.players;
-	// const userIds = jinro.userIds;
-	// const displayNames = await jinro.getDisplayNames();
-	// const positions = jinro.positions;
 	const userNumber = await jinro.getUserNumber();
 
 	for (let i = 0; i < userNumber; i++) {
@@ -132,7 +129,6 @@ const replyConfirmYes = async (jinro: jinroModule.Jinro, replyToken: string): Pr
 	}
 
 	const replyMessage = await import("../templates/replyConfirmYes");
-	// promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(userNumber, werewolfNumber, forecasterNumber, psychicNumber, hunterNumber, madmanNumber)));
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(jinro.positionNumbers)));
 
 	await Promise.all(promises);
@@ -149,14 +145,12 @@ const replyDiscussFinish = async (jinro: jinroModule.Jinro, replyToken: string):
 	const promises: Promise<void>[] = [];
 
 	promises.push(jinro.discussion.updateIsDiscussingFalse());
-	promises.push(jinro.putFirstVote());
+	// promises.push(jinro.putFirstVote());
 	promises.push(jinro.updateGameStatus("vote"));
 
 	const userNumber: number = await jinro.getUserNumber();
 	const shuffleUserIndexes: number[] = await dabyss.makeShuffleNumberArray(userNumber);
 	const displayNames = await jinro.getDisplayNames();
-
-	//if (usePostback) { // postbackを使う設定の場合
 	const replyMessage = await import("../templates/replyDiscussFinish");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(shuffleUserIndexes, displayNames)));
 
@@ -171,11 +165,8 @@ const replyAnnounceResult = async (jinro: jinroModule.Jinro, replyToken: string)
 	const group: dabyss.Group = await dabyss.Group.createInstance(jinro.groupId);
 	promises.push(group.finishGroup());
 
-	const displayNames = await jinro.getDisplayNames();
-	const positions = jinro.positions;
-
 	const replyMessage = await import("../templates/replyAnnounceResult");
-	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayNames, positions)));
+	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(jinro.players)));
 
 	await Promise.all(promises);
 	return;
