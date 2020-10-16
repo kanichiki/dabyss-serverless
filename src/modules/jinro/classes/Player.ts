@@ -5,7 +5,6 @@ import { User } from "../../dabyss";
 const userTable = process.env.userTable;
 
 export class Player extends User {
-    playerId: number;
     displayName: string;
     position: string;
     isAlive: boolean;
@@ -50,6 +49,7 @@ export class Player extends User {
         player.displayName = await player.getDisplayName();
         return player;
     }
+
     // こんな風にデータをいじるのは書かずに、あとでまとめてデータ処理できるようになりたいねえ
     // TODO: DBupdateをする関数をかく
     async updatePosition(newPosition: string): Promise<void>{
@@ -68,13 +68,13 @@ export class Player extends User {
         this.isReady = true;
     }
 
-    async vote(voteTarget: number): Promise<void> {
-        this.voteTarget[-1][-1] = voteTarget;
+    async vote(day: number, voteTarget: number): Promise<void> {
+        this.voteTarget[day][-1] = voteTarget;
         this.isReady = true;
     }
 
-    async act(actionTarget: number): Promise<void> {
-        this.actionTarget[-1][-1] = actionTarget;
+    async act(day: number, actionTarget: number): Promise<void> {
+        this.actionTarget[day][-1] = actionTarget;
         this.isReady = true;
     }
 

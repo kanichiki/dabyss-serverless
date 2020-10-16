@@ -88,13 +88,11 @@ const replyVoteSuccess = async (
 	const player: Player = jinro.players[userIndex];
 
 	const voterDisplayName = await jinro.getDisplayName(userIndex);
-	await player.vote(votedUserIndex);	
+	await player.vote(jinro.day, votedUserIndex);	
 	let replyMessage: line.Message[] = [];
 
 	const replyVoteSuccess = await import("../templates/replyVoteSuccess");
 	replyMessage = replyMessage.concat(await replyVoteSuccess.main(voterDisplayName));
-	let diPlayer: Player = null;
-
 	if (await jinro.isAllMembersGetReady()) {
 		// いつかは下2行を統合する
 		const mostPolledPlayers: Player[] = await jinro.getMostPolledPlayers();
@@ -152,8 +150,6 @@ const replyVoteFinish = async (jinro: jinroModule.Jinro): Promise<line.Message[]
 	const promises: Promise<void>[] = [];
 
 	promises.push(jinro.updateGameStatus("action")); // ステータスをアクション中に
-
-	const displayNames = await jinro.getDisplayNames();
 	// TODO: これなに
 	promises.push(jinro.putAction());
 	const players = jinro.players;

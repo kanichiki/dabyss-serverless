@@ -64,7 +64,7 @@ const replyBasicAction = async (
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
 	const player = jinro.players[userIndex];
-	await player.act(targetIndex);
+	await player.act(jinro.day, targetIndex);
 	if (position == jinro.positionNames.werewolf) {
 		const replyMessage = await import("../templates/replyWerewolfAction");
 		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(player.displayName)));
@@ -89,7 +89,7 @@ const replyForecasterAction = async (
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
 	const player = jinro.players[userIndex];
-	await player.act(targetIndex);
+	await player.act(jinro.day, targetIndex);
 	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
 	const displayName: string = await jinro.players[targetIndex].displayName;
 
@@ -111,7 +111,7 @@ const replyPsychicAction = async (
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
 	const player = jinro.players[userIndex];
-	await player.act(targetIndex);
+	await player.act(jinro.day, targetIndex);
 	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
 	const displayName = await jinro.getDisplayName(targetIndex);
 
