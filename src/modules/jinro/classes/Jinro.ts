@@ -261,6 +261,27 @@ export class Jinro extends dabyss.Game {
 		return aliveWerewolfNumber == 0;
 	}
 
+	async getBiteTargetIndex(): Promise<number> {
+		let targetsIndexes: number[] = [];
+		for (let player of this.players) {
+			if (player.isWerewolf) {
+				targetsIndexes.push(player.actionTarget[-1][-1]);
+			}
+		}
+		const index = Math.floor(Math.random() * targetsIndexes.length); // これは返さない
+		return targetsIndexes[index];
+	}
+
+	async getProtectTargetIndex(): Promise<number> {
+		let index: number = -1;
+		for (let player of this.players) {
+			if (player.position == this.positionNames.hunter) {
+				index = player.actionTarget[-1][-1];
+			}
+		}
+		return index;
+	}
+
 	async getDeadPlayers(): Promise<Player[]> {
 		const deadPlayers: Player[] = [];
 		for (let i = 0; i < this.players.length; i++) {
@@ -422,6 +443,5 @@ export class Jinro extends dabyss.Game {
 		}
 		await this.update();
 	}
-
 }
 

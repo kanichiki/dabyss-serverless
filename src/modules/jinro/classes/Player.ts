@@ -64,6 +64,10 @@ export class Player extends User {
         this.isReady = false;
     }
 
+    async getReady(): Promise<void> {
+        this.isReady = true;
+    }
+
     async vote(voteTarget: number): Promise<void> {
         this.voteTarget[-1][-1] = voteTarget;
         this.isReady = true;

@@ -11,7 +11,6 @@ export const handleUserPostback = async (
 	const status: string = jinro.gameStatus;
 	const day: number = jinro.day;
 	if (status == "action") {
-		await jinro.setAction();
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);
 		const targetIndex = Number(postbackData);
 		const player: Player = jinro.players[userIndex]
@@ -36,8 +35,7 @@ export const handleUserPostback = async (
 			// 0日目以外の場合
 
 			// const actionsState = await jinro.action.isActedUser(userIndex);
-			const actionsState: boolean = player.isReady
-			if (!actionsState) {
+			if (!player.isReady) {
 				// その人のアクションがまだなら
 
 				const targetExists = await jinro.existsUserIndexExceptOneself(userIndex, targetIndex);
@@ -65,22 +63,17 @@ const replyBasicAction = async (
 	replyToken: string
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
-
-	await jinro.action.act(userIndex, targetIndex);
-
-	const displayName = await jinro.getDisplayName(targetIndex);
-
+	const player = jinro.players[userIndex];
+	await player.act(targetIndex);
 	if (position == jinro.positionNames.werewolf) {
 		const replyMessage = await import("../templates/replyWerewolfAction");
-		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
+		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(player.displayName)));
 	}
 	if (position == jinro.positionNames.hunter) {
 		const replyMessage = await import("../templates/replyHunterAction");
-		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName)));
+		promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(player.displayName)));
 	}
-
-	const isActionsCompleted = await jinro.action.isActionCompleted();
-	if (isActionsCompleted) {
+	if (await jinro.isAllMembersGetReady()) {
 		promises.push(replyActionCompleted(jinro));
 	}
 
@@ -95,17 +88,14 @@ const replyForecasterAction = async (
 	replyToken: string
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
-
-	await jinro.action.act(userIndex, targetIndex);
-	// const isWerewolf = await jinro.isWerewolf(targetIndex);
+	const player = jinro.players[userIndex];
+	await player.act(targetIndex);
 	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
 	const displayName: string = await jinro.players[targetIndex].displayName;
 
 	const replyMessage = await import("../templates/replyForecasterAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
-
-	const isActionsCompleted = await jinro.action.isActionCompleted();
-	if (isActionsCompleted) {
+	if (player.isReady) {
 		promises.push(replyActionCompleted(jinro));
 	}
 
@@ -120,16 +110,14 @@ const replyPsychicAction = async (
 	replyToken: string
 ): Promise<void> => {
 	const promises: Promise<void>[] = [];
-
-	await jinro.action.act(userIndex, targetIndex);
+	const player = jinro.players[userIndex];
+	await player.act(targetIndex);
 	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
 	const displayName = await jinro.getDisplayName(targetIndex);
 
 	const replyMessage = await import("../templates/replyPsychicAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
-
-	const isActionsCompleted = await jinro.action.isActionCompleted();
-	if (isActionsCompleted) {
+	if (player.isReady) {
 		promises.push(replyActionCompleted(jinro));
 	}
 
@@ -139,14 +127,13 @@ const replyPsychicAction = async (
 
 const replyPositionConfirm = async (jinro: jinroModule.Jinro, userIndex: number, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
-
-	await jinro.action.updateActionStateTrue(userIndex);
+	const player = jinro.players[userIndex];
+	await player.getReady()
 
 	const replyMessage = await import("../templates/replyPositionConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));
 
-	const isActionsCompleted = await jinro.action.isActionCompleted();
-	if (isActionsCompleted) {
+	if (await jinro.isAllMembersGetReady()) {
 		promises.push(replyActionCompleted(jinro));
 	}
 
@@ -157,8 +144,8 @@ const replyPositionConfirm = async (jinro: jinroModule.Jinro, userIndex: number,
 const replyActionCompleted = async (jinro: jinroModule.Jinro): Promise<void> => {
 	const promises: Promise<void>[] = [];
 
-	const biteTarget = await jinro.getTargetOfPosition(jinro.positionNames.werewolf);
-	const protectTarget = await jinro.getTargetOfPosition(jinro.positionNames.hunter);
+	const biteTarget = await jinro.getBiteTargetIndex();
+	const protectTarget = await jinro.getProtectTargetIndex();
 	if (biteTarget != -1 && biteTarget != protectTarget) {
 		promises.push(jinro.players[biteTarget].die());
 	}
