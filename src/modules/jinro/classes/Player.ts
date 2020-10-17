@@ -69,12 +69,13 @@ export class Player extends User {
     }
 
     async vote(day: number, voteTarget: number): Promise<void> {
-        this.voteTarget[day][-1] = voteTarget;
+        const voteCount = this.voteTarget[day].length
+        this.voteTarget[day][voteCount] = voteTarget;
         this.isReady = true;
     }
 
     async act(day: number, actionTarget: number): Promise<void> {
-        this.actionTarget[day][-1] = actionTarget;
+        this.actionTarget[day][0] = actionTarget;
         this.isReady = true;
     }
 

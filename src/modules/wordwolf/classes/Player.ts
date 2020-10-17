@@ -60,7 +60,8 @@ export class Player extends dabyss.User {
     }
 
     async vote(voteTarget: number): Promise<void> {
-        this.voteTarget[-1] = voteTarget;
+        const voteCount = this.voteTarget.length
+        this.voteTarget[voteCount] = voteTarget;
         this.getReady();
     }
 
