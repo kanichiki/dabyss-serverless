@@ -7,10 +7,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { dirname } = require('path');
 
 module.exports = {
+  bail: true,
   context: __dirname,
   mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
   entry: slsw.lib.entries,
-  devtool: slsw.lib.webpack.isLocal ? 'cheap-module-eval-source-map' : 'source-map',
+  // devtool: slsw.lib.webpack.isLocal ? 'eval-source-map' : 'source-map',
+  devtool: 'nosources-source-map',
   resolve: {
     extensions: ['.mjs', '.json', '.ts', '.js'],
     symlinks: false,
@@ -20,6 +22,7 @@ module.exports = {
     libraryTarget: 'commonjs',
     path: path.join(__dirname, '.webpack'),
     filename: '[name].js',
+    sourceMapFilename: '[file].map',
   },
   target: 'node',
   externals: [nodeExternals()],

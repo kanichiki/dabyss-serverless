@@ -1,4 +1,5 @@
 import * as aws from "../clients/awsClient";
+import "source-map-support/register";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import * as commonFunction from "../utils/commonFunction";
 
@@ -89,7 +90,7 @@ export class Discussion {
 			start_time: this.startTime,
 			end_time: this.endTime,
 			is_discussing: this.isDiscussing,
-		}
+		};
 		await aws.dynamoUpdate(discussionTable, discussion);
 	}
 

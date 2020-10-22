@@ -1,4 +1,5 @@
 import aws = require("aws-sdk");
+import "source-map-support/register";
 import line = require("@line/bot-sdk");
 
 let lineClient: line.Client;

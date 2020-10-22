@@ -1,4 +1,5 @@
 import dabyss = require("../../dabyss");
+import "source-map-support/register";
 import { Craziness } from "./Craziness";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Action } from "../../dabyss";
