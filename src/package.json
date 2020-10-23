@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@line/bot-sdk": "^7.0.0",
-    "aws-sdk": "^2.719.0"
+    "aws-sdk": "^2.719.0",
+    "source-map-support": "^0.5.19"
   }
 }

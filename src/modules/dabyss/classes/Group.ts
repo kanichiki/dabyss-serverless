@@ -1,4 +1,5 @@
 import * as aws from "../clients/awsClient";
+import "source-map-support/register";
 import { Game } from "./Game";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 

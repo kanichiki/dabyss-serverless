@@ -115,7 +115,7 @@ const replyConfirmYes = async (jinro: jinroModule.Jinro, replyToken: string): Pr
 	const userNumber = await jinro.getUserNumber();
 
 	for (let i = 0; i < userNumber; i++) {
-		const player = players[i]
+		const player = players[i];
 		const targetDisplayNames = await jinro.getDisplayNamesExceptOneself(i);
 		const targetUserIndexes = await jinro.getUserIndexesExceptOneself(i);
 

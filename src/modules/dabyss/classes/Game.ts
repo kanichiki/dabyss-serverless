@@ -1,4 +1,5 @@
 import * as aws from "../clients/awsClient";
+import "source-map-support/register";
 import { User } from "./User";
 import { Discussion } from "./Discussion";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";

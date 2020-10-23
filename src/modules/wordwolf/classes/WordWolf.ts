@@ -1,5 +1,6 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import "source-map-support/register";
 
 const gameTable: string = process.env.gameTable;
 

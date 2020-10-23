@@ -1,4 +1,5 @@
 import * as aws from "../clients/awsClient";
+import "source-map-support/register";
 import * as line from "../clients/lineClient";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
@@ -73,9 +74,9 @@ export class User {
 		const user = {
 			user_id: this.userId,
 			group_id: this.groupId,
-			is_restarting: this.isRestarting
-		}
-		await aws. dynamoUpdate(userTable, user);
+			is_restarting: this.isRestarting,
+		};
+		await aws.dynamoUpdate(userTable, user);
 	}
 
 	/**

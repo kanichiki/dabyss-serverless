@@ -1,4 +1,5 @@
 import aws = require("aws-sdk");
+import "source-map-support/register";
 // import AmazonDaxClient = require('amazon-dax-client');
 import { DocumentClient, GetItemOutput } from "aws-sdk/clients/dynamodb";
 
