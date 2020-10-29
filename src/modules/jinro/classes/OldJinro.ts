@@ -1,7 +1,6 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
-
 const gameTable = process.env.gameTable;
 
 export interface PositionNumbers {
@@ -39,6 +38,8 @@ export class Jinro extends dabyss.Game {
 	isAliveStatus: boolean[];
 	positionNumbers: PositionNumbers;
 
+	positions: string[];
+
 	/**
 	 * Jinroインスタンス作成
 	 *
@@ -70,6 +71,7 @@ export class Jinro extends dabyss.Game {
 			hunter: 0,
 			citizen: 0,
 		};
+		this.positions = [];
 	}
 
 	/**
@@ -143,7 +145,6 @@ export class Jinro extends dabyss.Game {
 
 			talk_type: this.talkType,
 			is_alive_status: this.isAliveStatus,
-
 		};
 		await dabyss.dynamoUpdate(gameTable, jinro);
 	}
@@ -333,22 +334,22 @@ export class Jinro extends dabyss.Game {
 		return deadIndexes;
 	}
 
-	async putAction() {
-		const userNumber: number = await this.getUserNumber();
-		const status: boolean[] = [];
-		for (let i = 0; i < userNumber; i++) {
-			if (
-				this.positions[i] == this.positionNames.madman ||
-				this.positions[i] == this.positionNames.citizen ||
-				!this.isAliveStatus[i]
-			) {
-				status[i] = true;
-			} else {
-				status[i] = false;
-			}
-		}
-		await Action.putAction(this.gameId, this.day, status);
-	}
+	// async putAction() {
+	// 	const userNumber: number = await this.getUserNumber();
+	// 	const status: boolean[] = [];
+	// 	for (let i = 0; i < userNumber; i++) {
+	// 		if (
+	// 			this.positions[i] == this.positionNames.madman ||
+	// 			this.positions[i] == this.positionNames.citizen ||
+	// 			!this.isAliveStatus[i]
+	// 		) {
+	// 			status[i] = true;
+	// 		} else {
+	// 			status[i] = false;
+	// 		}
+	// 	}
+	// 	await Action.putAction(this.gameId, this.day, status);
+	// }
 
 	async getAliveUserIndexesExceptOneself(index: number): Promise<number[]> {
 		const res: number[] = [];

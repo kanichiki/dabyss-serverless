@@ -1,31 +1,41 @@
 import aws = require("aws-sdk");
 import "source-map-support/register";
 import line = require("@line/bot-sdk");
+import * as dotenv from "dotenv";
+dotenv.config({ path: __dirname + "/../../../../../.env" });
 
 let lineClient: line.Client;
 
 const getLineConfig = async (): Promise<{ [key: string]: string }> => {
-	const region = "ap-northeast-1";
-	const secretName = "dabyss-dev-line";
-	let secretString!: string;
+	let secret: { [key: string]: string } = {};
+	if (process.env.stage == "local" || process.env.stage == "debug") {
+		secret.channelAccessToken = process.env.channelAccessToken;
+		secret.channelSecret = process.env.channelSecret;
+		secret.channelId = process.env.channelId;
+		console.log(secret);
+	} else {
+		const region = "ap-northeast-1";
+		const secretName = "dabyss-dev-line";
+		let secretString = "";
 
-	const client: aws.SecretsManager = new aws.SecretsManager({
-		region: region,
-	});
+		const client: aws.SecretsManager = new aws.SecretsManager({
+			region: region,
+		});
 
-	await client
-		.getSecretValue({ SecretId: secretName }, (err, data) => {
-			if (err) {
-				console.log(err);
-			} else {
-				if (data.SecretString != undefined) {
-					secretString = data.SecretString;
+		await client
+			.getSecretValue({ SecretId: secretName }, (err, data) => {
+				if (err) {
+					console.log(err);
+				} else {
+					if (data.SecretString != undefined) {
+						secretString = data.SecretString;
+					}
 				}
-			}
-		})
-		.promise();
+			})
+			.promise();
 
-	const secret: { [key: string]: string } = JSON.parse(secretString);
+		secret = JSON.parse(secretString);
+	}
 	return secret;
 };
 
@@ -61,7 +71,7 @@ const replyMessage = async (replyToken: string, messages: line.Message | line.Me
 		lineClient = await createLineClient();
 	}
 
-	await lineClient.replyMessage(replyToken, messages);
+	await lineClient.replyMessage(replyToken, messages).catch((err) => console.log(err));
 };
 
 export /**

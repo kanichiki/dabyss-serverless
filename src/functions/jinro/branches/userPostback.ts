@@ -1,6 +1,5 @@
 import dabyss = require("../../../modules/dabyss");
 import jinroModule = require("../../../modules/jinro");
-import { Player } from "../../../modules/jinro/classes/Player"
 
 export const handleUserPostback = async (
 	postbackData: string,
@@ -13,10 +12,10 @@ export const handleUserPostback = async (
 	if (status == "action") {
 		const userIndex: number = await jinro.getUserIndexFromUserId(userId);
 		const targetIndex = Number(postbackData);
-		const player: Player = jinro.players[userIndex]
+		const player: jinroModule.Player = jinro.players[userIndex];
 		if (day == 0) {
 			// 0日目なら
-			const confirmsState: boolean = player.isReady
+			const confirmsState: boolean = player.isReady;
 			// const confirmsState: boolean = await jinro.action.isActedUser(userIndex);
 			if (!confirmsState) {
 				// const position: string = await jinro.getPosition(userIndex);
@@ -91,7 +90,7 @@ const replyForecasterAction = async (
 	const player = jinro.players[userIndex];
 	await player.act(jinro.day, targetIndex);
 	const isWerewolf: boolean = await jinro.players[targetIndex].isWerewolf();
-	const displayName: string = await jinro.players[targetIndex].displayName;
+	const displayName: string = jinro.players[targetIndex].displayName;
 
 	const replyMessage = await import("../templates/replyForecasterAction");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main(displayName, isWerewolf)));
@@ -128,7 +127,7 @@ const replyPsychicAction = async (
 const replyPositionConfirm = async (jinro: jinroModule.Jinro, userIndex: number, replyToken: string): Promise<void> => {
 	const promises: Promise<void>[] = [];
 	const player = jinro.players[userIndex];
-	await player.getReady()
+	await player.getReady();
 
 	const replyMessage = await import("../templates/replyPositionConfirm");
 	promises.push(dabyss.replyMessage(replyToken, await replyMessage.main()));

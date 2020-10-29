@@ -321,7 +321,7 @@ export class Jinro extends dabyss.Game {
 		return aliveUserIndexes;
 	}
 
-	async getDeadDisplayNamesExceptOneself(oneself: Player): Promise<string[]> {
+	async getDeadDisplayNames(): Promise<string[]> {
 		const deadDisplayNames: string[] = [];
 		const deadPlayers: Player[] = await this.getDeadPlayers();
 		for (let i = 0; i < deadPlayers.length; i++) {
@@ -330,7 +330,7 @@ export class Jinro extends dabyss.Game {
 		return deadDisplayNames;
 	}
 
-	async getDeadIndexes(oneself: Player): Promise<number[]> {
+	async getDeadIndexes(): Promise<number[]> {
 		const deadUserIndexes: number[] = [];
 		const deadPlayers: Player[] = await this.getDeadPlayers();
 		for (let i = 0; i < deadPlayers.length; i++) {

@@ -1,11 +1,10 @@
 import dabyss = require("../../dabyss");
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import "source-map-support/register";
-import { User } from "../../dabyss";
 
 const userTable = process.env.userTable;
 
-export class Player extends User {
+export class Player extends dabyss.User {
 	displayName: string;
 	position: string;
 	isAlive: boolean;
@@ -15,7 +14,6 @@ export class Player extends User {
 
 	constructor(userId: string) {
 		super(userId);
-		this.userId = userId;
 		this.displayName = "";
 		this.position = "";
 		this.isAlive = true;
