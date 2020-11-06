@@ -19,11 +19,6 @@ custom:
       inMemory: true
       migrate: true
       seed: true
-    seed:
-      development:
-        sources:
-          - table: dabyss-event-${opt:stage, self:provider.stage, 'dev'}
-            sources: [./migrations/events.json]
 
 provider:
   name: aws
