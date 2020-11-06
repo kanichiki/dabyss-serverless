@@ -43,6 +43,9 @@
     "serverless-offline": "^6.7.0",
     "source-map-support": "^0.5.10"
   },
+  "eslintIgnore": [
+    "/webpack.config.js"
+  ],
   "author": "The serverless webpack authors (https://github.com/elastic-coders/serverless-webpack)",
   "license": "MIT"
 }

@@ -20,19 +20,13 @@ export class Player extends dabyss.User {
 
     async init(): Promise<void> {
         try {
-            const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(
-                userTable,
-                "user_id",
-                this.userId,
-                false
-            );
+            const data: DocumentClient.QueryOutput = await dabyss.dynamoQuery(userTable, "user_id", this.userId, false);
             if (data.Count != undefined) {
                 if (data.Count > 0 && data.Items != undefined) {
                     const user: DocumentClient.AttributeMap = data.Items[0];
                     this.userId = user.user_id as string;
-
-                };
-            };
+                }
+            }
         } catch (err) {
             console.error(err);
             console.error("playerの初期化失敗");
@@ -60,12 +54,12 @@ export class Player extends dabyss.User {
     }
 
     async vote(voteTarget: number): Promise<void> {
-        const voteCount = this.voteTarget.length
+        const voteCount = this.voteTarget.length;
         this.voteTarget[voteCount] = voteTarget;
         this.getReady();
     }
 
     async isWolf(): Promise<boolean> {
-        return (this.position == "ウルフ")
+        return this.position == "ウルフ";
     }
 }

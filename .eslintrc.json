@@ -22,7 +22,7 @@
         // 設定可能なオプションの一部. () はデフォルト値.
         "printWidth": 120,   // 行の最大長 (80)
         "tabWidth": 4,       // 1 インデントあたりの空白数 (2)
-        "useTabs": true,     // インデントにタブを使用する (false)
+        "useTabs": false,     // インデントにタブを使用する (false)
         "singleQuote": false // 引用符としてシングルクオートを使用する (false)
       }
     ]
